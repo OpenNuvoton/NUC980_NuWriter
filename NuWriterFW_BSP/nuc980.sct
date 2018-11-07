@@ -1,0 +1,24 @@
+LR_IROM1 0x0008000
+{
+     EXE_IROM2 +0
+     {  ; load address = execution address
+          startup.o (NUC_INIT, +First)
+          *(InRoot$$Sections)
+          .ANY (+RO)
+     }
+     RW_RAM1 +0;0x200000;+0  
+     {  ; RW_RAM1 start address is after EXE_ROM2
+          .ANY (+RW +ZI)
+     }
+     ARM_LIB_HEAP +0 EMPTY 0x100    ;  0x80000 ; Heap region growing up 
+     {
+     }
+     ARM_LIB_STACK 0x800000 EMPTY -0x2000  ; Stack region growing down
+     {
+     }
+     VEC_ROM0 0x00000000  0x8000
+     {  ; vector table
+          vector.o(VECTOR, +First)
+     }
+}
+
