@@ -35,9 +35,9 @@ extern "C" {
 #include "NucWinUsb.h"
 #include "afxwin.h"
 
-#define PROJECT_NAME _T("Nuvoton NuWriter v1.0")
+#define PROJECT_NAME _T("Nuvoton NuWriter v1.01")
 
-#define LINE_BUFF_LEN            4096
+#define LINE_BUFF_LEN       4096
 
 #define PACK_FORMAT_HEADER (16)
 #define BOOT_HEADER        (32)  // 0x20 'T' 'V' 'N'

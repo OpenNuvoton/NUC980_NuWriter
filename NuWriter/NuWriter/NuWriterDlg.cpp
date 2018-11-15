@@ -117,20 +117,20 @@ void CNuWriterDlg::ShowDeviceConnectState(BOOL isConnect)
 {
     COLORREF col = RGB(0xFF, 0x00, 0xFF);
 
-	if(isConnect)
-	{
+    if(isConnect)
+    {
         m_portName.Format(_T("Nuvoton VCOM"));
-	    m_reconnect.setBitmapId(IDB_RECONNECT0, col);
+        m_reconnect.setBitmapId(IDB_RECONNECT0, col);
         m_reconnect.setGradient(true);
-		m_burntext.SetWindowText(_T("Device Connected"));
-	}
-	else
-	{
-	    m_portName="";
-	    m_reconnect.setBitmapId(IDB_RECONNECT1, col);
-	    m_reconnect.setGradient(true);
-	    m_burntext.SetWindowText(_T(" Disconnected"));
-	}
+        m_burntext.SetWindowText(_T("Device Connected"));
+    }
+    else
+    {
+        m_portName="";
+        m_reconnect.setBitmapId(IDB_RECONNECT1, col);
+        m_reconnect.setGradient(true);
+        m_burntext.SetWindowText(_T(" Disconnected"));
+    }
 }
 
 BOOL CNuWriterDlg::OnInitDialog()
@@ -250,7 +250,7 @@ BOOL CNuWriterDlg::OnInitDialog()
 
     INItoSaveOrLoad(SAVE);
 
-	GetDlgItem(IDC_RECONNECT)->EnableWindow(FALSE);
+    GetDlgItem(IDC_RECONNECT)->EnableWindow(FALSE);
     COLORREF col = RGB(0xFF, 0x00, 0xFF);
     m_reconnect.setBitmapId(IDB_RECONNECT0, col);
     m_reconnect.setGradient(true);
@@ -259,11 +259,11 @@ BOOL CNuWriterDlg::OnInitDialog()
 
     CString tempText;
     if(!g_iDeviceNum) {
-		ShowDeviceConnectState(0);//Disconnected
-	    GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
+        ShowDeviceConnectState(0);//Disconnected
+        GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
     } else {
-		ShowDeviceConnectState(1);//Connected
-	    GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
+        ShowDeviceConnectState(1);//Connected
+        GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
     }
 
     g_iCurDevNum =  g_iDeviceNum;
@@ -278,8 +278,8 @@ BOOL CNuWriterDlg::OnInitDialog()
         if(m_initdlg.GetVersion() == _T("xxxx"))
         //if(!g_iDeviceNum)
         {
-			ShowDeviceConnectState(0);//Disconnected
-			GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
+            ShowDeviceConnectState(0);//Disconnected
+            GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
             g_iCurDevNum -= 1;
             g_iDeviceNum -= 1;
 
@@ -291,7 +291,7 @@ BOOL CNuWriterDlg::OnInitDialog()
             m_version.SetWindowText(m_initdlg.GetVersion());
             g_iCurDevNum =  g_iDeviceNum;
             Sleep(FirstDelay);
-			GetInfo();
+            GetInfo();
         }
     }
 
@@ -361,8 +361,8 @@ void CNuWriterDlg::OnBnClickedReconnect()
     TRACE(_T("\n@@@@@ CNuWriterDlg::OnBnClickedReconnect, g_iDeviceNum =%d\n"), g_iDeviceNum);
     if(!g_iDeviceNum) {
         AfxMessageBox(_T("No VCOM Port found !"));
-		ShowDeviceConnectState(0);//Disconnected
-	    GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
+        ShowDeviceConnectState(0);//Disconnected
+        GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
         g_iCurDevNum = 0;
         g_iDeviceNum = 0;
 
@@ -388,8 +388,8 @@ void CNuWriterDlg::OnBnClickedReconnect()
     iDevice=0;
 
     if(m_initdlg.GetVersion() == _T("xxxx") || g_iDeviceNum == 0) {
-		ShowDeviceConnectState(0);//Disconnected
-	    GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
+        ShowDeviceConnectState(0);//Disconnected
+        GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
         g_iCurDevNum -= 1;
         g_iDeviceNum -= 1;
 
@@ -402,13 +402,13 @@ void CNuWriterDlg::OnBnClickedReconnect()
         m_version.SetWindowText(m_initdlg.GetVersion());
         GetInfo();
 #if(0)
-		TRACE("CNuWriterDlg::OnBnClickedReconnect:g_iDeviceNum =%d\n",g_iDeviceNum); 
-	    for(i=0;  i < g_iDeviceNum; i++) {
-		   OneDeviceInfo(i);
+        TRACE("CNuWriterDlg::OnBnClickedReconnect:g_iDeviceNum =%d\n",g_iDeviceNum);
+        for(i=0;  i < g_iDeviceNum; i++) {
+           OneDeviceInfo(i);
         }
 #endif
         g_iDeviceNum = NucUsb.WinUsbNumber;
-		TRACE(_T("g_iDeviceNum = %d\n"), g_iDeviceNum);
+        TRACE(_T("g_iDeviceNum = %d\n"), g_iDeviceNum);
     }
 #endif
 
@@ -446,13 +446,13 @@ void CNuWriterDlg::OnDestroy()
 
 BYTE CNuWriterDlg::Str2Hex(CString strSource)
 {
-	BYTE num;
-	char *str;
-	CStringA strA(strSource.GetBuffer(0));
-	strSource.ReleaseBuffer();
-	string s = strA.GetBuffer(0);
-	const char* pc = s.c_str();
-	num = (int)strtol(pc, &str, 16);
+    BYTE num;
+    char *str;
+    CStringA strA(strSource.GetBuffer(0));
+    strSource.ReleaseBuffer();
+    string s = strA.GetBuffer(0);
+    const char* pc = s.c_str();
+    num = (int)strtol(pc, &str, 16);
     return num;
 }
 
@@ -463,7 +463,7 @@ void CNuWriterDlg::INItoSaveOrLoad(int Flag)
         return;
 
     CString idx;
-	memset((char *)&m_info,0xff,sizeof(INFO_T));
+    memset((char *)&m_info,0xff,sizeof(INFO_T));
     if(Flag==LOAD) {
 #if 0
         idx=m_inifile.GetValue(_T("DEFAULT"),_T("PAGE_IDX"));
@@ -485,27 +485,27 @@ void CNuWriterDlg::INItoSaveOrLoad(int Flag)
         Nand_uBlockPerFlash=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uBlockPerFlash")));
         Nand_uPagePerBlock=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uPagePerBlock")));
 
-		//memset((char *)&m_info,0xff,sizeof(INFO_T));
-		m_info.SPI_QuadReadCmd = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("QuadReadCmd")));
-		m_info.SPI_ReadStatusCmd = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("ReadStatusCmd")));
-		m_info.SPI_WriteStatusCmd = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("WriteStatusCmd")));
-		m_info.SPI_dummybyte = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("dummybyte")));
-		m_info.SPI_StatusValue = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("StatusValue")));
+        //memset((char *)&m_info,0xff,sizeof(INFO_T));
+        m_info.SPI_QuadReadCmd = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("QuadReadCmd")));
+        m_info.SPI_ReadStatusCmd = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("ReadStatusCmd")));
+        m_info.SPI_WriteStatusCmd = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("WriteStatusCmd")));
+        m_info.SPI_dummybyte = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("dummybyte")));
+        m_info.SPI_StatusValue = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("StatusValue")));
 
-		//(char*)(LPCTSTR)strSource
-		m_info.SPINand_PageSize = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PageSize")));
-		m_info.SPINand_SpareArea = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("SpareArea")));
+        //(char*)(LPCTSTR)strSource
+        m_info.SPINand_PageSize = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PageSize")));
+        m_info.SPINand_SpareArea = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("SpareArea")));
 
-		m_info.SPINand_QuadReadCmd = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("QuadReadCmd")));
-		m_info.SPINand_ReadStatusCmd = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("ReadStatusCmd")));
-		m_info.SPINand_WriteStatusCmd = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("WriteStatusCmd")));
-		m_info.SPINand_dummybyte = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("dummybyte")));
-		m_info.SPINand_StatusValue = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("StatusValue")));
+        m_info.SPINand_QuadReadCmd = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("QuadReadCmd")));
+        m_info.SPINand_ReadStatusCmd = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("ReadStatusCmd")));
+        m_info.SPINand_WriteStatusCmd = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("WriteStatusCmd")));
+        m_info.SPINand_dummybyte = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("dummybyte")));
+        m_info.SPINand_StatusValue = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("StatusValue")));
 
-		//m_info.SPINand_ReadStatusCmd = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("ReadStatusCmd")));
-		//m_info.SPINand_WriteStatusCmd = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("WriteStatusCmd")));
-		//m_info.SPINand_dummybyte = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("dummybyte")));
-		//m_info.SPINand_StatusValue = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("StatusValue")));
+        //m_info.SPINand_ReadStatusCmd = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("ReadStatusCmd")));
+        //m_info.SPINand_WriteStatusCmd = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("WriteStatusCmd")));
+        //m_info.SPINand_dummybyte = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("dummybyte")));
+        //m_info.SPINand_StatusValue = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("StatusValue")));
 
         m_info.SPINand_BlockPerFlash=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
         m_info.SPINand_PagePerBlock=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
@@ -594,21 +594,21 @@ void CNuWriterDlg::LoadDDRInit(CString pathName,int *len)
     Write.write(ptmpbuf,tmpbuf_size);
     Write.close();
 #endif
-	TRACE(_T("ptmpbuf[0~3] = 0x%x 0x%x 0x%x 0x%x\n"), ptmpbuf[0], ptmpbuf[1], ptmpbuf[2], ptmpbuf[3]);
-	if(((ptmpbuf[0]&0xff) == 0) && ((ptmpbuf[1]&0xff) == 0) && ((ptmpbuf[2]&0xff) == 0) && ((ptmpbuf[3]&0xff) == 0xB0))
-	{
+    TRACE(_T("ptmpbuf[0~3] = 0x%x 0x%x 0x%x 0x%x\n"), ptmpbuf[0], ptmpbuf[1], ptmpbuf[2], ptmpbuf[3]);
+    if(((ptmpbuf[0]&0xff) == 0) && ((ptmpbuf[1]&0xff) == 0) && ((ptmpbuf[2]&0xff) == 0) && ((ptmpbuf[3]&0xff) == 0xB0))
+    {
         *len=(tmpbuf_size-8);// ddr version 8 byte
-	    DDRFileVer.Format(_T("V%d.0"), ptmpbuf[4]);
-	    memcpy((char *)ShareDDRBuf, ptmpbuf+8, *len);
-	}
-	else
-	{
+        DDRFileVer.Format(_T("V%d.0"), ptmpbuf[4]);
+        memcpy((char *)ShareDDRBuf, ptmpbuf+8, *len);
+    }
+    else
+    {
         *len=tmpbuf_size;
         DDRFileVer.Format(_T("No version"));
-	    memcpy((char *)ShareDDRBuf, ptmpbuf, *len);
-	}
+        memcpy((char *)ShareDDRBuf, ptmpbuf, *len);
+    }
 
-	free(ptmpbuf);
+    free(ptmpbuf);
     return ;
 }
 
@@ -647,26 +647,24 @@ void CNuWriterDlg::LoadDirINI(CString szDir,wchar_t * pext, vector<CString> &sLi
     CString szFileName,szFileFullPath;
     wchar_t filename[_MAX_FNAME];
     wchar_t ext[_MAX_EXT];
-    //szDir = IncludeTrailingPathDelimiter(Dir); // 確保最後有反斜線
+    //szDir = IncludeTrailingPathDelimiter(Dir);
 
-    filehandle = FindFirstFile((szDir + _T("*.*")).GetBuffer(0), &filedata); // 因為我們要包含子目錄，所以要用 *.*，不然直接用 *.ini 就行了
+    filehandle = FindFirstFile((szDir + _T("*.*")).GetBuffer(0), &filedata);
     if (filehandle != INVALID_HANDLE_VALUE) {
         do {
-            /* 不處理隱藏檔及 . 跟 .. */
             if ((filedata.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) != 0 ||
                     lstrcmp(filedata.cFileName, _T(".")) == 0 ||
                     lstrcmp(filedata.cFileName, _T("..")) == 0)
                 continue;
-            /* 若是資料夾 */
             if ((filedata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
-                szFileFullPath = szDir + filedata.cFileName;// 資料夾完整路徑
-                LoadDirINI(szFileFullPath,pext,sList); // 遞迴找下一層目錄
+                szFileFullPath = szDir + filedata.cFileName;
+                LoadDirINI(szFileFullPath,pext,sList);
             } else {
                 szFileFullPath = szDir + filedata.cFileName;
                 _wsplitpath(szFileFullPath, NULL, NULL, filename,ext);
-                if(lstrcmp(ext,pext)==0) { // 若找到的檔案的副檔名是 .ini
+                if(lstrcmp(ext,pext)==0) {
                     szFileName.Format(_T("%s%s"),filename,ext);
-                    sList.push_back(szFileName); // 將完整路徑加到 sList 裡頭
+                    sList.push_back(szFileName);
                 }
 
             }
@@ -686,9 +684,9 @@ void CNuWriterDlg::OnCbnSelchangeComboType()
 
     CString t_type, str;
 
-	//Default
-	m_info.Nand_uIsUserConfig = 0;
-	m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
+    //Default
+    m_info.Nand_uIsUserConfig = 0;
+    m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
     m_info.Nand_uBlockPerFlash = Nand_uBlockPerFlash;
     m_gtype.GetWindowText(t_type);
     if( !t_type.Compare(_T("NAND")) ) {
@@ -704,59 +702,59 @@ void CNuWriterDlg::OnCbnSelchangeComboType()
         }
         ((CNANDDlg *)mainWnd)->m_status.SetWindowText(tmp);
 
-		if(m_info.Nand_uBlockPerFlash == 1023)
-			m_info.Nand_uBlockPerFlash = 1024;
-		else if(m_info.Nand_uBlockPerFlash == 2047)
-			m_info.Nand_uBlockPerFlash = 2048;
-		else if(m_info.Nand_uBlockPerFlash == 4095)
-			m_info.Nand_uBlockPerFlash = 4096;
-		else if(m_info.Nand_uBlockPerFlash == 8191)
-			m_info.Nand_uBlockPerFlash = 8192;
+        if(m_info.Nand_uBlockPerFlash == 1023)
+            m_info.Nand_uBlockPerFlash = 1024;
+        else if(m_info.Nand_uBlockPerFlash == 2047)
+            m_info.Nand_uBlockPerFlash = 2048;
+        else if(m_info.Nand_uBlockPerFlash == 4095)
+            m_info.Nand_uBlockPerFlash = 4096;
+        else if(m_info.Nand_uBlockPerFlash == 8191)
+            m_info.Nand_uBlockPerFlash = 8192;
 
         if(((CNANDDlg *)mainWnd)->m_nandflash_check.GetCheck()!=TRUE) // Auto Detect
-		{
-			m_info.Nand_uIsUserConfig = 0;
-		    str.Format(_T("%d"), m_info.Nand_uBlockPerFlash);
-		    m_inifile.SetValue(_T("NAND_INFO"),_T("uBlockPerFlash"),str);
-		    m_inifile.WriteFile();
-		    str.Format(_T("%d"), m_info.Nand_uPagePerBlock);
-		    m_inifile.SetValue(_T("NAND_INFO"),_T("uPagePerBlock"),str);
-		    m_inifile.WriteFile();
-		}
-		else // User Config
-		{
+        {
+            m_info.Nand_uIsUserConfig = 0;
+            str.Format(_T("%d"), m_info.Nand_uBlockPerFlash);
+            m_inifile.SetValue(_T("NAND_INFO"),_T("uBlockPerFlash"),str);
+            m_inifile.WriteFile();
+            str.Format(_T("%d"), m_info.Nand_uPagePerBlock);
+            m_inifile.SetValue(_T("NAND_INFO"),_T("uPagePerBlock"),str);
+            m_inifile.WriteFile();
+        }
+        else // User Config
+        {
             m_info.Nand_uIsUserConfig = 1;
-			m_info.Nand_uBlockPerFlash=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uBlockPerFlash")));
-			str.Format(_T("%d"), m_info.Nand_uBlockPerFlash);
-		    m_inifile.SetValue(_T("NAND_INFO"),_T("uBlockPerFlash"),str);
-		    m_inifile.WriteFile();
+            m_info.Nand_uBlockPerFlash=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uBlockPerFlash")));
+            str.Format(_T("%d"), m_info.Nand_uBlockPerFlash);
+            m_inifile.SetValue(_T("NAND_INFO"),_T("uBlockPerFlash"),str);
+            m_inifile.WriteFile();
             m_info.Nand_uPagePerBlock=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uPagePerBlock")));
-			str.Format(_T("%d"), m_info.Nand_uPagePerBlock);
-		    m_inifile.SetValue(_T("NAND_INFO"),_T("uPagePerBlock"),str);
-		    m_inifile.WriteFile();
-		}
-    }
-	
-    if( !t_type.Compare(_T("SPI")) ) {
-        CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
-		
-	    if( !t_type.Compare(_T("SPI")) ) {
-            CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
-	    	if(((CSPIDlg *)mainWnd)->m_spinor_check.GetCheck()!=TRUE)
-	    	{
-	    		m_info.SPI_uIsUserConfig = 0;
-	    	}
-	    	else
-	    	{
-	    	    m_info.SPI_uIsUserConfig = 1;
-	    	}
+            str.Format(_T("%d"), m_info.Nand_uPagePerBlock);
+            m_inifile.SetValue(_T("NAND_INFO"),_T("uPagePerBlock"),str);
+            m_inifile.WriteFile();
         }
     }
 
-	if( !t_type.Compare(_T("SPI NAND")) ) {
+    if( !t_type.Compare(_T("SPI")) ) {
+        CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
+
+        if( !t_type.Compare(_T("SPI")) ) {
+            CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
+            if(((CSPIDlg *)mainWnd)->m_spinor_check.GetCheck()!=TRUE)
+            {
+                m_info.SPI_uIsUserConfig = 0;
+            }
+            else
+            {
+                m_info.SPI_uIsUserConfig = 1;
+            }
+        }
+    }
+
+    if( !t_type.Compare(_T("SPI NAND")) ) {
         CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
         CString tmp;
-		unsigned int val= m_info.SPINand_PagePerBlock * m_info.SPINand_PageSize;//m_info.Nand_uPagePerBlock * m_info.SPINand_PageSize
+        unsigned int val= m_info.SPINand_PagePerBlock * m_info.SPINand_PageSize;//m_info.Nand_uPagePerBlock * m_info.SPINand_PageSize
         if(val==0 || val>0x800000) {
             tmp.Format(_T("Alignment : N/A"));
             SPINand_size.Format(_T("N/A"));
@@ -766,17 +764,17 @@ void CNuWriterDlg::OnCbnSelchangeComboType()
         }
         ((CSPINandDlg *)mainWnd)->m_status.SetWindowText(tmp);
 
-	    if( !t_type.Compare(_T("SPI NAND")) ) {
+        if( !t_type.Compare(_T("SPI NAND")) ) {
             CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
-	    	if(((CSPINandDlg *)mainWnd)->m_spinandflash_check.GetCheck()!=TRUE)
-	    	{
-	    		m_info.SPINand_uIsUserConfig = 0;
-	    		// m_info.SPINand_PagePerBlock=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
-	    		// m_info.SPINand_BlockPerFlash=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
-	    	}
-	    	else
-	    	{
-	    	    m_info.SPINand_uIsUserConfig = 1;
+            if(((CSPINandDlg *)mainWnd)->m_spinandflash_check.GetCheck()!=TRUE)
+            {
+                m_info.SPINand_uIsUserConfig = 0;
+                // m_info.SPINand_PagePerBlock=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
+                // m_info.SPINand_BlockPerFlash=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
+            }
+            else
+            {
+                m_info.SPINand_uIsUserConfig = 1;
                 // m_info.SPINand_PageSize = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PageSize")));
                 // m_info.SPINand_SpareArea = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("SpareArea")));
                 // m_info.SPINand_QuadReadCmd = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("QuadReadCmd")));
@@ -786,7 +784,7 @@ void CNuWriterDlg::OnCbnSelchangeComboType()
                 // m_info.SPINand_StatusValue = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("StatusValue")));
                 // m_info.SPINand_BlockPerFlash=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
                 // m_info.SPINand_PagePerBlock=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
-	    	}
+            }
         }
     }
 
@@ -815,55 +813,55 @@ void CNuWriterDlg::OnCbnSelchangeComboType()
     if( !t_type.Compare(_T("Mass Production")) ) {
         CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
 
-		if(m_info.Nand_uBlockPerFlash == 1023)
-			m_info.Nand_uBlockPerFlash = 1024;
-		else if(m_info.Nand_uBlockPerFlash == 2047)
-			m_info.Nand_uBlockPerFlash = 2048;
-		else if(m_info.Nand_uBlockPerFlash == 4095)
-			m_info.Nand_uBlockPerFlash = 4096;
-		else if(m_info.Nand_uBlockPerFlash == 8191)
-			m_info.Nand_uBlockPerFlash = 8192;
+        if(m_info.Nand_uBlockPerFlash == 1023)
+            m_info.Nand_uBlockPerFlash = 1024;
+        else if(m_info.Nand_uBlockPerFlash == 2047)
+            m_info.Nand_uBlockPerFlash = 2048;
+        else if(m_info.Nand_uBlockPerFlash == 4095)
+            m_info.Nand_uBlockPerFlash = 4096;
+        else if(m_info.Nand_uBlockPerFlash == 8191)
+            m_info.Nand_uBlockPerFlash = 8192;
 
         if(((FastDlg *)mainWnd)->m_nandflashInfo_check.GetCheck()!=TRUE) // Auto Detect
-		{
-			m_info.Nand_uIsUserConfig = 0;
-		    str.Format(_T("%d"), m_info.Nand_uBlockPerFlash);
-		    m_inifile.SetValue(_T("NAND_INFO"),_T("uBlockPerFlash"),str);
-		    m_inifile.WriteFile();
-		    str.Format(_T("%d"), m_info.Nand_uPagePerBlock);
-		    m_inifile.SetValue(_T("NAND_INFO"),_T("uPagePerBlock"),str);
-		    m_inifile.WriteFile();
-		}
-		else // User Config
-		{
+        {
+            m_info.Nand_uIsUserConfig = 0;
+            str.Format(_T("%d"), m_info.Nand_uBlockPerFlash);
+            m_inifile.SetValue(_T("NAND_INFO"),_T("uBlockPerFlash"),str);
+            m_inifile.WriteFile();
+            str.Format(_T("%d"), m_info.Nand_uPagePerBlock);
+            m_inifile.SetValue(_T("NAND_INFO"),_T("uPagePerBlock"),str);
+            m_inifile.WriteFile();
+        }
+        else // User Config
+        {
             m_info.Nand_uIsUserConfig = 1;
-			m_info.Nand_uBlockPerFlash=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uBlockPerFlash")));
-			str.Format(_T("%d"), m_info.Nand_uBlockPerFlash);
-		    m_inifile.SetValue(_T("NAND_INFO"),_T("uBlockPerFlash"),str);
-		    m_inifile.WriteFile();
+            m_info.Nand_uBlockPerFlash=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uBlockPerFlash")));
+            str.Format(_T("%d"), m_info.Nand_uBlockPerFlash);
+            m_inifile.SetValue(_T("NAND_INFO"),_T("uBlockPerFlash"),str);
+            m_inifile.WriteFile();
             m_info.Nand_uPagePerBlock=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uPagePerBlock")));
-			str.Format(_T("%d"), m_info.Nand_uPagePerBlock);
-		    m_inifile.SetValue(_T("NAND_INFO"),_T("uPagePerBlock"),str);
-		    m_inifile.WriteFile();
-		}
+            str.Format(_T("%d"), m_info.Nand_uPagePerBlock);
+            m_inifile.SetValue(_T("NAND_INFO"),_T("uPagePerBlock"),str);
+            m_inifile.WriteFile();
+        }
 
-		if(((FastDlg *)mainWnd)->m_spinor_check.GetCheck()!=TRUE)
-		{
-			m_info.SPI_uIsUserConfig = 0;
-		}
-		else // User Config
-		{
-		    m_info.SPI_uIsUserConfig = 1;
-		}
-		
-		if(((FastDlg *)mainWnd)->m_spinandflashInfo_check.GetCheck()!=TRUE)
-		{
-			m_info.SPINand_uIsUserConfig = 0;
-		}
-		else // User Config
-		{
-		    m_info.SPINand_uIsUserConfig = 1;
-		}
+        if(((FastDlg *)mainWnd)->m_spinor_check.GetCheck()!=TRUE)
+        {
+            m_info.SPI_uIsUserConfig = 0;
+        }
+        else // User Config
+        {
+            m_info.SPI_uIsUserConfig = 1;
+        }
+
+        if(((FastDlg *)mainWnd)->m_spinandflashInfo_check.GetCheck()!=TRUE)
+        {
+            m_info.SPINand_uIsUserConfig = 0;
+        }
+        else // User Config
+        {
+            m_info.SPINand_uIsUserConfig = 1;
+        }
 
         for(i=0; i< NucUsb.WinUsbNumber; i++) {
             ((CProgressCtrl *)mainWnd->GetDlgItem(IDC_FAST_PROGRESS1 + i))->ShowWindow(SW_SHOW);
@@ -901,8 +899,8 @@ void CNuWriterDlg::OneSelchangeComboType(int id)
 
 int  CNuWriterDlg::Read_File_Line(HANDLE hFile)
 {
-    DWORD  	i, nBytesRead;
-    char	data_byte;
+    DWORD   i, nBytesRead;
+    char    data_byte;
     BOOL    bResult;
 
     for (i = 0; i < LINE_BUFF_LEN; i++) {
@@ -971,40 +969,40 @@ BOOL CNuWriterDlg:: Info()
     }
 
 #if(1)
-	CString t_type;
+    CString t_type;
     m_gtype.GetWindowText(t_type);
-	if( !t_type.Compare(_T("NAND")) ) {
+    if( !t_type.Compare(_T("NAND")) ) {
         CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
-		if(((CNANDDlg *)mainWnd)->m_nandflash_check.GetCheck()!=TRUE)
-		{
-			m_info.Nand_uIsUserConfig = 0;
-			m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
+        if(((CNANDDlg *)mainWnd)->m_nandflash_check.GetCheck()!=TRUE)
+        {
+            m_info.Nand_uIsUserConfig = 0;
+            m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
             m_info.Nand_uBlockPerFlash = Nand_uBlockPerFlash;
-		}
-		else
-		{
-			m_info.Nand_uIsUserConfig = 1;
-		    m_info.Nand_uPagePerBlock=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uPagePerBlock")));
-			m_info.Nand_uBlockPerFlash=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uBlockPerFlash")));
-		}
+        }
+        else
+        {
+            m_info.Nand_uIsUserConfig = 1;
+            m_info.Nand_uPagePerBlock=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uPagePerBlock")));
+            m_info.Nand_uBlockPerFlash=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uBlockPerFlash")));
+        }
 
-		TRACE(_T("Info: BlockPerFlash =%d, PagePerBlock = %d\n"),  m_info.Nand_uBlockPerFlash, m_info.Nand_uPagePerBlock);
+        TRACE(_T("Info: BlockPerFlash =%d, PagePerBlock = %d\n"),  m_info.Nand_uBlockPerFlash, m_info.Nand_uPagePerBlock);
     }
 
     m_gtype.GetWindowText(t_type);
-	if( !t_type.Compare(_T("SPI NAND")) ) {
+    if( !t_type.Compare(_T("SPI NAND")) ) {
         CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
-	    if(((CSPINandDlg *)mainWnd)->m_spinandflash_check.GetCheck()!=TRUE)
-	    {
-	    	m_info.SPINand_uIsUserConfig = 0;
-	    	// m_info.SPINand_PagePerBlock=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
-	    	// m_info.SPINand_BlockPerFlash=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
-	    }
-	    else
-	    {
-	        m_info.SPINand_uIsUserConfig = 1;
-	    	// m_info.SPINand_PagePerBlock=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
-	    	// m_info.SPINand_BlockPerFlash=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
+        if(((CSPINandDlg *)mainWnd)->m_spinandflash_check.GetCheck()!=TRUE)
+        {
+            m_info.SPINand_uIsUserConfig = 0;
+            // m_info.SPINand_PagePerBlock=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
+            // m_info.SPINand_BlockPerFlash=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
+        }
+        else
+        {
+            m_info.SPINand_uIsUserConfig = 1;
+            // m_info.SPINand_PagePerBlock=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
+            // m_info.SPINand_BlockPerFlash=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
             m_info.SPINand_PageSize = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PageSize")));
             m_info.SPINand_SpareArea = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("SpareArea")));
             m_info.SPINand_QuadReadCmd = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("QuadReadCmd")));
@@ -1014,20 +1012,20 @@ BOOL CNuWriterDlg:: Info()
             m_info.SPINand_StatusValue = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("StatusValue")));
             m_info.SPINand_BlockPerFlash=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
             m_info.SPINand_PagePerBlock=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
-	    }
+        }
 
-		TRACE(_T("Info: BlockPerFlash =%d, PagePerBlock = %d\n"),  m_info.Nand_uBlockPerFlash, m_info.Nand_uPagePerBlock);
+        TRACE(_T("Info: BlockPerFlash =%d, PagePerBlock = %d\n"),  m_info.Nand_uBlockPerFlash, m_info.Nand_uPagePerBlock);
     }
 #endif
     //m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
     //m_info.Nand_uBlockPerFlash = Nand_uBlockPerFlash;
     bResult=NucUsb.NUC_WritePipe(0,(UCHAR *)&m_info, sizeof(INFO_T));
     if(WaitForSingleObject(m_ExitEvent, 0) != WAIT_TIMEOUT) bResult=FALSE;
-    if(bResult!=TRUE)	bResult=FALSE;
+    if(bResult!=TRUE)   bResult=FALSE;
 
     bResult=NucUsb.NUC_ReadPipe(0,(UCHAR *)&m_info, sizeof(INFO_T));
     if(WaitForSingleObject(m_ExitEvent, 0) != WAIT_TIMEOUT) bResult=FALSE;
-    if(bResult!=TRUE)	bResult=FALSE;
+    if(bResult!=TRUE)   bResult=FALSE;
 
 
     NucUsb.NUC_CloseHandle();
@@ -1040,63 +1038,63 @@ BOOL CNuWriterDlg::OneDeviceInfo(int id)
     BOOL bResult, bRet;
     int count=0;
 
-	//TRACE(_T("\n@@@@@(%d) CNuWriterDlg::OneDeviceInfo\n"), id);
-	ResetEvent(m_ExitEvent[id]);
-	bRet = FALSE;
-	for(count =0; count < RETRYCNT; count++) {
-	    //TRACE(_T("@@@@@ (%d) OneDeviceInfo Retry %d\n"), id, count);
-        bResult=NucUsb.EnableOneWinUsbDevice(id);		
-		//TRACE(_T("@@@@@ (%d) bResult %d\n\n"), id, bResult);
+    //TRACE(_T("\n@@@@@(%d) CNuWriterDlg::OneDeviceInfo\n"), id);
+    ResetEvent(m_ExitEvent[id]);
+    bRet = FALSE;
+    for(count =0; count < RETRYCNT; count++) {
+        //TRACE(_T("@@@@@ (%d) OneDeviceInfo Retry %d\n"), id, count);
+        bResult=NucUsb.EnableOneWinUsbDevice(id);
+        //TRACE(_T("@@@@@ (%d) bResult %d\n\n"), id, bResult);
         if(!bResult) {
-		    //TRACE(_T("@@@@@ !!!!! Start (%d) bResult %d\n"), id, bResult);
-		    bResult=NucUsb.EnableOneWinUsbDevice(id);
-			//TRACE(_T("@@@@@ !!!!! End   (%d) bResult %d\n"), id, bResult);
-			if(bResult == FALSE) {
-				bResult =NucUsb.NUC_ResetFW(id);
-				TRACE(_T("@@@@@ (%d) RESET NUC980 \n"), id);
-				Sleep(100);//for Mass production
-				if(bResult == FALSE) {
-					TRACE(_T("@@@@@ XXXX (%d) RESET NUC980 failed\n"), id);
-					continue;
-				}
-				else
-				{
-					bRet = TRUE;
-					//GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
-					break;
-				}			
-				Sleep(200);//for Mass production
-				bResult = FWDownload(id);
-				//TRACE(_T("@@@@@ (%d) FWDownload NUC980 \n"), id);
-				Sleep(200);//for Mass production
-				if(bResult == FALSE) {
-					TRACE(_T("@@@@@ XXXX (%d) Download FW failed\n"), id);
-					continue;
-				}
-			}
-			else
-			{
-			    bRet = TRUE;
-				break;
-			}
+            //TRACE(_T("@@@@@ !!!!! Start (%d) bResult %d\n"), id, bResult);
+            bResult=NucUsb.EnableOneWinUsbDevice(id);
+            //TRACE(_T("@@@@@ !!!!! End   (%d) bResult %d\n"), id, bResult);
+            if(bResult == FALSE) {
+                bResult =NucUsb.NUC_ResetFW(id);
+                TRACE(_T("@@@@@ (%d) RESET NUC980 \n"), id);
+                Sleep(100);//for Mass production
+                if(bResult == FALSE) {
+                    TRACE(_T("@@@@@ XXXX (%d) RESET NUC980 failed\n"), id);
+                    continue;
+                }
+                else
+                {
+                    bRet = TRUE;
+                    //GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
+                    break;
+                }
+                Sleep(200);//for Mass production
+                bResult = FWDownload(id);
+                //TRACE(_T("@@@@@ (%d) FWDownload NUC980 \n"), id);
+                Sleep(200);//for Mass production
+                if(bResult == FALSE) {
+                    TRACE(_T("@@@@@ XXXX (%d) Download FW failed\n"), id);
+                    continue;
+                }
+            }
+            else
+            {
+                bRet = TRUE;
+                break;
+            }
         }
-		else
-		{
-			bRet = TRUE;
-			//GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
-			break;
-		}
+        else
+        {
+            bRet = TRUE;
+            //GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
+            break;
+        }
     }
 
-	if(bRet == FALSE) // Retry Fail
-	{
+    if(bRet == FALSE) // Retry Fail
+    {
         TRACE(_T("@@@@@ XXX (%d) EnableOneWinUsbDevice RETRY ERROR\n"), id);
-	    NucUsb.CloseWinUsbDevice(id);
-		ShowDeviceConnectState(0);//Disconnected
-	    GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
+        NucUsb.CloseWinUsbDevice(id);
+        ShowDeviceConnectState(0);//Disconnected
+        GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
         //AfxMessageBox(_T("Please reset device and Re-connect now !!!\n"));
         return FALSE;
-	}
+    }
 
 
 #if(0)
@@ -1111,68 +1109,68 @@ BOOL CNuWriterDlg::OneDeviceInfo(int id)
     USHORT typeack;
     bResult=NucUsb.NUC_SetType(id,INFO,(UCHAR *)&typeack,sizeof(typeack));
     if(bResult==FALSE) {
-	    NucUsb.CloseWinUsbDevice(id);
-		ShowDeviceConnectState(0);//Disconnected
-	    GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
+        NucUsb.CloseWinUsbDevice(id);
+        ShowDeviceConnectState(0);//Disconnected
+        GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
         return FALSE;
     }
 
 #if(1)
-	CString t_type;
+    CString t_type;
     m_gtype.GetWindowText(t_type);
 
-	//Default
-	m_info.Nand_uIsUserConfig = 0;
-	m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
+    //Default
+    m_info.Nand_uIsUserConfig = 0;
+    m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
     m_info.Nand_uBlockPerFlash = Nand_uBlockPerFlash;
 
-	if( !t_type.Compare(_T("NAND")) ) {
+    if( !t_type.Compare(_T("NAND")) ) {
         CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
-		if(((CNANDDlg *)mainWnd)->m_nandflash_check.GetCheck()!=TRUE)
-		{
-			m_info.Nand_uIsUserConfig = 0;
-			m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
+        if(((CNANDDlg *)mainWnd)->m_nandflash_check.GetCheck()!=TRUE)
+        {
+            m_info.Nand_uIsUserConfig = 0;
+            m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
             m_info.Nand_uBlockPerFlash = Nand_uBlockPerFlash;
-		}
-		else
-		{
-		    m_info.Nand_uIsUserConfig = 1;
-			m_info.Nand_uPagePerBlock=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uPagePerBlock")));
-			m_info.Nand_uBlockPerFlash=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uBlockPerFlash")));
-		}
+        }
+        else
+        {
+            m_info.Nand_uIsUserConfig = 1;
+            m_info.Nand_uPagePerBlock=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uPagePerBlock")));
+            m_info.Nand_uBlockPerFlash=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uBlockPerFlash")));
+        }
 
-		//TRACE(_T("OneDeviceInfo: IsUserConfig =%d, BlockPerFlash =%d, PagePerBlock = %d\n"),  m_info.Nand_uIsUserConfig, m_info.Nand_uBlockPerFlash, m_info.Nand_uPagePerBlock);
+        //TRACE(_T("OneDeviceInfo: IsUserConfig =%d, BlockPerFlash =%d, PagePerBlock = %d\n"),  m_info.Nand_uIsUserConfig, m_info.Nand_uBlockPerFlash, m_info.Nand_uPagePerBlock);
     }
 
-	if( !t_type.Compare(_T("SPI")) ) {
+    if( !t_type.Compare(_T("SPI")) ) {
 
         CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
-		if(((CSPIDlg *)mainWnd)->m_spinor_check.GetCheck()!=TRUE)
-		{
-			m_info.SPI_uIsUserConfig = 0;
-		}
-		else
-		{
-		    m_info.SPI_uIsUserConfig = 1;
+        if(((CSPIDlg *)mainWnd)->m_spinor_check.GetCheck()!=TRUE)
+        {
+            m_info.SPI_uIsUserConfig = 0;
+        }
+        else
+        {
+            m_info.SPI_uIsUserConfig = 1;
             m_info.SPI_QuadReadCmd = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("QuadReadCmd")));
             m_info.SPI_ReadStatusCmd = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("ReadStatusCmd")));
             m_info.SPI_WriteStatusCmd = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("WriteStatusCmd")));
             m_info.SPI_StatusValue = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("StatusValue")));
-		    m_info.SPI_dummybyte = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("dummybyte")));
-		}
-	}
+            m_info.SPI_dummybyte = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("dummybyte")));
+        }
+    }
 
-	if( !t_type.Compare(_T("SPI NAND")) ) {
+    if( !t_type.Compare(_T("SPI NAND")) ) {
         CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
-	    if(((CSPINandDlg *)mainWnd)->m_spinandflash_check.GetCheck()!=TRUE)
-	    {
-	    	m_info.SPINand_uIsUserConfig = 0;
-	    	// m_info.SPINand_PagePerBlock=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
-	    	// m_info.SPINand_BlockPerFlash=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
-	    }
-	    else
-	    {
-	        m_info.SPINand_uIsUserConfig = 1;
+        if(((CSPINandDlg *)mainWnd)->m_spinandflash_check.GetCheck()!=TRUE)
+        {
+            m_info.SPINand_uIsUserConfig = 0;
+            // m_info.SPINand_PagePerBlock=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
+            // m_info.SPINand_BlockPerFlash=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
+        }
+        else
+        {
+            m_info.SPINand_uIsUserConfig = 1;
             m_info.SPINand_PageSize = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PageSize")));
             m_info.SPINand_SpareArea = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("SpareArea")));
             m_info.SPINand_QuadReadCmd = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("QuadReadCmd")));
@@ -1182,47 +1180,47 @@ BOOL CNuWriterDlg::OneDeviceInfo(int id)
             m_info.SPINand_StatusValue = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("StatusValue")));
             m_info.SPINand_BlockPerFlash=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
             m_info.SPINand_PagePerBlock=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
-	    }
+        }
 
-		//TRACE(_T("OneDeviceInfo: IsUserConfig =%d, BlockPerFlash =%d, PagePerBlock = %d\n"),  m_info.SPINand_uIsUserConfig, m_info.SPINand_BlockPerFlash, m_info.SPINand_PagePerBlock);
+        //TRACE(_T("OneDeviceInfo: IsUserConfig =%d, BlockPerFlash =%d, PagePerBlock = %d\n"),  m_info.SPINand_uIsUserConfig, m_info.SPINand_BlockPerFlash, m_info.SPINand_PagePerBlock);
     }
 
     if( !t_type.Compare(_T("Mass Production")) ) {
         CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
         if(((FastDlg *)mainWnd)->m_nandflashInfo_check.GetCheck()!=TRUE) // Auto Detect
-		{
-			m_info.Nand_uIsUserConfig = 0;
-			m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
+        {
+            m_info.Nand_uIsUserConfig = 0;
+            m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
             m_info.Nand_uBlockPerFlash = Nand_uBlockPerFlash;
-		}
-		else // User Config
-		{
-		    m_info.Nand_uIsUserConfig = 1;
-			m_info.Nand_uPagePerBlock=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uPagePerBlock")));
-			m_info.Nand_uBlockPerFlash=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uBlockPerFlash")));
-		}
+        }
+        else // User Config
+        {
+            m_info.Nand_uIsUserConfig = 1;
+            m_info.Nand_uPagePerBlock=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uPagePerBlock")));
+            m_info.Nand_uBlockPerFlash=_wtoi(m_inifile.GetValue(_T("NAND_INFO"),_T("uBlockPerFlash")));
+        }
 
-		if(((FastDlg *)mainWnd)->m_spinor_check.GetCheck()!=TRUE)
-		{
-			m_info.SPI_uIsUserConfig = 0;
-		}
-		else
-		{
-		    m_info.SPI_uIsUserConfig = 1;
-			m_info.SPI_QuadReadCmd = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("QuadReadCmd")));
+        if(((FastDlg *)mainWnd)->m_spinor_check.GetCheck()!=TRUE)
+        {
+            m_info.SPI_uIsUserConfig = 0;
+        }
+        else
+        {
+            m_info.SPI_uIsUserConfig = 1;
+            m_info.SPI_QuadReadCmd = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("QuadReadCmd")));
             m_info.SPI_ReadStatusCmd = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("ReadStatusCmd")));
             m_info.SPI_WriteStatusCmd = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("WriteStatusCmd")));
             m_info.SPI_StatusValue = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("StatusValue")));
-		    m_info.SPI_dummybyte = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("dummybyte")));
-		}
+            m_info.SPI_dummybyte = Str2Hex(m_inifile.GetValue(_T("SPI_INFO"),_T("dummybyte")));
+        }
 
-		if(((FastDlg *)mainWnd)->m_spinandflashInfo_check.GetCheck()!=TRUE) // Auto Detect
-		{
-			m_info.SPINand_uIsUserConfig = 0;
-		}
-		else // User Config
-		{
-		    m_info.SPINand_uIsUserConfig = 1;
+        if(((FastDlg *)mainWnd)->m_spinandflashInfo_check.GetCheck()!=TRUE) // Auto Detect
+        {
+            m_info.SPINand_uIsUserConfig = 0;
+        }
+        else // User Config
+        {
+            m_info.SPINand_uIsUserConfig = 1;
             m_info.SPINand_PageSize = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PageSize")));
             m_info.SPINand_SpareArea = _wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("SpareArea")));
             m_info.SPINand_QuadReadCmd = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("QuadReadCmd")));
@@ -1232,33 +1230,33 @@ BOOL CNuWriterDlg::OneDeviceInfo(int id)
             m_info.SPINand_StatusValue = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("StatusValue")));
             m_info.SPINand_BlockPerFlash=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
             m_info.SPINand_PagePerBlock=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
-		}
-		//TRACE(_T("OneDeviceInfo: IsUserConfig =%d, BlockPerFlash =%d, PagePerBlock = %d\n"),  m_info.Nand_uIsUserConfig, m_info.Nand_uBlockPerFlash, m_info.Nand_uPagePerBlock);
+        }
+        //TRACE(_T("OneDeviceInfo: IsUserConfig =%d, BlockPerFlash =%d, PagePerBlock = %d\n"),  m_info.Nand_uIsUserConfig, m_info.Nand_uBlockPerFlash, m_info.Nand_uPagePerBlock);
     }
 
 #endif
-	//m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
+    //m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
     //m_info.Nand_uBlockPerFlash = Nand_uBlockPerFlash;
 
     bResult=NucUsb.NUC_WritePipe(id,(UCHAR *)&m_info, sizeof(INFO_T));
     if(WaitForSingleObject(m_ExitEvent[id], 0) != WAIT_TIMEOUT) bResult=FALSE;
     if(bResult==FALSE) {
         TRACE(_T("XXXX Error NUC_WritePipe: %d.\n"), GetLastError());
-		return FALSE;
-	}
+        return FALSE;
+    }
 
-	Sleep(300);// Delay for INFO complete
+    Sleep(300);// Delay for INFO complete
     bResult=NucUsb.NUC_ReadPipe(id,(UCHAR *)&m_info, sizeof(INFO_T));
     if(WaitForSingleObject(m_ExitEvent[id], 0) != WAIT_TIMEOUT) bResult=FALSE;
     if(bResult==FALSE) {
         TRACE(_T("XXXX Error NUC_ReadPipe: %d.\n"), GetLastError());
-		return FALSE;
-	}
+        return FALSE;
+    }
 
     NucUsb.CloseWinUsbDevice(id);
     OnCbnSelchangeComboType();
 
-	GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
+    GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
     return bResult;
 }
 
@@ -1278,7 +1276,7 @@ unsigned WINAPI CNuWriterDlg::Info_proc(void* args)
 #else
     TRACE("Info_proc:: %d   %d\n",pThis->g_iDeviceNum, NucUsb.WinUsbNumber);
     //if(pThis->g_iDeviceNum < NucUsb.WinUsbNumber) {
-	//if(pThis->iDevice <= pThis->g_iDeviceNum) {
+    //if(pThis->iDevice <= pThis->g_iDeviceNum) {
         TRACE("Info_proc:idevice =%d\n",pThis->iDevice);
         pThis->OneDeviceInfo(pThis->iDevice++);
     //}
@@ -1301,7 +1299,7 @@ BOOL CNuWriterDlg:: FWDownload(int id)
     CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
     BOOL bResult=1;
 
-	COLORREF col = RGB(0xFF, 0x00, 0xFF);
+    COLORREF col = RGB(0xFF, 0x00, 0xFF);
     m_reconnect.setBitmapId(IDB_RECONNECT0, col);
     m_reconnect.setGradient(true);
     m_exit.setBitmapId(IDB_EXIT, col);
@@ -1328,8 +1326,8 @@ BOOL CNuWriterDlg:: FWDownload(int id)
     bResult = XUSB(id, filename);
 
     if(!bResult) {
-		ShowDeviceConnectState(0);//Disconnected
-	    GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
+        ShowDeviceConnectState(0);//Disconnected
+        GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
         NucUsb.CloseWinUsbDevice(id);
     }
 
@@ -1357,7 +1355,7 @@ BOOL CNuWriterDlg::DDRtoDevice(int id, char *buf,unsigned int len)
     AUTOTYPEHEAD head;
 
     head.address=DDRAddress;  // 0x10
-    head.filelen=len;	// *.ini length = 368
+    head.filelen=len;   // *.ini length = 384
 
     //TRACE(_T("(%d)  0x%x,  %d\n"), id, head.address, head.filelen);
     bResult=NucUsb.NUC_WritePipe(id,(unsigned char*)&head,sizeof(AUTOTYPEHEAD));

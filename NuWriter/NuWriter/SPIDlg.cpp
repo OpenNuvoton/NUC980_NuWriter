@@ -28,23 +28,23 @@ CSPIDlg::~CSPIDlg()
 
 void CSPIDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_SPI_IMAGELIST, m_imagelist);
-	DDX_Control(pDX, IDC_SPI_DOWNPROGRESS, m_progress);
-	DDX_Text(pDX, IDC_SPI_IMAGENAME_A, m_imagename);
-	DDX_Text(pDX, IDC_SPI_FLASHOFFSET_A, m_startblock);
-	DDV_MaxChars(pDX, m_startblock, 8);
-	DDX_Text(pDX, IDC_SPI_EXECADDR_A, m_execaddr);
-	DDV_MaxChars(pDX, m_execaddr, 8);
-	DDX_Radio(pDX, IDC_SPI_TYPE_A, m_type);
+    CDialog::DoDataExchange(pDX);
+    DDX_Control(pDX, IDC_SPI_IMAGELIST, m_imagelist);
+    DDX_Control(pDX, IDC_SPI_DOWNPROGRESS, m_progress);
+    DDX_Text(pDX, IDC_SPI_IMAGENAME_A, m_imagename);
+    DDX_Text(pDX, IDC_SPI_FLASHOFFSET_A, m_startblock);
+    DDV_MaxChars(pDX, m_startblock, 8);
+    DDX_Text(pDX, IDC_SPI_EXECADDR_A, m_execaddr);
+    DDV_MaxChars(pDX, m_execaddr, 8);
+    DDX_Radio(pDX, IDC_SPI_TYPE_A, m_type);
 
-	DDX_Control(pDX, IDC_SPI_DOWNLOAD, m_burn);
-	DDX_Control(pDX, IDC_SPI_VERIFY, m_verify);
-	DDX_Control(pDX, IDC_SPI_READ, m_read);
-	DDX_Control(pDX, IDC_SPI_ERASEALL, m_eraseall);
-	DDX_Control(pDX, IDC_SPI_BROWSE, m_browse);
-	DDX_Control(pDX, IDC_SPI_STATUS, m_status);
-	DDX_Control(pDX, IDC_SPINOR_USRCONFIG, m_spinor_check);
+    DDX_Control(pDX, IDC_SPI_DOWNLOAD, m_burn);
+    DDX_Control(pDX, IDC_SPI_VERIFY, m_verify);
+    DDX_Control(pDX, IDC_SPI_READ, m_read);
+    DDX_Control(pDX, IDC_SPI_ERASEALL, m_eraseall);
+    DDX_Control(pDX, IDC_SPI_BROWSE, m_browse);
+    DDX_Control(pDX, IDC_SPI_STATUS, m_status);
+    DDX_Control(pDX, IDC_SPINOR_USRCONFIG, m_spinor_check);
 }
 
 
@@ -56,7 +56,7 @@ BEGIN_MESSAGE_MAP(CSPIDlg, CDialog)
     ON_BN_CLICKED(IDC_SPI_BROWSE, &CSPIDlg::OnBnClickedSpiBrowse)
     ON_MESSAGE(WM_SPI_PROGRESS,ShowStatus)
     ON_WM_SHOWWINDOW()
-	ON_BN_CLICKED(IDC_SPINOR_USRCONFIG, &CSPIDlg::OnBnClickedSpinorUsrconfig)
+    ON_BN_CLICKED(IDC_SPINOR_USRCONFIG, &CSPIDlg::OnBnClickedSpinorUsrconfig)
 END_MESSAGE_MAP()
 
 
@@ -154,16 +154,16 @@ void CSPIDlg::Download()
                 m_imagelist.InsertItem(0,m_imagename,flagstr,_startblock,_endblock);
             }
             else
-		        m_progress.SetPos(0);
-            //	AfxMessageBox("Burn unsuccessfully!! Please check device");
+                m_progress.SetPos(0);
+            //  AfxMessageBox("Burn unsuccessfully!! Please check device");
         } else {
             ret=XUSB_Pack(mainWnd->m_portName,m_filename,&len);
             if(ret) {
                 GetDlgItem(IDC_SPI_VERIFY)->EnableWindow(TRUE);
                 AfxMessageBox(_T("Program successfully"));
             }
-			else
-				m_progress.SetPos(0);
+            else
+                m_progress.SetPos(0);
         }
 
         GetDlgItem(IDC_SPI_DOWNLOAD)->EnableWindow(TRUE);
@@ -270,10 +270,10 @@ void CSPIDlg:: Verify()
         if(ret)
             AfxMessageBox(_T("Verify OK !"));
         else
-		{
+        {
             m_progress.SetPos(0);
-			AfxMessageBox(_T("Verify Error !"));
-		}
+            AfxMessageBox(_T("Verify Error !"));
+        }
         GetDlgItem(IDC_SPI_VERIFY)->EnableWindow(TRUE);
         GetDlgItem(IDC_SPI_VERIFY)->SetWindowText(_T("Verify"));
         //UpdateData(FALSE);
@@ -336,10 +336,10 @@ void CSPIDlg:: Read()
         if(XUSB_Read(mainWnd->m_portName,m_filename2,sblocks*64*1024,blocks*64*1024))
             AfxMessageBox(_T("Read OK !"));
         else
-		{
+        {
             m_progress.SetPos(0);
             AfxMessageBox(_T("Read Error !"));
-		}
+        }
 
         GetDlgItem(IDC_SPI_READ)->EnableWindow(TRUE);
 
@@ -404,7 +404,7 @@ void CSPIDlg:: Erase()
     if(ret)
         AfxMessageBox(_T("Erase successfully"));
     //else
-    //	AfxMessageBox("Erase unsuccessfully!! Please check device");
+    //  AfxMessageBox("Erase unsuccessfully!! Please check device");
     GetDlgItem(IDC_SPI_ERASEALL)->EnableWindow(TRUE);
     //UpdateData(FALSE);
     mainWnd->m_gtype.EnableWindow(TRUE);
@@ -621,22 +621,17 @@ BOOL CSPIDlg::InitFile(int flag)
     return true;
 }
 
-
-
-
-
 void CSPIDlg::OnBnClickedSpinorUsrconfig()
 {
-	// TODO: 在此加入控制項告知處理常式程式碼
-	CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
-	SPINORInfo spinorinfo_dlg;
-	
-	if(m_spinor_check.GetCheck()==TRUE)
-	{
-	    spinorinfo_dlg.DoModal();
-	}
+    CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
+    SPINORInfo spinorinfo_dlg;
 
-	mainWnd->GetDlgItem(IDC_RECONNECT)->EnableWindow(FALSE);
-	NucUsb.UsbDevice_Detect();// Re-detert WinUSB number
-	mainWnd->OneDeviceInfo(0);// Update nand parameters
+    if(m_spinor_check.GetCheck()==TRUE)
+    {
+        spinorinfo_dlg.DoModal();
+    }
+
+    mainWnd->GetDlgItem(IDC_RECONNECT)->EnableWindow(FALSE);
+    NucUsb.UsbDevice_Detect();// Re-detert WinUSB number
+    mainWnd->OneDeviceInfo(0);// Update nand parameters
 }

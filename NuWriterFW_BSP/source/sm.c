@@ -1357,6 +1357,9 @@ INT fmiHWInit(void)
         // SD Initial
         outpw(REG_EMMC_DMACTL, DMAC_CSR_SWRST | DMAC_CSR_EN);
         while(inpw(REG_EMMC_DMACTL) & DMAC_CSR_SWRST);
+        // NAND Initial
+        outpw(REG_FMI_DMACTL, DMAC_CSR_SWRST | DMAC_CSR_EN);
+        while(inpw(REG_FMI_DMACTL) & DMAC_CSR_SWRST);
         // reset FMI engine
         outpw(REG_FMI_CTL, inpw(REG_FMI_CTL) |FMI_CSR_SWRST);
         while(inpw(REG_FMI_CTL) & FMI_CSR_SWRST);

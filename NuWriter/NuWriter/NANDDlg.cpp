@@ -47,8 +47,8 @@ void CNANDDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_NAND_BROWSE, m_browse);
     DDX_Radio(pDX, IDC_NAND_TYPE_A, m_type);
     DDX_Control(pDX, IDC_NAND_STATUS, m_status);
-	DDX_Control(pDX, IDC_NAND_STATUS, m_status);
-	DDX_Control(pDX, IDC_NAND_USRCONFIG, m_nandflash_check);
+    DDX_Control(pDX, IDC_NAND_STATUS, m_status);
+    DDX_Control(pDX, IDC_NAND_USRCONFIG, m_nandflash_check);
 }
 
 
@@ -60,7 +60,7 @@ BEGIN_MESSAGE_MAP(CNANDDlg, CDialog)
     ON_BN_CLICKED(IDC_NAND_BROWSE, &CNANDDlg::OnBnClickedNandBrowse)
     ON_MESSAGE(WM_NAND_PROGRESS,ShowStatus)
     ON_WM_SHOWWINDOW()
-	ON_BN_CLICKED(IDC_NAND_USRCONFIG, &CNANDDlg::OnBnClickedNandUsrconfig)
+    ON_BN_CLICKED(IDC_NAND_USRCONFIG, &CNANDDlg::OnBnClickedNandUsrconfig)
 END_MESSAGE_MAP()
 
 
@@ -150,18 +150,18 @@ void CNANDDlg::Download()
                 m_imagelist.InsertItem(0,m_imagename,flagstr,_startblock,_endblock,_blockNum);
             }
             else
-			{
-            	//AfxMessageBox("Burn unsuccessfully!! Please check device");
-				m_progress.SetPos(0);
-			}
+            {
+                //AfxMessageBox("Burn unsuccessfully!! Please check device");
+                m_progress.SetPos(0);
+            }
         } else {
             ret=XUSB_Pack(mainWnd->m_portName,m_filename,&len);
             if(ret) {
                 GetDlgItem(IDC_NAND_VERIFY)->EnableWindow(TRUE);
                 AfxMessageBox(_T("Program successfully"));
             }
-			else
-				m_progress.SetPos(0);
+            else
+                m_progress.SetPos(0);
         }
 
         GetDlgItem(IDC_NAND_DOWNLOAD)->EnableWindow(TRUE);
@@ -198,20 +198,20 @@ void CNANDDlg::OnBnClickedNandDownload()
     }
 
     _stscanf_s(m_startblock,_T("%x"),&_startblock);
-	CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
-	CNandInfoDlg* nandinfoWnd=(CNandInfoDlg*)(AfxGetApp()->m_pMainWnd);
-	CString tmp;
-	if(m_nandflash_check.GetCheck()==TRUE) // user configure
-	{
-		CString tmp;
-	    tmp.Format(_T("NAND parameters by User Configure.\nBlockPerFlash =%d, PagePerBlock = %d"),mainWnd->m_info.Nand_uBlockPerFlash, mainWnd->m_info.Nand_uPagePerBlock);
-		TRACE(_T("User Configure: %s\n"), tmp);
-		AfxMessageBox(tmp);
-	}
-	else
-	{
-		TRACE(_T("Auto Detect: BlockPerFlash =%d, PagePerBlock = %d\n"),  mainWnd->m_info.Nand_uBlockPerFlash, mainWnd->m_info.Nand_uPagePerBlock);
-	}
+    CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
+    CNandInfoDlg* nandinfoWnd=(CNandInfoDlg*)(AfxGetApp()->m_pMainWnd);
+    CString tmp;
+    if(m_nandflash_check.GetCheck()==TRUE) // user configure
+    {
+        CString tmp;
+        tmp.Format(_T("NAND parameters by User Configure.\nBlockPerFlash =%d, PagePerBlock = %d"),mainWnd->m_info.Nand_uBlockPerFlash, mainWnd->m_info.Nand_uPagePerBlock);
+        TRACE(_T("User Configure: %s\n"), tmp);
+        AfxMessageBox(tmp);
+    }
+    else
+    {
+        TRACE(_T("Auto Detect: BlockPerFlash =%d, PagePerBlock = %d\n"),  mainWnd->m_info.Nand_uBlockPerFlash, mainWnd->m_info.Nand_uPagePerBlock);
+    }
 
     unsigned int val=mainWnd->m_info.Nand_uPagePerBlock * mainWnd->m_info.Nand_uPageSize;
 
@@ -289,7 +289,7 @@ void CNANDDlg:: Verify()
         if(ret==1)
             AfxMessageBox(_T("Verify OK !"));
         else {
-			m_progress.SetPos(0);
+            m_progress.SetPos(0);
             if(ret==NAND_VERIFY_FILESYSTEM_ERROR)
                 AfxMessageBox(_T("This File System can't verify"));
             else if(ret==NAND_VERIFY_PACK_ERROR)
@@ -363,18 +363,18 @@ void CNANDDlg:: Read()
             if(XUSB_Read(mainWnd->m_portName,m_filename2,sblocks,blocks*blocksize))
                 AfxMessageBox(_T("Read OK !"));
             else
-			{
+            {
                 AfxMessageBox(_T("Read Error !"));
-				m_progress.SetPos(0);
-			}
+                m_progress.SetPos(0);
+            }
         } else { //read redunancy data, good block and bad block
             if(XUSB_Read_Redunancy(mainWnd->m_portName,m_filename2,sblocks,blocks))
                 AfxMessageBox(_T("Read OK !"));
             else
-			{
+            {
                 AfxMessageBox(_T("Read Error !"));
-				m_progress.SetPos(0);
-			}
+                m_progress.SetPos(0);
+            }
         }
         GetDlgItem(IDC_NAND_READ)->EnableWindow(TRUE);
 
@@ -691,16 +691,15 @@ void CNANDDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 
 void CNANDDlg::OnBnClickedNandUsrconfig()
 {
-	// TODO: 在此加入控制項告知處理常式程式碼
-	CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
-	CNandInfoDlg nandinfo_dlg;
-	
-	if(m_nandflash_check.GetCheck()==TRUE)
-	{
-	    nandinfo_dlg.DoModal();
-	}
+    CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
+    CNandInfoDlg nandinfo_dlg;
 
-	mainWnd->GetDlgItem(IDC_RECONNECT)->EnableWindow(FALSE);
-	NucUsb.UsbDevice_Detect();// Re-detect WinUSB number
-	mainWnd->OneDeviceInfo(0);// Update nand parameters
+    if(m_nandflash_check.GetCheck()==TRUE)
+    {
+        nandinfo_dlg.DoModal();
+    }
+
+    mainWnd->GetDlgItem(IDC_RECONNECT)->EnableWindow(FALSE);
+    NucUsb.UsbDevice_Detect();// Re-detect WinUSB number
+    mainWnd->OneDeviceInfo(0);// Update nand parameters
 }

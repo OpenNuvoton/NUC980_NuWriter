@@ -170,14 +170,19 @@ int SD_SDCmdAndRspDataIn(FMI_SD_INFO_T *pSD, UINT8 ucCmd, UINT32 uArg)
 
 void SD_Set_clock(UINT32 sd_clock_khz)
 {
-    UINT32 div1, i;
-    div1=(_sd_ReferenceClock/sd_clock_khz)-1;
-    outpw(REG_CLK_DIVCTL3, (inpw(REG_CLK_DIVCTL3) & ~0x18) | (0x0 << 3)); 	    // SD clock from XIN [4:3]
-    outpw(REG_CLK_DIVCTL3, (inpw(REG_CLK_DIVCTL3) & ~0xff00) | (div1 << 8)); 	// SD clock divided by CLKDIV3[SD_N] [15:8]
-    outpw(REG_CLK_DIVCTL9, (inpw(REG_CLK_DIVCTL9) & ~0x18) | (0x0 << 3)); 	    // SD clock from XIN [4:3]
-    outpw(REG_CLK_DIVCTL9, (inpw(REG_CLK_DIVCTL9) & ~0xff00) | (div1 << 8)); 	// SD clock divided by CLKDIV3[SD_N] [15:8]
-    for(i=0; i<1000; i++);  // waiting for clock become stable
-    MSG_DEBUG("clock: sd_clock_khz= %d   div1 = %d, REG_CLK_DIVCTL3=0x%x\n", sd_clock_khz, div1, inpw(REG_CLK_DIVCTL3));
+    UINT32 div;
+    if(sd_clock_khz<2000){
+       outpw(REG_CLK_DIVCTL9, (inpw(REG_CLK_DIVCTL9) & ~0x18) | (0x0 << 3)); 	    // SD clock from XIN [4:3]
+			 outpw(REG_CLK_DIVCTL3, (inpw(REG_CLK_DIVCTL3) & ~0x18) | (0x0 << 3)); 	    // SD clock from XIN [4:3]
+       div=(12000/sd_clock_khz)-1;
+    }else{
+        outpw(REG_CLK_DIVCTL9, (inpw(REG_CLK_DIVCTL9) & ~0x18) | (0x3 << 3)); 	    // SD clock from UPLL [4:3]
+        outpw(REG_CLK_DIVCTL3, (inpw(REG_CLK_DIVCTL3) & ~0x18) | (0x3 << 3)); 	    // SD clock from XIN [4:3]
+        div=(300000/sd_clock_khz)-1;
+    }
+    outpw(REG_CLK_DIVCTL9, (inpw(REG_CLK_DIVCTL9) & ~0xff00) | ((div) << 8)); 	// SD clock divided by CLKDIV9[SD_N] [15:8]	
+    outpw(REG_CLK_DIVCTL3, (inpw(REG_CLK_DIVCTL3) & ~0xff00) | ((div) << 8)); 	// SD clock divided by CLKDIV9[SD_N] [15:8]	
+    MSG_DEBUG("clock: sd_clock_khz= %d   div = %d, REG_CLK_DIVCTL3=0x%x   REG_CLK_DIVCTL9=0x%x\n", sd_clock_khz, div, inpw(REG_CLK_DIVCTL3), inpw(REG_CLK_DIVCTL9));
 
     return;
 }
@@ -191,8 +196,8 @@ int SD_Init(FMI_SD_INFO_T *pSD)
     unsigned int volatile u32CmdTimeOut;
 
     // set the clock to 200KHz
-    SD_Set_clock(200);
-    //SD_Set_clock(1000); //1MHz
+    //SD_Set_clock(200);
+    SD_Set_clock(1000); //1MHz
 
     // power ON 74 clock
     outpw(REG_FMI_EMMCCTL, inpw(REG_FMI_EMMCCTL) | SD_CSR_CLK74_OE);
@@ -304,16 +309,24 @@ int SD_Init(FMI_SD_INFO_T *pSD)
         }
     }
 
+    SD_Set_clock(24000);
     if (pSD->uCardType == SD_TYPE_SD_HIGH)
         MSG_DEBUG("This is high capacity SD memory card\n");
     if (pSD->uCardType == SD_TYPE_SD_LOW)
         MSG_DEBUG("This is standard capacity SD memory card\n");
     if (pSD->uCardType == SD_TYPE_MMC)
+    {
+        SD_Set_clock(20000);
         MSG_DEBUG("This is MMC memory card\n");
+    }
     if (pSD->uCardType == SD_TYPE_EMMC)
+    {
+        SD_Set_clock(20000);
         MSG_DEBUG("This is eMMC memory card\n");
-
-    SD_Set_clock(1000);
+    }
+		
+    //SD_Set_clock(1000);
+		
     return Successful;
 }
 
@@ -555,12 +568,12 @@ int SD_Write_in(FMI_SD_INFO_T *pSD, UINT32 uSector, UINT32 uBufcnt, UINT32 uSAdd
 
     //--- check input parameters
     if (uBufcnt == 0) {
-        printf("#560  XXXXX SD_SELECT_ERROR\n");
+        printf("#560  XXX SD_SELECT_ERROR\n");
         return SD_SELECT_ERROR;
     }
 
     if ((status = SD_SDCmdAndRsp(pSD, 7, pSD->uRCA, 0)) != Successful) {
-        printf("#565  XXXXX status =0x%x\n", status);
+        printf("#565  XXX status =0x%x\n", status);
         return status;
     }
     MSG_DEBUG("#568\n");
@@ -594,7 +607,7 @@ int SD_Write_in(FMI_SD_INFO_T *pSD, UINT32 uSector, UINT32 uBufcnt, UINT32 uSAdd
 
         if ((inpw(REG_FMI_EMMCINTSTS) & SD_ISR_CRC_IF) != 0) {      // check CRC
             outpw(REG_FMI_EMMCINTSTS, SD_ISR_CRC_IF);
-            printf("#599 XXXXX SD_CRC_ERROR = 0x%x\n", SD_CRC_ERROR);
+            printf("#599 XXX SD_CRC_ERROR = 0x%x\n", SD_CRC_ERROR);
             return SD_CRC_ERROR;
         }
     }
@@ -618,14 +631,14 @@ int SD_Write_in(FMI_SD_INFO_T *pSD, UINT32 uSector, UINT32 uBufcnt, UINT32 uSAdd
         if ((inpw(REG_FMI_EMMCINTSTS) & SD_ISR_CRC_IF) != 0) {      // check CRC
             MSG_DEBUG("inpw(REG_FMI_EMMCINTSTS) = 0x%x\n", inpw(REG_FMI_EMMCINTSTS));
             outpw(REG_FMI_EMMCINTSTS, SD_ISR_CRC_IF);
-            printf("#623  XXXXX SD_CRC_ERROR = 0x%x\n", SD_CRC_ERROR);
+            printf("#623  XXX SD_CRC_ERROR = 0x%x\n", SD_CRC_ERROR);
             return SD_CRC_ERROR;
         }
     }
     outpw(REG_FMI_EMMCINTSTS, SD_ISR_CRC_IF);
     MSG_DEBUG("#628\n");
     if (SD_SDCmdAndRsp(pSD, 12, 0, 0)) {    // stop command
-        printf("#630   XXXXX SD_CRC7_ERROR\n");
+        printf("#630   XXX SD_CRC7_ERROR\n");
         return SD_CRC7_ERROR;
     }
     SD_CheckRB();

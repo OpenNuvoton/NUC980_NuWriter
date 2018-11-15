@@ -1,4 +1,4 @@
-// SPINandDlg.cpp : 實作檔
+// SPINandDlg.cpp
 //
 
 #include "stdafx.h"
@@ -7,20 +7,20 @@
 #include "SPINandDlg.h"
 
 
-// CSPINandDlg 對話方塊
+// CSPINandDlg
 
 IMPLEMENT_DYNAMIC(CSPINandDlg, CDialog)
 
 CSPINandDlg::CSPINandDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CSPINandDlg::IDD, pParent)
-	, m_imagename(_T(""))
-	, m_startblock(_T(""))
-	, m_execaddr(_T(""))
-	, m_type(0)
+    : CDialog(CSPINandDlg::IDD, pParent)
+    , m_imagename(_T(""))
+    , m_startblock(_T(""))
+    , m_execaddr(_T(""))
+    , m_type(0)
 {
-    InitFlag=0;    
-	TmpOffsetFlag=0;
-	m_fhead=(NORBOOT_NAND_HEAD *)malloc(sizeof(NORBOOT_NAND_HEAD));
+    InitFlag=0;
+    TmpOffsetFlag=0;
+    m_fhead=(NORBOOT_NAND_HEAD *)malloc(sizeof(NORBOOT_NAND_HEAD));
 }
 
 CSPINandDlg::~CSPINandDlg()
@@ -30,40 +30,40 @@ CSPINandDlg::~CSPINandDlg()
 
 void CSPINandDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_SPINAND_IMAGENAME_A, m_imagename);
-	DDX_Control(pDX, IDC_SPINAND_IMAGELIST, m_imagelist);
-	DDX_Control(pDX, IDC_SPINAND_PROGRESS, m_progress);
-	DDX_Text(pDX, IDC_SPINAND_FLASHOFFSET_A, m_startblock);
-	DDV_MaxChars(pDX, m_startblock, 8);
-	DDX_Text(pDX, IDC_SPINAND_EXECADDR_A, m_execaddr);
-	DDV_MaxChars(pDX, m_execaddr, 8);
-	DDX_Control(pDX, IDC_SPINAND_DOWNLOAD, m_burn);
-	DDX_Control(pDX, IDC_SPINAND_VERIFY, m_verify);
-	DDX_Control(pDX, IDC_SPINAND_READ, m_read);
-	DDX_Control(pDX, IDC_SPINAND_ERASEALL, m_eraseall);
-	DDX_Control(pDX, IDC_SPINAND_BROWSE, m_browse);
-	DDX_Control(pDX, IDC_SPINAND_INFO, m_info);
-	DDX_Radio(pDX, IDC_SPINAND_TYPE_A, m_type);
-	DDX_Control(pDX, IDC_SPINAND_STATUS, m_status);
-	DDX_Control(pDX, IDC_SPINAND_USRCONFIG, m_spinandflash_check);
+    CDialog::DoDataExchange(pDX);
+    DDX_Text(pDX, IDC_SPINAND_IMAGENAME_A, m_imagename);
+    DDX_Control(pDX, IDC_SPINAND_IMAGELIST, m_imagelist);
+    DDX_Control(pDX, IDC_SPINAND_PROGRESS, m_progress);
+    DDX_Text(pDX, IDC_SPINAND_FLASHOFFSET_A, m_startblock);
+    DDV_MaxChars(pDX, m_startblock, 8);
+    DDX_Text(pDX, IDC_SPINAND_EXECADDR_A, m_execaddr);
+    DDV_MaxChars(pDX, m_execaddr, 8);
+    DDX_Control(pDX, IDC_SPINAND_DOWNLOAD, m_burn);
+    DDX_Control(pDX, IDC_SPINAND_VERIFY, m_verify);
+    DDX_Control(pDX, IDC_SPINAND_READ, m_read);
+    DDX_Control(pDX, IDC_SPINAND_ERASEALL, m_eraseall);
+    DDX_Control(pDX, IDC_SPINAND_BROWSE, m_browse);
+    DDX_Control(pDX, IDC_SPINAND_INFO, m_info);
+    DDX_Radio(pDX, IDC_SPINAND_TYPE_A, m_type);
+    DDX_Control(pDX, IDC_SPINAND_STATUS, m_status);
+    DDX_Control(pDX, IDC_SPINAND_USRCONFIG, m_spinandflash_check);
 }
 
 
 BEGIN_MESSAGE_MAP(CSPINandDlg, CDialog)
-	ON_BN_CLICKED(IDC_SPINAND_INFO, &CSPINandDlg::OnBnClickedSpinandInfo)
-	ON_BN_CLICKED(IDC_SPINAND_DOWNLOAD, &CSPINandDlg::OnBnClickedSpinandDownload)
-	ON_WM_SHOWWINDOW()
-	ON_MESSAGE(WM_SPINAND_PROGRESS,ShowStatus)
-	ON_BN_CLICKED(IDC_SPINAND_VERIFY, &CSPINandDlg::OnBnClickedSpinandVerify)
-	ON_BN_CLICKED(IDC_SPINAND_BROWSE, &CSPINandDlg::OnBnClickedSpinandBrowse)
-	ON_BN_CLICKED(IDC_SPINAND_ERASEALL, &CSPINandDlg::OnBnClickedSpinandEraseall)
-	ON_BN_CLICKED(IDC_SPINAND_READ, &CSPINandDlg::OnBnClickedSpinandRead)
-	ON_BN_CLICKED(IDC_SPINAND_USRCONFIG, &CSPINandDlg::OnBnClickedSpinandUsrconfig)
+    ON_BN_CLICKED(IDC_SPINAND_INFO, &CSPINandDlg::OnBnClickedSpinandInfo)
+    ON_BN_CLICKED(IDC_SPINAND_DOWNLOAD, &CSPINandDlg::OnBnClickedSpinandDownload)
+    ON_WM_SHOWWINDOW()
+    ON_MESSAGE(WM_SPINAND_PROGRESS,ShowStatus)
+    ON_BN_CLICKED(IDC_SPINAND_VERIFY, &CSPINandDlg::OnBnClickedSpinandVerify)
+    ON_BN_CLICKED(IDC_SPINAND_BROWSE, &CSPINandDlg::OnBnClickedSpinandBrowse)
+    ON_BN_CLICKED(IDC_SPINAND_ERASEALL, &CSPINandDlg::OnBnClickedSpinandEraseall)
+    ON_BN_CLICKED(IDC_SPINAND_READ, &CSPINandDlg::OnBnClickedSpinandRead)
+    ON_BN_CLICKED(IDC_SPINAND_USRCONFIG, &CSPINandDlg::OnBnClickedSpinandUsrconfig)
 END_MESSAGE_MAP()
 
 
-// CSPINandDlg 訊息處理常式
+// CSPINandDlg
 LRESULT CSPINandDlg::ShowStatus( WPARAM  pos, LPARAM message)
 {
     m_progress.SetPos((int)pos);
@@ -72,19 +72,17 @@ LRESULT CSPINandDlg::ShowStatus( WPARAM  pos, LPARAM message)
 
 void CSPINandDlg::OnBnClickedSpinandInfo()
 {
-	// TODO: 在此加入控制項告知處理常式程式碼 
-    CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);	
-	CSPINandInfoDlg spinandinfo_dlg;
-	spinandinfo_dlg.DoModal();
-	mainWnd->GetDlgItem(IDC_RECONNECT)->EnableWindow(FALSE);
-	NucUsb.UsbDevice_Detect();// Re-detert WinUSB number
-	mainWnd->OneDeviceInfo(0);// Update nand parameters
+    CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
+    CSPINandInfoDlg spinandinfo_dlg;
+    spinandinfo_dlg.DoModal();
+    mainWnd->GetDlgItem(IDC_RECONNECT)->EnableWindow(FALSE);
+    NucUsb.UsbDevice_Detect();// Re-detert WinUSB number
+    mainWnd->OneDeviceInfo(0);// Update nand parameters
 }
 
 
 BOOL CSPINandDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-	// TODO: 在此加入特定的程式碼和 (或) 呼叫基底類別
     //TmpOffset
     UpdateData(TRUE);
     if(m_type==UBOOT) {
@@ -113,19 +111,18 @@ BOOL CSPINandDlg::OnCommand(WPARAM wParam, LPARAM lParam)
             GetDlgItem(IDC_SPINAND_FLASHOFFSET_A)->EnableWindow(TRUE);
         }
     }
-	return CDialog::OnCommand(wParam, lParam);
+    return CDialog::OnCommand(wParam, lParam);
 }
 
 
 BOOL CSPINandDlg::OnInitDialog()
 {
-	CDialog::OnInitDialog();
+    CDialog::OnInitDialog();
 
-	// TODO:  在此加入額外的初始化
     m_imagelist.SetHeadings(_T("Name, 70; Type, 50;Start, 60;End, 60;Block, 60"));
     m_imagelist.SetGridLines(TRUE);
 
-	m_ExitEvent=CreateEvent(NULL,TRUE,FALSE,NULL);
+    m_ExitEvent=CreateEvent(NULL,TRUE,FALSE,NULL);
 
     m_progress.SetRange(0,100);
     m_progress.SetBkColor(COLOR_DOWNLOAD);
@@ -143,17 +140,17 @@ BOOL CSPINandDlg::OnInitDialog()
     m_burn.setGradient(true);
     m_browse.setBitmapId(IDB_BROWSE, col);
     m_browse.setGradient(true);
-	m_info.setBitmapId(IDB_READ_DEVICE, col);
+    m_info.setBitmapId(IDB_READ_DEVICE, col);
     m_info.setGradient(true);
 
-	//memset(m_spinandinfo, 0, sizeof(SPINAND_INFO_T));
-	//m_spinandinfo->PageSize = 2048;
-	//m_spinandinfo->SpareArea = 64;
-	
+    //memset(m_spinandinfo, 0, sizeof(SPINAND_INFO_T));
+    //m_spinandinfo->PageSize = 2048;
+    //m_spinandinfo->SpareArea = 64;
 
-	UpdateData(FALSE);
-	return TRUE;  // return TRUE unless you set the focus to a control
-	// EXCEPTION: OCX 屬性頁應傳回 FALSE
+
+    UpdateData(FALSE);
+    return TRUE;  // return TRUE unless you set the focus to a control
+    // EXCEPTION: OCX return FALSE
 }
 
 BOOL CSPINandDlg::InitFile(int flag)
@@ -218,13 +215,13 @@ BOOL CSPINandDlg::InitFile(int flag)
         ((CButton *)GetDlgItem(IDC_SPINAND_TYPE_A))->SetCheck(FALSE);
         ((CButton *)GetDlgItem(IDC_SPINAND_TYPE_A2))->SetCheck(FALSE);
         ((CButton *)GetDlgItem(IDC_SPINAND_TYPE_A4))->SetCheck(FALSE);
-        ((CButton *)GetDlgItem(IDC_SPINAND_TYPE_A3))->SetCheck(FALSE);        
+        ((CButton *)GetDlgItem(IDC_SPINAND_TYPE_A3))->SetCheck(FALSE);
         ((CButton *)GetDlgItem(IDC_SPINAND_TYPE_A))->SetCheck(TRUE);
 
         ((CButton *)GetDlgItem(IDC_SPINAND_TYPE_A))->EnableWindow(FALSE);
         ((CButton *)GetDlgItem(IDC_SPINAND_TYPE_A2))->EnableWindow(FALSE);
         ((CButton *)GetDlgItem(IDC_SPINAND_TYPE_A4))->EnableWindow(FALSE);
-        ((CButton *)GetDlgItem(IDC_SPINAND_TYPE_A3))->EnableWindow(FALSE);        
+        ((CButton *)GetDlgItem(IDC_SPINAND_TYPE_A3))->EnableWindow(FALSE);
     }
     return true;
 }
@@ -281,16 +278,16 @@ void CSPINandDlg::Download()
                 m_imagelist.InsertItem(0,m_imagename,flagstr,_startblock,_endblock,_blockNum);
             }
             else
-				m_progress.SetPos(0);
-            //	AfxMessageBox("Burn unsuccessfully!! Please check device");
+                m_progress.SetPos(0);
+            //  AfxMessageBox("Burn unsuccessfully!! Please check device");
         } else {
             ret=XUSB_Pack(mainWnd->m_portName,m_filename,&len);
             if(ret) {
                 GetDlgItem(IDC_SPINAND_VERIFY)->EnableWindow(TRUE);
                 AfxMessageBox(_T("Burn successfully"));
             }
-			else
-				m_progress.SetPos(0);
+            else
+                m_progress.SetPos(0);
         }
 
         GetDlgItem(IDC_SPINAND_DOWNLOAD)->EnableWindow(TRUE);
@@ -314,7 +311,6 @@ unsigned WINAPI CSPINandDlg:: Download_proc(void* args)
 
 void CSPINandDlg::OnBnClickedSpinandDownload()
 {
-	// TODO: 在此加入控制項告知處理常式程式碼
     InitFile(1);
 
     CString dlgText;
@@ -329,7 +325,7 @@ void CSPINandDlg::OnBnClickedSpinandDownload()
     _stscanf_s(m_startblock,_T("%x"),&_startblock);
     CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
     unsigned int val=mainWnd->m_info.SPINand_PagePerBlock*mainWnd->m_info.SPINand_PageSize;//64*2048;
-	
+
 #if 1 // cfli why???
     if(mainWnd->ChipWriteWithOOB!=1) {
         if(val>0 && val<=0x800000) {
@@ -392,10 +388,9 @@ void CSPINandDlg::OnBnClickedSpinandDownload()
 
 void CSPINandDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 {
-	CDialog::OnShowWindow(bShow, nStatus);
+    CDialog::OnShowWindow(bShow, nStatus);
 
-	// TODO: 在此加入您的訊息處理常式程式碼
-	m_imagelist.DeleteAllItems();
+    m_imagelist.DeleteAllItems();
     if(InitFlag==0) {
         InitFlag=1;
         InitFile(0);
@@ -449,7 +444,6 @@ unsigned WINAPI CSPINandDlg:: Verify_proc(void* args)
 
 void CSPINandDlg::OnBnClickedSpinandVerify()
 {
-	// TODO: 在此加入控制項告知處理常式程式碼
     CString dlgText;
 
     UpdateData(TRUE);
@@ -476,11 +470,10 @@ void CSPINandDlg::OnBnClickedSpinandVerify()
 
 void CSPINandDlg::OnBnClickedSpinandBrowse()
 {
-	// TODO: 在此加入控制項告知處理常式程式碼
     UpdateData(TRUE);
     UpdateData(FALSE);
 
-	CString temp;    
+    CString temp;
     CAddFileDialog dlg(TRUE,NULL,NULL,OFN_FILEMUSTEXIST | OFN_HIDEREADONLY ,_T("Bin Files (*.bin)|*.bin|All Files (*.*)|*.*||"));
 
     dlg.m_ofn.lpstrTitle=_T("Choose burning file...");
@@ -514,7 +507,7 @@ void CSPINandDlg::OnBnClickedSpinandBrowse()
     //if(m_imagename.GetLength()>16)
     //    m_imagename = m_imagename.Mid(0,15);
     this->GetDlgItem(IDC_SPINAND_IMAGENAME_A)->SetWindowText(m_imagename);
-    
+
 
     CString filepath=m_filename.Left(m_filename.GetLength()-dlg.GetFileName().GetLength()-1);
 
@@ -535,11 +528,11 @@ void CSPINandDlg:: Erase()
     if(ret)
         AfxMessageBox(_T("Erase successfully"));
     else
-	{
+    {
         //AfxMessageBox("Erase unsuccessfully!! Please check device");
-		SetEvent(m_ExitEvent);
-	    m_progress.SetPos(0);
-	}
+        SetEvent(m_ExitEvent);
+        m_progress.SetPos(0);
+    }
     GetDlgItem(IDC_SPINAND_ERASEALL)->EnableWindow(TRUE);
     //UpdateData(FALSE);
     mainWnd->m_gtype.EnableWindow(TRUE);
@@ -556,7 +549,6 @@ unsigned WINAPI CSPINandDlg::Erase_proc(void* args)
 
 void CSPINandDlg::OnBnClickedSpinandEraseall()
 {
-	// TODO: 在此加入控制項告知處理常式程式碼
     CString dlgText;
     CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
 #if 1
@@ -622,10 +614,10 @@ void CSPINandDlg:: Read()
             if(XUSB_Read(mainWnd->m_portName,m_filename2,sblocks,blocks*blocksize))
                 AfxMessageBox(_T("Read OK !"));
             else
-		    {
+            {
                 m_progress.SetPos(0);
                 AfxMessageBox(_T("Read Error !"));
-		    }
+            }
         } else { //read redunancy data, good block and bad block
 #if(0) //cfli to do
             if(XUSB_Read_Redunancy(mainWnd->m_portName,m_filename2,sblocks,blocks))
@@ -654,7 +646,6 @@ unsigned WINAPI CSPINandDlg::Read_proc(void* args)
 
 void CSPINandDlg::OnBnClickedSpinandRead()
 {
-	// TODO: 在此加入控制項告知處理常式程式碼
     CReadDlg read_dlg;
     //read_dlg.SizeName.Format(_T("Blocks(1 block is 0x%05x bytes)"),NAND_SIZE);
     read_dlg.SizeName.Format(_T("Blocks"));
@@ -688,16 +679,15 @@ void CSPINandDlg::OnBnClickedSpinandRead()
 
 void CSPINandDlg::OnBnClickedSpinandUsrconfig()
 {
-	// TODO: 在此加入控制項告知處理常式程式碼
-	CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
-	CSPINandInfoDlg spinandinfo_dlg;
-	
-	if(m_spinandflash_check.GetCheck()==TRUE)
-	{
-	    spinandinfo_dlg.DoModal();
-	}
+    CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
+    CSPINandInfoDlg spinandinfo_dlg;
 
-	mainWnd->GetDlgItem(IDC_RECONNECT)->EnableWindow(FALSE);
-	NucUsb.UsbDevice_Detect();// Re-detert WinUSB number
-	mainWnd->OneDeviceInfo(0);// Update nand parameters
+    if(m_spinandflash_check.GetCheck()==TRUE)
+    {
+        spinandinfo_dlg.DoModal();
+    }
+
+    mainWnd->GetDlgItem(IDC_RECONNECT)->EnableWindow(FALSE);
+    NucUsb.UsbDevice_Detect();// Re-detert WinUSB number
+    mainWnd->OneDeviceInfo(0);// Update nand parameters
 }

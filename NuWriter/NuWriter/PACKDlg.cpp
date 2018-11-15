@@ -67,7 +67,7 @@ END_MESSAGE_MAP()
 BOOL CPACKDlg::OnInitDialog()
 {
     CDialog::OnInitDialog();
-    m_imagelist.SetHeadings(_T("Name, 180 ; Type,60 ; BootType,100 ; Start Address(Hex),160 ; End Address(Hex),160 ; Exec Address(Hex),160"));
+    m_imagelist.SetHeadings(_T("Name, 180 ; Type,60 ; BootType,80 ; Start Address(Hex),130 ; End Address(Hex),130 ; Exec Address(Hex),140 ; SPI User Defined,140"));
     m_imagelist.SetGridLines(TRUE);
 
     COLORREF col = RGB(0xFF, 0x00, 0xFF);
@@ -123,6 +123,7 @@ extern unsigned char * DDR2Buf(char *buf,int buflen,int *ddrlen);
 
 void CPACKDlg::OnBnClickedPackAdd()
 {
+    CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
 
     if(m_pack_tabcontrol.GetCurSel()==PACK_PAR) {
         m_packtab1.UpdateData(TRUE);
@@ -146,25 +147,45 @@ void CPACKDlg::OnBnClickedPackAdd()
 
         ImageType.push_back(m_packtab1.m_type);
 
-		CString ubootflashtype;
+        CString ubootflashtype;
         switch(m_packtab1.m_ubootflashtype) {
             case TYPE_NAND:
-		        ubootflashtype.Format(_T("NAND"));
-		    	break;
+                ubootflashtype.Format(_T("NAND"));
+                break;
             case TYPE_SPI:
-		        ubootflashtype.Format(_T("SPI"));
-		    	break;		
-		    case TYPE_EMMC:
-		        ubootflashtype.Format(_T("eMMC/SD"));
-		    	break;
+                ubootflashtype.Format(_T("SPI"));
+                break;
+            case TYPE_EMMC:
+                ubootflashtype.Format(_T("eMMC/SD"));
+                break;
             case TYPE_SPINAND:
-		        ubootflashtype.Format(_T("SPI NAND"));
-		    	break;				
-		}
-		FlashType.push_back(m_packtab1.m_ubootflashtype);
+                ubootflashtype.Format(_T("SPI NAND"));
+                break;
+        }
+        FlashType.push_back(m_packtab1.m_ubootflashtype);
 
         ImageExec.push_back(m_packtab1.m_execaddr);
         ImageStartblock.push_back(m_packtab1.m_startblock);
+
+        CString userstr;
+        switch(m_packtab1.m_isUserConfig) {
+            case 1:
+            {
+                userstr.Format(_T("Yes"));
+                mainWnd->m_info.SPI_uIsUserConfig = 1;
+                mainWnd->m_info.SPINand_uIsUserConfig = 1;
+                break;
+            }
+            case 0:
+            default:
+            {
+                userstr.Format(_T("No"));
+                mainWnd->m_info.SPI_uIsUserConfig = 0;
+                mainWnd->m_info.SPINand_uIsUserConfig = 0;
+                break;
+            }
+        }
+        UserConfig.push_back(m_packtab1.m_isUserConfig);
 
         CString flagstr;
         switch(m_packtab1.m_type) {
@@ -195,9 +216,9 @@ void CPACKDlg::OnBnClickedPackAdd()
             total=ftell(rfp)+startblock;
             if(m_packtab1.m_type==UBOOT) {
                 int ddrlen;
-                UCHAR * ddrbuf;                
+                UCHAR * ddrbuf;
                 ddrbuf=DDR2Buf(mainWnd->ShareDDRBuf,mainWnd->DDRLen,&ddrlen);
-				total+=(ddrlen+32);
+                total+=(ddrlen+32);
             }
 
             len.Format(_T("%x"),total);
@@ -207,10 +228,10 @@ void CPACKDlg::OnBnClickedPackAdd()
         switch(m_packtab1.m_type) {
         case DATA:
         case ENV:
-			m_imagelist.InsertItem(m_imagelist.GetItemCount(),m_packtab1.m_imagename,flagstr,_T(""),m_packtab1.m_startblock,len,_T(""));
+            m_imagelist.InsertItem(m_imagelist.GetItemCount(),m_packtab1.m_imagename,flagstr,_T(""),m_packtab1.m_startblock,len,_T(""),_T(""));
             break;
         case UBOOT:
-			m_imagelist.InsertItem(m_imagelist.GetItemCount(),m_packtab1.m_imagename,flagstr,ubootflashtype,m_packtab1.m_startblock,len,m_packtab1.m_execaddr);
+            m_imagelist.InsertItem(m_imagelist.GetItemCount(),m_packtab1.m_imagename,flagstr,ubootflashtype,m_packtab1.m_startblock,len,m_packtab1.m_execaddr, userstr);
             break;
         }
     }
@@ -218,18 +239,20 @@ void CPACKDlg::OnBnClickedPackAdd()
     //vector<CString>::iterator item;
     //for(item=ImageExec.begin();item!=ImageExec.end();item++)
     //{
-    //	AfxMessageBox(*item);
+    //  AfxMessageBox(*item);
     //}
 }
 
 void CPACKDlg::OnBnClickedPackModify()
 {
     CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
+
     vector<CString>::iterator itemName;
     vector<int>::iterator itemType;
     vector<int>::iterator itemFlash;
     vector<CString>::iterator itemExec;
     vector<CString>::iterator itemStartblock;
+    vector<int>::iterator itemUserconfig;
 
     if(m_pack_tabcontrol.GetCurSel()==PACK_PAR) {
         m_packtab1.UpdateData(TRUE);
@@ -267,18 +290,21 @@ void CPACKDlg::OnBnClickedPackModify()
         itemFlash=FlashType.begin()+modify_idx;
         itemExec=ImageExec.begin()+modify_idx;
         itemStartblock=ImageStartblock.begin()+modify_idx;
+        itemUserconfig=UserConfig.begin()+modify_idx;
+
         *itemName=m_packtab1.m_filename;
         *itemExec=m_packtab1.m_execaddr;
 
         *itemType=m_packtab1.m_type;
-		*itemFlash=m_packtab1.m_ubootflashtype;
+        *itemFlash=m_packtab1.m_ubootflashtype;
         *itemExec=m_packtab1.m_execaddr;
         *itemStartblock=m_packtab1.m_startblock;
+        *itemUserconfig=m_packtab1.m_isUserConfig;
     }
 
     //------------------------------------------------------------------------------
     int imagelen=m_imagelist.GetItemCount();
-    CString flagstr,flashstr;
+    CString flagstr,flashstr,userstr;
     m_imagelist.DeleteAllItems();
     for(int i=0; i<imagelen; i++) {
         itemName=ImageName.begin()+i;
@@ -286,6 +312,7 @@ void CPACKDlg::OnBnClickedPackModify()
         itemFlash=FlashType.begin()+i;
         itemExec=ImageExec.begin()+i;
         itemStartblock=ImageStartblock.begin()+i;
+        itemUserconfig=UserConfig.begin()+i;
 
         CString filename,tmp;
         tmp=(*itemName).Mid((*itemName).ReverseFind('\\')+1, (*itemName).GetLength());
@@ -313,21 +340,39 @@ void CPACKDlg::OnBnClickedPackModify()
             flagstr.Format(_T("FS"));
             break;
         }
-		
+
         switch(*itemFlash) {
             case TYPE_NAND:
-		        flashstr.Format(_T("NAND"));
-		    	break;
+                flashstr.Format(_T("NAND"));
+                break;
             case TYPE_SPI:
-		        flashstr.Format(_T("SPI"));
-		    	break;		
-		    case TYPE_EMMC:
-		        flashstr.Format(_T("eMMC/SD"));
-		    	break;
+                flashstr.Format(_T("SPI"));
+                break;
+            case TYPE_EMMC:
+                flashstr.Format(_T("eMMC/SD"));
+                break;
             case TYPE_SPINAND:
-		        flashstr.Format(_T("SPI NAND"));
-		    	break;
-        }		
+                flashstr.Format(_T("SPI NAND"));
+                break;
+        }
+
+        switch(*itemUserconfig) {
+            case 1:
+            {
+                userstr.Format(_T("Yes"));
+                mainWnd->m_info.SPI_uIsUserConfig = 1;
+                mainWnd->m_info.SPINand_uIsUserConfig = 1;
+                break;
+            }
+            case 0:
+            default:
+            {
+                userstr.Format(_T("No"));
+                mainWnd->m_info.SPI_uIsUserConfig = 0;
+                mainWnd->m_info.SPINand_uIsUserConfig = 0;
+                break;
+            }
+        }
 
         CString len;
         if(*itemType!=PMTP) {
@@ -338,13 +383,13 @@ void CPACKDlg::OnBnClickedPackModify()
             fseek(rfp,0,SEEK_END);
             _stscanf_s(*itemStartblock,_T("%x"),&startblock);
             total=ftell(rfp)+startblock;
-			if(*itemType==UBOOT)
-			{				
-				int ddrlen;
-				UCHAR * ddrbuf;
-				ddrbuf=DDR2Buf(mainWnd->ShareDDRBuf,mainWnd->DDRLen,&ddrlen);
-				total+=(ddrlen+32);
-			}
+            if(*itemType==UBOOT)
+            {
+                int ddrlen;
+                UCHAR * ddrbuf;
+                ddrbuf=DDR2Buf(mainWnd->ShareDDRBuf,mainWnd->DDRLen,&ddrlen);
+                total+=(ddrlen+32);
+            }
             len.Format(_T("%x"),total);
             fclose(rfp);
         }
@@ -352,11 +397,11 @@ void CPACKDlg::OnBnClickedPackModify()
         switch(*itemType) {
             case DATA:
             case ENV:
-				m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,_T(""),*itemStartblock,len,_T(""));
+                m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,_T(""),*itemStartblock,len,_T(""),_T(""));
                 break;
             case UBOOT:
-				m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,flashstr,*itemStartblock,len,*itemExec);
-        } 
+                m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,flashstr,*itemStartblock,len,*itemExec,userstr);
+        }
     }
 
 }
@@ -364,6 +409,7 @@ void CPACKDlg::OnBnClickedPackModify()
 void CPACKDlg::OnBnClickedPackDelete()
 {
 #if 1
+    CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
     m_packtab1.UpdateData(TRUE);
 
     vector<CString>::iterator itemName;
@@ -371,6 +417,7 @@ void CPACKDlg::OnBnClickedPackDelete()
     vector<int>::iterator itemFlash;
     vector<CString>::iterator itemExec;
     vector<CString>::iterator itemStartblock;
+    vector<int>::iterator itemUserconfig;
     int modify_idx;
     int i;
     int imagelen=m_imagelist.GetItemCount();
@@ -389,7 +436,7 @@ void CPACKDlg::OnBnClickedPackDelete()
     FlashType.erase(FlashType.begin() + modify_idx);
     ImageExec.erase(ImageExec.begin() + modify_idx);
     ImageStartblock.erase(ImageStartblock.begin() + modify_idx);
-
+    UserConfig.erase(UserConfig.begin() + modify_idx);
 
     //--- re-show image list ---
     m_imagelist.DeleteAllItems();
@@ -400,9 +447,10 @@ void CPACKDlg::OnBnClickedPackDelete()
         itemFlash=(FlashType.begin()+i);
         itemExec=(ImageExec.begin()+i);
         itemStartblock=(ImageStartblock.begin()+i);
+        itemUserconfig=(UserConfig.begin()+i);
         i++;
 
-        CString flagstr,flashstr;
+        CString flagstr,flashstr,userstr;
         switch(*itemType) {
         case DATA :
             flagstr.Format(_T("DATA"));
@@ -412,6 +460,23 @@ void CPACKDlg::OnBnClickedPackDelete()
             break;
         case UBOOT:
             flagstr.Format(_T("uBOOT"));
+            switch(*itemUserconfig) {
+            case 1:
+            {
+                userstr.Format(_T("Yes"));
+                mainWnd->m_info.SPI_uIsUserConfig = 1;
+                mainWnd->m_info.SPINand_uIsUserConfig = 1;
+                break;
+            }
+            case 0:
+            default:
+            {
+                userstr.Format(_T("No"));
+                mainWnd->m_info.SPI_uIsUserConfig = 0;
+                mainWnd->m_info.SPINand_uIsUserConfig = 0;
+                break;
+            }
+        }
             break;
         case PACK :
             flagstr.Format(_T("Pack"));
@@ -420,21 +485,22 @@ void CPACKDlg::OnBnClickedPackDelete()
             flagstr.Format(_T("FS"));
             break;
         }
-		
+
         switch(*itemFlash) {
             case TYPE_NAND:
-		        flashstr.Format(_T("NAND"));
-		    	break;
+                flashstr.Format(_T("NAND"));
+                break;
             case TYPE_SPI:
-		        flashstr.Format(_T("SPI"));
-		    	break;		
-		    case TYPE_EMMC:
-		        flashstr.Format(_T("eMMC/SD"));
-		    	break;
+                flashstr.Format(_T("SPI"));
+                break;
+            case TYPE_EMMC:
+                flashstr.Format(_T("eMMC/SD"));
+                break;
             case TYPE_SPINAND:
-		        flashstr.Format(_T("SPI NAND"));
-		    	break;
-        }		
+                flashstr.Format(_T("SPI NAND"));
+                break;
+        }
+
 
         CString filename,tmp;
         tmp=(*itemName).Mid((*itemName).ReverseFind('\\')+1, (*itemName).GetLength());
@@ -459,9 +525,9 @@ void CPACKDlg::OnBnClickedPackDelete()
         }
         if(*itemType!=PMTP) {
             if(*itemType==UBOOT)
-				m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,flashstr,*itemStartblock,len,*itemExec);
+                m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,flashstr,*itemStartblock,len,*itemExec,userstr);
             else
-				m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,_T(""),*itemStartblock,len,_T(""));
+                m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,_T(""),*itemStartblock,len,_T(""),_T(""));
         }
     }
 #else
@@ -493,12 +559,13 @@ int CPACKDlg::Output()
     int storageSize=64*1024;
     vector<CString>::iterator itemName;
     vector<int>::iterator itemType;
-	vector<int>::iterator itemFlash;
+    vector<int>::iterator itemFlash;
     vector<CString>::iterator itemExec;
     vector<CString>::iterator itemStartblock;
     vector<CString>::iterator itemuBoot;
+    vector<int>::iterator itemUserConfig;
 
-	mainWnd->INItoSaveOrLoad(1);//load path.ini to get SPI header
+    mainWnd->INItoSaveOrLoad(1);//load path.ini to get SPI header
 
     int imagelen=m_imagelist.GetItemCount();
 
@@ -538,8 +605,9 @@ int CPACKDlg::Output()
     for(i=0; i<imagelen; i++) {
         itemName=(ImageName.begin()+i);
         itemType=(ImageType.begin()+i);
-		itemFlash=(FlashType.begin()+i);
+        itemFlash=(FlashType.begin()+i);
         itemExec=(ImageExec.begin()+i);
+        itemUserConfig=(UserConfig.begin()+i);
 
         if(*itemType!=PMTP) {
             itemStartblock=(ImageStartblock.begin()+i);
@@ -559,7 +627,7 @@ int CPACKDlg::Output()
                 memset((char *)&child,0xff,sizeof(PACK_CHILD_HEAD));
 
                 //write  pack_child_head
-				child.filelen=len+ddrlen+32;
+                child.filelen=len+ddrlen+32;
                 child.startaddr=0;
                 child.imagetype=UBOOT;
                 fwrite((char *)&child,1,sizeof(PACK_CHILD_HEAD),wfp);
@@ -573,51 +641,51 @@ int CPACKDlg::Output()
                 tmp=0xffffffff;
                 fwrite((char *)&tmp,1,4,wfp);
 #if(1)
-				//Add IBR header for NUC980 SPI NOR/NAND
-				if(m_packtab1.m_ubootflashtype == TYPE_SPINAND) //SPI NAND
-				{
-				    tmp = mainWnd->m_info.SPINand_PageSize;
-				    fwrite((char *)&tmp,1,2,wfp);
-				    tmp = mainWnd->m_info.SPINand_SpareArea;
-				    fwrite((char *)&tmp,1,2,wfp);
-				    tmp = mainWnd->m_info.SPINand_QuadReadCmd;
-				    fwrite((char *)&tmp,1,1,wfp);
-				    tmp = mainWnd->m_info.SPINand_ReadStatusCmd;
-				    fwrite((char *)&tmp,1,1,wfp);
-				    tmp = mainWnd->m_info.SPINand_WriteStatusCmd;
-				    fwrite((char *)&tmp,1,1,wfp);
-				    tmp = mainWnd->m_info.SPINand_StatusValue;
-				    fwrite((char *)&tmp,1,1,wfp);
-				    tmp = mainWnd->m_info.SPINand_dummybyte;
-				    fwrite((char *)&tmp,1,1,wfp);
-				    tmp = 0xffffff;
-				    fwrite((char *)&tmp,1,3,wfp);
-				    tmp = 0xffffffff;
-				    fwrite((char *)&tmp,1,4,wfp);
-				}
-				else //SPI NOR
+                //Add IBR header for NUC980 SPI NOR/NAND
+                if(m_packtab1.m_ubootflashtype == TYPE_SPINAND) //SPI NAND
+                {
+                    tmp = mainWnd->m_info.SPINand_PageSize;
+                    fwrite((char *)&tmp,1,2,wfp);
+                    tmp = mainWnd->m_info.SPINand_SpareArea;
+                    fwrite((char *)&tmp,1,2,wfp);
+                    tmp = mainWnd->m_info.SPINand_QuadReadCmd;
+                    fwrite((char *)&tmp,1,1,wfp);
+                    tmp = mainWnd->m_info.SPINand_ReadStatusCmd;
+                    fwrite((char *)&tmp,1,1,wfp);
+                    tmp = mainWnd->m_info.SPINand_WriteStatusCmd;
+                    fwrite((char *)&tmp,1,1,wfp);
+                    tmp = mainWnd->m_info.SPINand_StatusValue;
+                    fwrite((char *)&tmp,1,1,wfp);
+                    tmp = mainWnd->m_info.SPINand_dummybyte;
+                    fwrite((char *)&tmp,1,1,wfp);
+                    tmp = 0xffffff;
+                    fwrite((char *)&tmp,1,3,wfp);
+                    tmp = 0xffffffff;
+                    fwrite((char *)&tmp,1,4,wfp);
+                }
+                else //SPI NOR
 #endif
-				{
+                {
                     tmp = 0x800;
-				    fwrite((char *)&tmp,1,2,wfp);
-				    tmp = 0x40;
-				    fwrite((char *)&tmp,1,2,wfp);
-				    tmp = mainWnd->m_info.SPI_QuadReadCmd;
-				    fwrite((char *)&tmp,1,1,wfp);
-				    tmp = mainWnd->m_info.SPI_ReadStatusCmd;
-				    fwrite((char *)&tmp,1,1,wfp);
-				    tmp = mainWnd->m_info.SPI_WriteStatusCmd;
-				    fwrite((char *)&tmp,1,1,wfp);
-				    tmp = mainWnd->m_info.SPI_StatusValue;
-				    fwrite((char *)&tmp,1,1,wfp);
-				    tmp = mainWnd->m_info.SPI_dummybyte;
-				    fwrite((char *)&tmp,1,1,wfp);
-				    tmp = 0xffffff;
-				    fwrite((char *)&tmp,1,3,wfp);
-				    tmp = 0xffffffff;
-				    fwrite((char *)&tmp,1,4,wfp);
-				    
-				}
+                    fwrite((char *)&tmp,1,2,wfp);
+                    tmp = 0x40;
+                    fwrite((char *)&tmp,1,2,wfp);
+                    tmp = mainWnd->m_info.SPI_QuadReadCmd;
+                    fwrite((char *)&tmp,1,1,wfp);
+                    tmp = mainWnd->m_info.SPI_ReadStatusCmd;
+                    fwrite((char *)&tmp,1,1,wfp);
+                    tmp = mainWnd->m_info.SPI_WriteStatusCmd;
+                    fwrite((char *)&tmp,1,1,wfp);
+                    tmp = mainWnd->m_info.SPI_StatusValue;
+                    fwrite((char *)&tmp,1,1,wfp);
+                    tmp = mainWnd->m_info.SPI_dummybyte;
+                    fwrite((char *)&tmp,1,1,wfp);
+                    tmp = 0xffffff;
+                    fwrite((char *)&tmp,1,3,wfp);
+                    tmp = 0xffffffff;
+                    fwrite((char *)&tmp,1,4,wfp);
+
+                }
 
                 //write DDR
                 fwrite(ddrbuf,1,ddrlen,wfp);
@@ -669,7 +737,7 @@ int CPACKDlg::Output()
                 _stscanf_s(*itemStartblock,_T("%x"),&child.startaddr);
                 //-----------------------------------------------
                 fwrite((char *)&child,sizeof(PACK_CHILD_HEAD),1,wfp);
-				fread(pBuffer,1,len,rfp);
+                fread(pBuffer,1,len,rfp);
                 fwrite((char *)pBuffer,1,len,wfp);
             }
             break;
@@ -687,7 +755,7 @@ int CPACKDlg::Output()
             }
             fclose(rfp);
             if(pBuffer!=NULL) free(pBuffer);
-        } 
+        }
     }
     fclose(wfp);
     AfxMessageBox(_T("Output finish "));
@@ -757,14 +825,15 @@ BOOL CPACKDlg::FileExist(CString strFileName)
 
 BOOL CPACKDlg::InitFile(int flag)
 {
-
-    CString tName,tType,tFlashType,tExec,tStartblock;
+    CString tName,tType,tFlashType,tExec,tStartblock,tUserConfig;
     CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
     vector<CString>::iterator itemName;
     vector<int>::iterator itemType;
     vector<int>::iterator itemFlash;
     vector<CString>::iterator itemExec;
     vector<CString>::iterator itemStartblock;
+    vector<int>::iterator itemUserConfig;
+
 
     if(!mainWnd->m_inifile.ReadFile()) return false;
     switch(flag) {
@@ -794,48 +863,67 @@ BOOL CPACKDlg::InitFile(int flag)
             tStartblock.Format(_T("STARTBLOCK%02d"),i);
             ImageStartblock.push_back( mainWnd->m_inifile.GetValue(_T("PACK"),tStartblock) );
 
+            tUserConfig.Format(_T("USERCONFIG%02d"),i);
+            UserConfig.push_back( _wtoi(mainWnd->m_inifile.GetValue(_T("PACK"),tUserConfig)) );
 
             itemName=(ImageName.begin()+i);
             itemType=(ImageType.begin()+i);
             itemFlash=(FlashType.begin()+i);
             itemExec=(ImageExec.begin()+i);
             itemStartblock=(ImageStartblock.begin()+i);
+            itemUserConfig=(UserConfig.begin()+i);
 
-
-            CString flagstr,flashstr;
+            CString flagstr,flashstr,userstr;
             switch(*itemType) {
-            case DATA	:
+            case DATA   :
                 flagstr.Format(_T("DATA"));
                 break;
-            case ENV	:
+            case ENV    :
                 flagstr.Format(_T("ENV"));
                 break;
-            case UBOOT	:
+            case UBOOT  :
                 flagstr.Format(_T("uBOOT"));
                 break;
-            case PACK	:
+            case PACK   :
                 flagstr.Format(_T("Pack"));
                 break;
-            case IMAGE	:
+            case IMAGE  :
                 flagstr.Format(_T("FS"));
                 break;
             }
-			
-			
+
             switch(*itemFlash) {
                 case TYPE_NAND:
-		            flashstr.Format(_T("NAND"));
-		        	break;
+                    flashstr.Format(_T("NAND"));
+                    break;
                 case TYPE_SPI:
-		            flashstr.Format(_T("SPI"));
-		        	break;		
-		        case TYPE_EMMC:
-		            flashstr.Format(_T("eMMC/SD"));
-		        	break;
+                    flashstr.Format(_T("SPI"));
+                    break;
+                case TYPE_EMMC:
+                    flashstr.Format(_T("eMMC/SD"));
+                    break;
                 case TYPE_SPINAND:
-		            flashstr.Format(_T("SPI NAND"));
-		        	break;
-            }			
+                    flashstr.Format(_T("SPI NAND"));
+                    break;
+            }
+
+            switch(*itemUserConfig) {
+                case 1:
+                {
+                    userstr.Format(_T("Yes"));
+                    mainWnd->m_info.SPI_uIsUserConfig = 1;
+                    mainWnd->m_info.SPINand_uIsUserConfig = 1;
+                    break;
+                }
+                case 0:
+                default:
+                {
+                    userstr.Format(_T("No"));
+                    mainWnd->m_info.SPI_uIsUserConfig = 0;
+                    mainWnd->m_info.SPINand_uIsUserConfig = 0;
+                    break;
+                }
+            }
 
             CString filename,tmp;
             tmp=(*itemName).Mid((*itemName).ReverseFind('\\')+1, (*itemName).GetLength());
@@ -870,12 +958,12 @@ BOOL CPACKDlg::InitFile(int flag)
             switch(*itemType) {
             case DATA:
             case ENV:
-			 	m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,_T(""),*itemStartblock,len,_T(""));
+                m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,_T(""),*itemStartblock,len,_T(""),_T(""));
                 break;
             case UBOOT:
-			 	m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,flashstr,*itemStartblock,len,*itemExec);
+                m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,flashstr,*itemStartblock,len,*itemExec,userstr);
                 break;
-            }			
+            }
         }
     }
     break;
@@ -889,10 +977,11 @@ BOOL CPACKDlg::InitFile(int flag)
         for(int i=0; i<imagelen; i++) {
 
             itemName=(ImageName.begin()+i);
-            itemType=(ImageType.begin()+i);            
-			itemFlash=(FlashType.begin()+i);
+            itemType=(ImageType.begin()+i);
+            itemFlash=(FlashType.begin()+i);
             itemExec=(ImageExec.begin()+i);
             itemStartblock=(ImageStartblock.begin()+i);
+            itemUserConfig=(UserConfig.begin()+i);
 
             tName.Format(_T("NAME%02d"),i);
             mainWnd->m_inifile.SetValue(_T("PACK"),tName,*itemName);
@@ -902,14 +991,18 @@ BOOL CPACKDlg::InitFile(int flag)
             mainWnd->m_inifile.SetValue(_T("PACK"),tType,tmp);
 
             tFlashType.Format(_T("BOOTTYPE%02d"),i);
-			tmp.Format(_T("%d"),*itemFlash);
+            tmp.Format(_T("%d"),*itemFlash);
             mainWnd->m_inifile.SetValue(_T("PACK"),tFlashType,tmp);
-			
+
             tExec.Format(_T("EXEC%02d"),i);
             mainWnd->m_inifile.SetValue(_T("PACK"),tExec,*itemExec);
 
             tStartblock.Format(_T("STARTBLOCK%02d"),i);
             mainWnd->m_inifile.SetValue(_T("PACK"),tStartblock,*itemStartblock);
+
+            tUserConfig.Format(_T("USERCONFIG%02d"),i);
+            tmp.Format(_T("%d"),*itemUserConfig);
+            mainWnd->m_inifile.SetValue(_T("PACK"),tUserConfig,tmp);
         }
         mainWnd->m_inifile.WriteFile();
     }
@@ -921,6 +1014,7 @@ void CPACKDlg::OnNMDblclkPackImagelist(NMHDR *pNMHDR, LRESULT *pResult)
 {
     LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<NMITEMACTIVATE *>(pNMHDR);
     // TODO: Add your control notification handler code here
+    CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
     *pResult = 0;
 
     vector<CString>::iterator itemName;
@@ -928,6 +1022,7 @@ void CPACKDlg::OnNMDblclkPackImagelist(NMHDR *pNMHDR, LRESULT *pResult)
     vector<int>::iterator itemFlash;
     vector<CString>::iterator itemExec;
     vector<CString>::iterator itemStartblock;
+    vector<int>::iterator itemUserConfig;
 
     int i;
     int modify_idx;
@@ -956,51 +1051,73 @@ void CPACKDlg::OnNMDblclkPackImagelist(NMHDR *pNMHDR, LRESULT *pResult)
     //    m_packtab1.m_imagename = m_packtab1.m_imagename.Mid(0,15);
 
     m_pack_tabcontrol.SetCurSel(PACK_PAR);
-	//SwapTab();
-	m_packtab1.GetDlgItem(IDC_PACK_IMAGENAME_A)->SetWindowText(m_packtab1.m_imagename);
-	//-----------------------------------------------------------------------------
-	itemType=ImageType.begin()+modify_idx;
-	((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A))->SetCheck(FALSE);
-	((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A2))->SetCheck(FALSE);
-	((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A4))->SetCheck(FALSE);
-	switch((*itemType)) {
-	case 0:
-		((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A ))->SetCheck(TRUE);
-		break;
-	case 1:
-		((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A2))->SetCheck(TRUE);
-		break;
-	case 2:
-		((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A4))->SetCheck(TRUE);
-		break;
-	}
-	//-----------------------------------------------------------------------------
-	itemFlash=FlashType.begin()+modify_idx;
-	((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_1))->SetCheck(FALSE);
-	((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_2))->SetCheck(FALSE);
-	((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_3))->SetCheck(FALSE);
-	((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_4))->SetCheck(FALSE);	
-	switch((*itemFlash)) {
-		case TYPE_NAND:
-			((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_1 ))->SetCheck(TRUE);
-			break;
-		case TYPE_SPI:
-			((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_2))->SetCheck(TRUE);
-			break;
-		case TYPE_EMMC:
-			((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_3))->SetCheck(TRUE);
-			break;
-		case TYPE_SPINAND:
-			((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_4))->SetCheck(TRUE);
-			break;
-	}	
-	//-----------------------------------------------------------------------------
-	itemExec=ImageExec.begin()+modify_idx;
-	m_packtab1.GetDlgItem(IDC_PACK_EXECADDR_A)->SetWindowText(*itemExec);
-	//-----------------------------------------------------------------------------
-	itemStartblock=ImageStartblock.begin()+modify_idx;
-	m_packtab1.GetDlgItem(IDC_PACK_FLASHOFFSET_A)->SetWindowText(*itemStartblock);
-	//------------------------------------------------------------------------------
+    //SwapTab();
+    m_packtab1.GetDlgItem(IDC_PACK_IMAGENAME_A)->SetWindowText(m_packtab1.m_imagename);
+    //-----------------------------------------------------------------------------
+    itemType=ImageType.begin()+modify_idx;
+    ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A))->SetCheck(FALSE);
+    ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A2))->SetCheck(FALSE);
+    ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A4))->SetCheck(FALSE);
+    switch((*itemType)) {
+    case 0:
+        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A ))->SetCheck(TRUE);
+        break;
+    case 1:
+        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A2))->SetCheck(TRUE);
+        break;
+    case 2:
+        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A4))->SetCheck(TRUE);
+        break;
+    }
+    //-----------------------------------------------------------------------------
+    itemFlash=FlashType.begin()+modify_idx;
+    ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_1))->SetCheck(FALSE);
+    ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_2))->SetCheck(FALSE);
+    ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_3))->SetCheck(FALSE);
+    ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_4))->SetCheck(FALSE);
+    switch((*itemFlash)) {
+        case TYPE_NAND:
+            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_1 ))->SetCheck(TRUE);
+            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->EnableWindow(FALSE);
+            break;
+        case TYPE_SPI:
+            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_2))->SetCheck(TRUE);
+            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->EnableWindow(TRUE);
+            break;
+        case TYPE_EMMC:
+            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_3))->SetCheck(TRUE);
+            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->EnableWindow(FALSE);
+            break;
+        case TYPE_SPINAND:
+            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_4))->SetCheck(TRUE);
+            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->EnableWindow(TRUE);
+            break;
+    }
+    //-----------------------------------------------------------------------------
+    itemExec=ImageExec.begin()+modify_idx;
+    m_packtab1.GetDlgItem(IDC_PACK_EXECADDR_A)->SetWindowText(*itemExec);
+    //-----------------------------------------------------------------------------
+    itemStartblock=ImageStartblock.begin()+modify_idx;
+    m_packtab1.GetDlgItem(IDC_PACK_FLASHOFFSET_A)->SetWindowText(*itemStartblock);
+    //------------------------------------------------------------------------------
+    itemUserConfig=UserConfig.begin()+modify_idx;
+    switch((*itemUserConfig)) {
+        case 1:
+        {
+            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->SetCheck(TRUE);
+            mainWnd->m_info.SPI_uIsUserConfig = 1;
+            mainWnd->m_info.SPINand_uIsUserConfig = 1;
+            break;
+        }
+        case 0:
+        default:
+        {
+            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->SetCheck(FALSE);
+            mainWnd->m_info.SPI_uIsUserConfig = 0;
+            mainWnd->m_info.SPINand_uIsUserConfig = 0;
+            break;
+        }
+    }
 }
 
 void CPACKDlg::OnTcnSelchangePackTabcontrol(NMHDR *pNMHDR, LRESULT *pResult)

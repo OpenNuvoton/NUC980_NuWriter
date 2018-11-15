@@ -61,6 +61,7 @@ public:
 	std::vector<int> FlashType;	
 	std::vector<CString> ImageExec;	
 	std::vector<CString> ImageStartblock;
+	std::vector<int> UserConfig;
 
 	CString TmpOffset;
 	int TmpOffsetFlag;	

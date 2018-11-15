@@ -66,11 +66,11 @@ BOOL CNucWinUsb::NUC_ReadPipe(int id,UCHAR *buf,ULONG len)
     }
 #endif
     //for(int i=0x0; i<0x4000; i++);
-	for(int i=0x0; i<0x2000; i++);
+    for(int i=0x0; i<0x2000; i++);
     bResult = WinUsb_ReadPipe(WinUsbHandle[id].hUSBHandle, WinUsbHandle[id].pipeid.PipeInId, (unsigned char*)buf, len, &nBytesRead, 0);
     if(bResult==FALSE) {
         TRACE(_T("XXXX IN(%d) pipeId=0x%x   len=%d    nBytesRead=%d\n"), id, WinUsbHandle[id].pipeid.PipeOutId, len, nBytesRead);
-		TRACE(_T("Error WinUsb_ReadPipe: 0x%x.\n"), GetLastError());
+        TRACE(_T("Error WinUsb_ReadPipe: 0x%x.\n"), GetLastError());
         return FALSE;
     }
 
@@ -98,8 +98,8 @@ BOOL CNucWinUsb::NUC_SetType(int id,USHORT type,UCHAR * ack,ULONG len)
         bResult = WinUsb_ControlTransfer(WinUsbHandle[id].hUSBHandle, SetupPacket, 0, 0, &nBytesRead, 0);
         if(bResult==FALSE) {
             TRACE(_T("Error WinUsb_ControlTransfer: %d.\n"), GetLastError());
-			return FALSE;
-		}
+            return FALSE;
+        }
 
         ZeroMemory(&SetupPacket, sizeof(WINUSB_SETUP_PACKET));
         //Create the setup packet
@@ -176,7 +176,7 @@ BOOL CNucWinUsb::NUC_WritePipe(int id,UCHAR *buf,ULONG len)
     nBytesSent=0;
     bResult=WinUsb_WritePipe(WinUsbHandle[id].hUSBHandle, WinUsbHandle[id].pipeid.PipeOutId, buf, len, &nBytesSent, 0);
     if(bResult==FALSE) {
-		TRACE(_T("XXXXX Error WinUsb_WritePipe: 0x%x.\n"), GetLastError());
+        TRACE(_T("XXXXX Error WinUsb_WritePipe: 0x%x.\n"), GetLastError());
         //TRACE(_T("XXXX #189  OUT(%d) pipeId=0x%x   len=%d    nBytesSent=%d\n"), id, WinUsbHandle[id].pipeid.PipeOutId, len, nBytesSent);
         //TRACE(_T("           0x%x  0x%x  0x%x  0x%x  0x%x  0x%x  0x%x  0x%x\n"), buf[0],buf[1],buf[2],buf[3], buf[len-1],buf[len-2],buf[len-3],buf[len-4]);
         return FALSE;
@@ -466,7 +466,7 @@ BOOL CNucWinUsb::QueryDeviceEndpoints(void)
                         if (USB_ENDPOINT_DIRECTION_IN(Pipe.PipeId)) {
                             //TRACE(_T("Endpoint index: %d Pipe type: Bulk<0x%x> Pipe ID: 0x%x.\n"), index, Pipe.PipeType, Pipe.PipeId);
                             pipeid->PipeInId = Pipe.PipeId;
-							WinUsb_SetPipePolicy(hUSBHandle, Pipe.PipeId, PIPE_TRANSFER_TIMEOUT, sizeof(timeout), &timeout);
+                            WinUsb_SetPipePolicy(hUSBHandle, Pipe.PipeId, PIPE_TRANSFER_TIMEOUT, sizeof(timeout), &timeout);
                         }
                         if (USB_ENDPOINT_DIRECTION_OUT(Pipe.PipeId)) {
                             //TRACE(_T("Endpoint index: %d Pipe type: Bulk<0x%x> Pipe ID: 0x%x.\n"), index, Pipe.PipeType, Pipe.PipeId);
@@ -504,7 +504,7 @@ BOOL CNucWinUsb::CloseWinUsbDevice( int id )
     WinUsbHandle[id].hUSBHandle=INVALID_HANDLE_VALUE;
     WinUsbHandle[id].HandlesOpen = FALSE;
 
-//	Sleep(150);
+//Sleep(150);
     return TRUE;
 }
 
@@ -541,11 +541,11 @@ BOOL CNucWinUsb::EnableOneWinUsbDevice(int id)
 
     //TRACE(_T(" WinUsbNumber WinUsbNumber WinUsbNumber %d\n"),WinUsbNumber);
     Sleep(200);//for Mass production
-	bResult = GetOneUSBDeviceSpeed(id);
+    bResult = GetOneUSBDeviceSpeed(id);
     if(!bResult) {
-		TRACE(_T("#### (%d) XXX GetOneUSBDeviceSpeed\n"),id);
-		CloseWinUsbDevice(id);
-		return bResult;
+        TRACE(_T("#### (%d) XXX GetOneUSBDeviceSpeed\n"),id);
+        CloseWinUsbDevice(id);
+        return bResult;
     }
 
     Sleep(200);//for Mass production
@@ -804,7 +804,7 @@ BOOL CNucWinUsb::OpenDevice( int id )
                                 &WinUsbHandle[id].hUSBHandle);
     if (FALSE == bResult) {
         CloseHandle(WinUsbHandle[id].hDeviceHandle);
-		goto done;
+        goto done;
         //TRACE(_T("WinUsb_Initialize Error\n"));
     }
     WinUsbHandle[id].HandlesOpen = TRUE;
@@ -831,8 +831,8 @@ int CNucWinUsb::UsbDevice_Detect( void )
         NucUsb.CloseWinUsbDevice(id);
         id++;
     }
-	WinUsbNumber = id;
-	//TRACE(_T("CNucWinUsb::UsbDevice_Detect  WinUsbNumber %d\n"),WinUsbNumber);
+    WinUsbNumber = id;
+    //TRACE(_T("CNucWinUsb::UsbDevice_Detect  WinUsbNumber %d\n"),WinUsbNumber);
 
     return (WinUsbNumber);
 }

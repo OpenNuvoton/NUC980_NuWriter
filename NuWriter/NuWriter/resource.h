@@ -301,6 +301,7 @@
 #define IDC_PACK_FLASHTYPE_2            1274
 #define IDC_PACK_FLASHTYPE_3            1275
 #define IDC_PACK_FLASHTYPE_4            1276
+#define IDC_PACK_USRCONFIG              1277
 
 #define IDC_DOWNLOADSTATUS              4000
 #define IDC_DOWNLOADSTATUS2             4001
@@ -325,7 +326,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        169
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1277
+#define _APS_NEXT_CONTROL_VALUE         1278
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -44,11 +44,11 @@ INT  fmiInitSDDevice(void)
 
     // enable SD
     outpw(REG_EMMC_CTL, FMI_CSR_SD_EN);
-    outpw(REG_FMI_EMMCCTL, inpw(REG_FMI_EMMCCTL) | SD_CSR_SWRST);     // SD software reset
+    outpw(REG_FMI_EMMCCTL, inpw(REG_FMI_EMMCCTL) | SD_CSR_SWRST);// SD software reset
     while(inpw(REG_FMI_EMMCCTL) & SD_CSR_SWRST);
-    outpw(REG_FMI_EMMCCTL, (inpw(REG_FMI_EMMCCTL) & ~SD_CSR_NWR_MASK) | (0x09 << 24));        // set SDNWR = 9
-    outpw(REG_FMI_EMMCCTL, (inpw(REG_FMI_EMMCCTL) & ~SD_CSR_BLK_CNT_MASK) | (0x01 << 16));    // set BLKCNT = 1
-    outpw(REG_FMI_EMMCCTL, inpw(REG_FMI_EMMCCTL) & ~SD_CSR_DBW_4BIT);     // SD 1-bit data bus
+    outpw(REG_FMI_EMMCCTL, (inpw(REG_FMI_EMMCCTL) & ~SD_CSR_NWR_MASK) | (0x09 << 24));// set SDNWR = 9
+    outpw(REG_FMI_EMMCCTL, (inpw(REG_FMI_EMMCCTL) & ~SD_CSR_BLK_CNT_MASK) | (0x01 << 16));// set BLKCNT = 1
+    outpw(REG_FMI_EMMCCTL, inpw(REG_FMI_EMMCCTL) & ~SD_CSR_DBW_4BIT);// SD 1-bit data bus
     pSD_temp = malloc(sizeof(FMI_SD_INFO_T)+4);
     if (pSD_temp == NULL)
         return -1;
@@ -80,7 +80,7 @@ INT  fmiInitSDDevice(void)
 
 INT fmiSD_Read(UINT32 uSector, UINT32 uBufcnt, UINT32 uDAddr)
 {
-    int status=0;
+    int volatile status=0;
     // enable SD
     status = SD_Read_in(pSD0, uSector, uBufcnt, uDAddr);
     return status;
@@ -88,9 +88,9 @@ INT fmiSD_Read(UINT32 uSector, UINT32 uBufcnt, UINT32 uDAddr)
 
 INT fmiSD_Write(UINT32 uSector, UINT32 uBufcnt, UINT32 uSAddr)
 {
-    int status=0;
+    int volatile status=0;
     // enable SD
-    //printf("uSector = %d   uBufcnt =%d   uSAddr=0x%x\n", uSector, uBufcnt, uSAddr);
+    MSG_DEBUG("uSector = %d   uBufcnt =%d   uSAddr=0x%x\n", uSector, uBufcnt, uSAddr);
     status = SD_Write_in(pSD0, uSector, uBufcnt, uSAddr);
     return status;
 }

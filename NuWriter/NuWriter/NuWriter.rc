@@ -16,7 +16,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文 (繁體，台灣) resources
+//resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHT)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_TRADITIONAL
@@ -134,7 +134,7 @@ END
 
 IDD_TARGET_CHIP DIALOGEX 0, 0, 183, 124
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Nuvoton NuWriter v1.0 - Select Chip"
+CAPTION "Nuvoton NuWriter v1.01 - Select Chip"
 FONT 8, "MS Sans Serif", 400, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "Continue",IDOK,96,84,61,14
@@ -273,7 +273,7 @@ END
 IDD_NUWRITER_DIALOG DIALOGEX 0, 0, 482, 253
 STYLE DS_SETFONT | DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "Nuvoton NuWriter v1.0"
+CAPTION "Nuvoton NuWriter v1.01"
 FONT 8, "MS Sans Serif", 400, 0, 0x0
 BEGIN
     PUSHBUTTON      "EXIT",IDCANCEL,416,226,50,14
@@ -332,13 +332,13 @@ BEGIN
     CONTROL         "SPI",IDC_RADIO_FAST_SPI,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,319,52,26,10
     CONTROL         "eMMC/SD",IDC_RADIO_FAST_eMMC,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,350,52,42,10
     CONTROL         "SPI NAND",IDC_RADIO_FAST_SPINAND,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,398,52,44,10
-    PUSHBUTTON      "Start",IDC_BTN_FAST_START,306,116,80,24,WS_GROUP
+    PUSHBUTTON      "Start",IDC_BTN_FAST_START,306,103,80,24,WS_GROUP
     LTEXT           "NAND flash parameter:",IDC_STATIC_FAST_NANDINFO,242,68,71,8
     CONTROL         "User Defined",IDC_FAST_NAND_USRCONFIG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,318,67,52,10
     LTEXT           "SPI NOR parameter:",IDC_STATIC_FAST_SPINORINFO,242,92,71,8,NOT WS_VISIBLE
     CONTROL         "User Defined",IDC_FAST_SPINOR_USRCONFIG,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,318,91,52,10
-    LTEXT           "SPI NAND parameter:",IDC_STATIC_FAST_SPINANDINFO,242,80,71,8
-    CONTROL         "User Defined",IDC_FAST_SPINAND_USRCONFIG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,318,79,52,10
+    LTEXT           "SPI NAND parameter:",IDC_STATIC_FAST_SPINANDINFO,242,80,71,8,NOT WS_VISIBLE
+    CONTROL         "User Defined",IDC_FAST_SPINAND_USRCONFIG,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,318,79,52,10
     CONTROL         "",IDC_FAST_PROGRESS1,"msctls_progress32",NOT WS_VISIBLE | WS_BORDER,43,12,144,13
     LTEXT           "",IDC_STATIC_FAST_MSG1,190,14,40,12,NOT WS_VISIBLE
     LTEXT           "Device1",IDC_STATIC_FAST_DEV1,12,14,27,9,NOT WS_VISIBLE
@@ -605,12 +605,12 @@ IDB_ADD                 BITMAP                  "res\\Add.bmp"
 IDB_DELETE              BITMAP                  "res\\Delete.bmp"
 IDB_MODIFY              BITMAP                  "res\\Modify.bmp"
 IDB_OUTPUT              BITMAP                  "res\\Output.bmp"
-#endif    // 中文 (繁體，台灣) resources
+#endif    // resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 英文 (美國) resources
+// resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -634,14 +634,16 @@ BEGIN
     CONTROL         "Environment",IDC_PACK_TYPE_A2,"Button",BS_AUTORADIOBUTTON,77,26,52,10
     CONTROL         "Loader",IDC_PACK_TYPE_A4,"Button",BS_AUTORADIOBUTTON,133,26,38,10
     LTEXT           "Flash Type :",IDC_STATIC,2,57,43,8
-    CONTROL         "NAND",IDC_PACK_FLASHTYPE_1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,50,57,30,10
-    CONTROL         "SPI NOR",IDC_PACK_FLASHTYPE_2,"Button",BS_AUTORADIOBUTTON,87,57,42,10
-    CONTROL         "eMMC/SD",IDC_PACK_FLASHTYPE_3,"Button",BS_AUTORADIOBUTTON,133,57,44,10
-    CONTROL         "SPI NAND",IDC_PACK_FLASHTYPE_4,"Button",BS_AUTORADIOBUTTON,182,57,45,10
+    CONTROL         "NAND",IDC_PACK_FLASHTYPE_1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,48,57,30,10
+    CONTROL         "SPI NOR",IDC_PACK_FLASHTYPE_2,"Button",BS_AUTORADIOBUTTON,81,57,39,10
+    CONTROL         "eMMC/SD",IDC_PACK_FLASHTYPE_3,"Button",BS_AUTORADIOBUTTON,124,57,44,10
+    CONTROL         "SPI NAND",IDC_PACK_FLASHTYPE_4,"Button",BS_AUTORADIOBUTTON,171,57,45,10
     EDITTEXT        IDC_PACK_EXECADDR_A,270,38,81,14,ES_AUTOHSCROLL | WS_GROUP
     EDITTEXT        IDC_PACK_FLASHOFFSET_A,89,39,81,14,ES_AUTOHSCROLL
     LTEXT           "Image start offset : 0x",IDC_STATIC,1,42,80,8,NOT WS_GROUP
     LTEXT           "Alignment : SPI(0x10000) / eMMC(0x200) / NAND(0x20000)",IDC_PACK_STATUS,2,71,231,8,NOT WS_VISIBLE | NOT WS_GROUP
+    LTEXT           "SPI Flash Parameter:",IDC_STATIC,224,57,71,10
+    CONTROL         "User Defined",IDC_PACK_USRCONFIG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,296,57,61,10
 END
 
 
@@ -656,7 +658,7 @@ BEGIN
     IDD_PACK_TAB1, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 357
+        RIGHTMARGIN, 360
         TOPMARGIN, 7
         BOTTOMMARGIN, 84
     END
@@ -713,7 +715,7 @@ BEGIN
     IDS_ABOUTBOX            "&About NuWriter..."
 END
 
-#endif    // 英文 (美國) resources
+#endif    // resources
 /////////////////////////////////////////////////////////////////////////////
 
 
