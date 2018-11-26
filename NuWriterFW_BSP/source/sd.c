@@ -156,18 +156,6 @@ int SD_SDCmdAndRspDataIn(FMI_SD_INFO_T *pSD, UINT8 ucCmd, UINT32 uArg)
     return Successful;
 }
 
-/*-----------------------------------------------------------------------------
- * 2011/6/24 by CJChen1@nuvoton.com, To set up the clock for SD_CLK
- *      SD_CLK = UPLL / ((CLKDIV2[SD_N0] + 1) * (CLKDIV2[SD_N1] + 1))
- *      Support both FPGA board and real chip.
- *          FPGA board don't support CLKDIV2[SD_N0] divider.
- *      INPUT: sd_clock_khz: the SD clock you wanted with unit KHz.
- *---------------------------------------------------------------------------*/
-// there are 3 bits for divider N0, maximum is 8
-#define SD_CLK_DIV0_MAX     8
-// there are 8 bits for divider N1, maximum is 256
-#define SD_CLK_DIV1_MAX     256
-
 void SD_Set_clock(UINT32 sd_clock_khz)
 {
     UINT32 div;

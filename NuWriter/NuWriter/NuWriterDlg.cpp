@@ -685,9 +685,9 @@ void CNuWriterDlg::OnCbnSelchangeComboType()
     CString t_type, str;
 
     //Default
-    m_info.Nand_uIsUserConfig = 0;
-    m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
-    m_info.Nand_uBlockPerFlash = Nand_uBlockPerFlash;
+    //m_info.Nand_uIsUserConfig = 0;
+    //m_info.Nand_uPagePerBlock =  Nand_uPagePerBlock;
+    //m_info.Nand_uBlockPerFlash = Nand_uBlockPerFlash;
     m_gtype.GetWindowText(t_type);
     if( !t_type.Compare(_T("NAND")) ) {
         CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
@@ -754,7 +754,7 @@ void CNuWriterDlg::OnCbnSelchangeComboType()
     if( !t_type.Compare(_T("SPI NAND")) ) {
         CDialog * mainWnd=m_SubForms.GetSubForm(m_gtype.GetCurSel());
         CString tmp;
-        unsigned int val= m_info.SPINand_PagePerBlock * m_info.SPINand_PageSize;//m_info.Nand_uPagePerBlock * m_info.SPINand_PageSize
+        unsigned int val= m_info.SPINand_PagePerBlock * m_info.SPINand_PageSize;
         if(val==0 || val>0x800000) {
             tmp.Format(_T("Alignment : N/A"));
             SPINand_size.Format(_T("N/A"));

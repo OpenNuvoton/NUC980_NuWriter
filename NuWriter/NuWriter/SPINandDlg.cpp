@@ -596,7 +596,7 @@ void CSPINandDlg:: Read()
     int blocksize = mainWnd->m_info.SPINand_PagePerBlock*mainWnd->m_info.SPINand_PageSize;
     m_progress.SetRange(0,100);
     if(blocksize==0) {
-        AfxMessageBox(_T("Can't get SPI NAND flash size, Please reconnet to device\n"));
+        AfxMessageBox(_T("Can't get SPI NAND flash size, Please reconnect to device\n"));
         return;
     }
     //UpdateData(FALSE);
@@ -619,8 +619,10 @@ void CSPINandDlg:: Read()
                 AfxMessageBox(_T("Read Error !"));
             }
         } else { //read redunancy data, good block and bad block
-#if(0) //cfli to do
-            if(XUSB_Read_Redunancy(mainWnd->m_portName,m_filename2,sblocks,blocks))
+			AfxMessageBox(_T("Can't Read redundancy data!"));
+#if(1) //cfli to do
+			if(XUSB_Read(mainWnd->m_portName,m_filename2,sblocks,blocks*blocksize))
+            //if(XUSB_Read_Redunancy(mainWnd->m_portName,m_filename2,sblocks,blocks))
                 AfxMessageBox(_T("Read OK !"));
             else
                 AfxMessageBox(_T("Read Error !"));

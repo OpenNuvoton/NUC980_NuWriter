@@ -2238,10 +2238,10 @@ _retry_1:
         status = spiNAND_StatusRegister(3);
         status = (status&0x0C)>>2;
         if (status == 1) {
-            //fmiMarkBadBlock(pSM, blockNum);
-            spiNAND_bad_block_check(page);
-            blockNum++;
-            goto _retry_1;
+            if(spiNAND_bad_block_check(page) == 1) {
+                blockNum++;
+                goto _retry_1;
+            }
         } else if (status == -1) {
             MSG_DEBUG("XXX device error !! \n");
             usb_recv(ptr,Bulk_Out_Transfer_Size);  //recv data from PC
@@ -2257,10 +2257,10 @@ _retry_1:
             spiNAND_Program_Excute((((page+i)>>8)&0xFF), (page+i)&0xFF);
             status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
             if (status == 1) {
-                //fmiMarkBadBlock(pSM, blockNum);
-                spiNAND_bad_block_check(page);
-                blockNum++;
-                goto _retry_1;
+                if(spiNAND_bad_block_check(page) == 1) {
+                    blockNum++;
+                    goto _retry_1;
+                }
             }
             addr += pSN->SPINand_PageSize;
         }
@@ -2295,9 +2295,10 @@ _retry_2:
         status = (status&0x0C)>>2;
         if (status == 1) {
             //fmiMarkBadBlock(pSM, blockNum);
-            spiNAND_bad_block_check(page);
-            blockNum++;
-            goto _retry_2;
+            if(spiNAND_bad_block_check(page) == 1) {
+                blockNum++;
+                goto _retry_2;
+            }
         } else if (status == -1) {
             MSG_DEBUG("device error !! \n");
             SendAck(0xffff);
@@ -2312,10 +2313,10 @@ _retry_2:
             spiNAND_Program_Excute((((page+i)>>8)&0xFF), ((page+i)&0xFF));
             status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
             if (status != 0) {
-                //fmiMarkBadBlock(pSM, blockNum);
-                spiNAND_bad_block_check(page);
-                blockNum++;
-                goto _retry_2;
+                if(spiNAND_bad_block_check(page) == 1) {
+                    blockNum++;
+                    goto _retry_2;
+                }
             }
             addr += pSN->SPINand_PageSize;
         }
@@ -2464,11 +2465,12 @@ _retry_2:
             status = spiNAND_StatusRegister(3);
             status = (status&0x0C)>>2;
             if (status != 0) {
-                //fmiMarkBadBlock(pSM, blkindx);
-                spiNAND_bad_block_check(page);
-                blockNum++;
-                goto _retry_2;
-                //continue;
+                if(spiNAND_bad_block_check(page)==1) {
+                    printf("XXX bad_block blockNum = 0x%x(%d)\n", blockNum, blockNum);
+                    blockNum++;
+                    //continue;
+                    goto _retry_2;
+                }
             }
             // write block
             for (i=0; i<page_count; i++) {
@@ -2477,11 +2479,12 @@ _retry_2:
                 spiNAND_Program_Excute((((page+i)>>8)&0xFF), (page+i)&0xFF);
                 status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
                 if (status != 0) {
-                    //fmiMarkBadBlock(pSM, blkindx);
-                    spiNAND_bad_block_check(page);
-                    blockNum++;
-                    addr = (address + block_count * pSN->SPINand_PagePerBlock * pSN->SPINand_PageSize) | NON_CACHE;
-                    goto _retry_2;
+                    if(spiNAND_bad_block_check(page)==1) {
+                        //spiNAND_bad_block_check(page);
+                        blockNum++;
+                        addr = (address + block_count * pSN->SPINand_PagePerBlock * pSN->SPINand_PageSize) | NON_CACHE;
+                        goto _retry_2;
+                    }
                 }
                 addr += pSN->SPINand_PageSize;
                 pagetmp++;
@@ -2605,6 +2608,7 @@ void UXmodem_SPINAND()
             if(pspiNandImage->imageType!=IMAGE) {
                 if(pspiNandImage->imageType == DATA_OOB) {
                     MSG_DEBUG("DATA_OOB type\n");
+					// to do
                     //BatchBurn_SPINAND_Data_OOB(pSN, pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize,pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize),pspiNandImage->imageType);
                 } else {
                     MSG_DEBUG("BatchBurn_SPINAND(0x%x,  0x%x,  0x%x)\n", pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize, pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize), pspiNandImage->imageType);
