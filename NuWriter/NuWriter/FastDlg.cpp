@@ -526,7 +526,8 @@ void FastDlg::Start(int id)
         }
 
         retrycnt[id]++;  //debug
-#if(1)
+
+#if(1)  // FastErase
         //TRACE(_T("(%d) RETRY Count= %d, flag = %d\n"), id, retrycnt[id], timeoutflag[id]);
         ((CStatic *)GetDlgItem((IDC_STATIC_FAST_MSG1+id)))->SetWindowText(_T("Erase ..."));
         if(m_type != TYPE_SPI)
@@ -536,7 +537,9 @@ void FastDlg::Start(int id)
                 continue;
             }
 		}
+#endif
 
+#if(1)  //FastBurn
 		((CProgressCtrl *)GetDlgItem(iId_Array[id]))->SetRange(0,0);
 		((CStatic *)GetDlgItem((IDC_STATIC_FAST_MSG1+id)))->SetWindowText(_T("Download ..."));
 		ret = FastBurn(id, m_type);
@@ -554,7 +557,8 @@ void FastDlg::Start(int id)
             continue;
         }
 #endif
-#if(1)
+
+#if(1)  //FastVerify
         ((CProgressCtrl *)GetDlgItem(iId_Array[id]))->SetRange(0,0);
         ((CStatic *)GetDlgItem((IDC_STATIC_FAST_MSG1+id)))->SetWindowText(_T("Verify ..."));
         ret=FastVerify(id, m_type);

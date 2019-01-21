@@ -135,6 +135,8 @@
     <ClCompile Include="ReportCtrl.cpp" />
     <ClCompile Include="SelChipDlg.cpp" />
     <ClCompile Include="Serial.cpp" />
+    <ClCompile Include="Sliders.cpp" />
+    <ClCompile Include="SmartEdit.cpp" />
     <ClCompile Include="SPIDlg.cpp" />
     <ClCompile Include="SPINandDlg.cpp" />
     <ClCompile Include="SPINandInfoDlg.cpp" />
@@ -180,6 +182,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="NuWriter.vcxproj.user" />
     <None Include="res\Add.bmp" />
     <None Include="res\banner.bmp" />
     <None Include="res\banner2.bmp" />

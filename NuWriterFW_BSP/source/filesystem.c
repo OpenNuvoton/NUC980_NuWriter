@@ -68,28 +68,158 @@ void fsFreeSector(UINT8 *buff)
     ;
 }
 
+void MBR_DecodingCHS(UINT32 PartitionSize, UINT32 *CIdx, UINT32 *TIdx, UINT32 *SIdx)
+{
+    UINT32 u32Sector, u32Track, u32Cylinder;//, u32CHSValue;
+    UINT32 u32CHS_S, u32CHS_T, u32CHS_C;
+    UINT32 u32tempS, u32tempC;
+
+    /*
+        1 sector = 512 bytes
+        1 Track = 63 sector
+        1 Cylinder = 255 Track
+    */
+    u32Sector = PartitionSize;
+    u32Track = u32Sector/63;
+    u32tempS = u32Sector%63;
+
+    u32Cylinder = u32Track/255;
+    u32CHS_T = u32Track%255;
+
+    MSG_DEBUG("u32Cylinder=0x%08x(%d), u32Track=0x%08x(%d), u32tempS=0x%08x(%d)\n", u32Cylinder, u32Cylinder, u32Track, u32Track, u32tempS, u32tempS);
+    /*
+        1st     2nd     3rd
+        Track   Sector  Cylinder
+    */
+
+    u32CHS_C = u32Cylinder & 0xff;
+    u32tempC = (u32Cylinder >> 8);
+    u32CHS_S = (u32tempC << 6) | (u32tempS&0xff);
+
+    MSG_DEBUG("u32CHS_T=0x%02x(%d), u32CHS_S=0x%04x(%d), u32CHS_C=0x%02x(%d)\n", u32CHS_T, u32CHS_T, u32CHS_S, u32CHS_S, u32CHS_C,u32CHS_C);
+
+    //u32CHSValue = ((u32CHS_C&0xff)<<16) | ((u32CHS_S&0xff)<<8) | (u32CHS_T&0xff);
+    MSG_DEBUG("u32CHSValue=0x%08x(%d)\n", u32CHSValue,u32CHSValue);
+
+    *CIdx = u32CHS_C;
+    *TIdx = u32CHS_T;
+    *SIdx = u32CHS_S;
+}
+
 /*
     TotalSize(sectors) : total sector size in the Device
-    HideSize(sectors)  : Reserve sector in the Device
+    myPmmcImage        : MMC struct
 */
-PMBR create_mbr(UINT32 TotalSize,UINT32 HideSize)
+PMBR create_mbr(UINT32 TotalSize, FW_MMC_IMAGE_T *myPmmcImage)
 {
+    UINT32 paraCIdx=0, paraTIdx=0, paraSIdx=0;
     PMBR mbr=NULL;
     mbr=(PMBR)malloc(sizeof(MBR));
     if(mbr==NULL) return NULL;
     memset(mbr, 0, sizeof(MBR));
 
-    // pteStartSector(6 bit)= 1 & pteStartCylinder(10 bit)=0
+    printf("PartitionNum =%d\n", myPmmcImage->PartitionNum);
+    printf("Partition1Size =%dMB,  SectorSize1=%d\n", myPmmcImage->Partition1Size, (myPmmcImage->Partition1Size)*2*1024);
+    myPmmcImage->PartitionS1Size = (myPmmcImage->Partition1Size)*2*1024;///512*1024*1024;
+    myPmmcImage->PartitionS2Size = (myPmmcImage->Partition2Size)*2*1024;//512*1024*1024;
+    myPmmcImage->PartitionS3Size = (myPmmcImage->Partition3Size)*2*1024;//512*1024*1024;
+    myPmmcImage->PartitionS4Size = (myPmmcImage->Partition4Size)*2*1024;//512*1024*1024;
+
+    mbr->mbrPartition[0].pteStartHead    =0x00;
     mbr->mbrPartition[0].pteStartSector  =0x01;
     mbr->mbrPartition[0].pteStartCylinder=0x00;
     mbr->mbrPartition[0].pteSystemID     =0x0B; //FAT32
-    mbr->mbrPartition[0].pteEndHead      =0xFE; //value=254
 
-    // pteEndSector(6 bit)=63 & pteEndCylinder(10 bit)=1023
-    mbr->mbrPartition[0].pteEndSector    =0xFF;
-    mbr->mbrPartition[0].pteEndCylinder  =0xFF;
-    mbr->mbrPartition[0].pteFirstSector  =HideSize;
-    mbr->mbrPartition[0].ptePartitionSize=TotalSize-(HideSize);
+    MBR_DecodingCHS(myPmmcImage->PartitionS1Size, &paraCIdx, &paraTIdx, &paraSIdx);
+    MSG_DEBUG("SectorSize1 =%d(0x%x) [0x%02x 0x%02x 0x%02x]\n", myPmmcImage->PartitionS1Size, myPmmcImage->PartitionS1Size, paraTIdx, paraSIdx, paraCIdx);
+    mbr->mbrPartition[0].pteEndHead      =paraTIdx;
+    mbr->mbrPartition[0].pteEndSector    =paraSIdx;
+    mbr->mbrPartition[0].pteEndCylinder  =paraCIdx;
+    mbr->mbrPartition[0].pteFirstSector  =myPmmcImage->ReserveSize;
+    mbr->mbrPartition[0].ptePartitionSize=TotalSize-(myPmmcImage->ReserveSize);
+
+    if (myPmmcImage->PartitionNum > 1) {
+        printf("Partition2Size =%dMB,  SectorSize2=%d\n", myPmmcImage->Partition2Size, (myPmmcImage->Partition2Size)*2*1024);
+
+        mbr->mbrPartition[0].ptePartitionSize=myPmmcImage->PartitionS1Size;
+
+        mbr->mbrPartition[1].pteSystemID     =0x0B; //FAT32
+        MBR_DecodingCHS(myPmmcImage->PartitionS1Size, &paraCIdx, &paraTIdx, &paraSIdx);
+        MSG_DEBUG("SectorSize1 =%d(0x%x) [0x%02x 0x%02x 0x%02x]\n", myPmmcImage->PartitionS1Size, myPmmcImage->PartitionS1Size, paraTIdx, paraSIdx, paraCIdx);
+
+        mbr->mbrPartition[1].pteStartHead    =paraTIdx;
+        mbr->mbrPartition[1].pteStartSector  =paraSIdx+1;
+        mbr->mbrPartition[1].pteStartCylinder=paraCIdx;
+
+        MBR_DecodingCHS(myPmmcImage->PartitionS2Size, &paraCIdx, &paraTIdx, &paraSIdx);
+        MSG_DEBUG("SectorSize2 =%d(0x%x) [0x%02x 0x%02x 0x%02x]\n", myPmmcImage->PartitionS2Size, myPmmcImage->PartitionS2Size, paraTIdx, paraSIdx, paraCIdx);
+
+        mbr->mbrPartition[1].pteEndHead      =paraTIdx;
+        mbr->mbrPartition[1].pteEndSector    =paraSIdx;
+        mbr->mbrPartition[1].pteEndCylinder  =paraCIdx;
+
+        mbr->mbrPartition[1].pteFirstSector  =myPmmcImage->PartitionS1Size+myPmmcImage->ReserveSize;
+        mbr->mbrPartition[1].ptePartitionSize=TotalSize - myPmmcImage->PartitionS1Size - (myPmmcImage->ReserveSize);
+    }
+
+    if (myPmmcImage->PartitionNum > 2) {
+        printf("Partition3Size =%dMB,  SectorSize3=%d\n", myPmmcImage->Partition3Size, (myPmmcImage->Partition3Size)*2*1024);
+        mbr->mbrPartition[1].ptePartitionSize=myPmmcImage->PartitionS2Size;
+
+        mbr->mbrPartition[2].pteSystemID     =0x0B; //FAT32
+
+        mbr->mbrPartition[2].pteStartHead    =paraTIdx;
+        mbr->mbrPartition[2].pteStartSector  =paraSIdx+1;
+        mbr->mbrPartition[2].pteStartCylinder=paraCIdx;
+
+        MBR_DecodingCHS(myPmmcImage->PartitionS3Size, &paraCIdx, &paraTIdx, &paraSIdx);
+        MSG_DEBUG("SectorSize3 =%d(0x%x) [0x%02x 0x%02x 0x%02x]\n", myPmmcImage->PartitionS3Size, myPmmcImage->PartitionS3Size, paraTIdx, paraSIdx, paraCIdx);
+        mbr->mbrPartition[2].pteEndHead      =paraTIdx;
+        mbr->mbrPartition[2].pteEndSector    =paraSIdx;
+        mbr->mbrPartition[2].pteEndCylinder  =paraCIdx;
+
+        mbr->mbrPartition[2].pteFirstSector  =myPmmcImage->PartitionS1Size+myPmmcImage->PartitionS2Size+myPmmcImage->ReserveSize;
+        mbr->mbrPartition[2].ptePartitionSize=TotalSize - myPmmcImage->PartitionS1Size - myPmmcImage->PartitionS2Size-myPmmcImage->ReserveSize;
+    }
+
+    if (myPmmcImage->PartitionNum > 3) {
+        printf("Partition4Size =%dMB,  SectorSize4=%d\n", myPmmcImage->Partition4Size, (myPmmcImage->Partition4Size)*2*1024);
+        mbr->mbrPartition[2].ptePartitionSize=myPmmcImage->PartitionS3Size;
+
+        mbr->mbrPartition[3].pteSystemID     =0x0B; //FAT32
+        MBR_DecodingCHS(myPmmcImage->PartitionS3Size, &paraCIdx, &paraTIdx, &paraSIdx);
+        MSG_DEBUG("SectorSize3 =%d(0x%x) [0x%02x 0x%02x 0x%02x]\n", myPmmcImage->PartitionS3Size, myPmmcImage->PartitionS3Size, paraTIdx, paraSIdx, paraCIdx);
+        mbr->mbrPartition[3].pteStartHead    =paraTIdx;
+        mbr->mbrPartition[3].pteStartSector  =paraSIdx+1;
+        mbr->mbrPartition[3].pteStartCylinder=paraCIdx;
+
+        MBR_DecodingCHS(myPmmcImage->PartitionS4Size, &paraCIdx, &paraTIdx, &paraSIdx);
+        MSG_DEBUG("SectorSize4 =%d(0x%x) [0x%02x 0x%02x 0x%02x]\n", myPmmcImage->PartitionS4Size, myPmmcImage->PartitionS4Size, paraTIdx, paraSIdx, paraCIdx);
+        mbr->mbrPartition[3].pteEndHead      =paraTIdx;
+        mbr->mbrPartition[3].pteEndSector    =paraSIdx;
+        mbr->mbrPartition[3].pteEndCylinder  =paraCIdx;
+
+        mbr->mbrPartition[3].pteFirstSector  =myPmmcImage->PartitionS1Size+myPmmcImage->PartitionS2Size+myPmmcImage->PartitionS3Size+myPmmcImage->ReserveSize;
+        mbr->mbrPartition[3].ptePartitionSize=TotalSize - myPmmcImage->PartitionS1Size - myPmmcImage->PartitionS2Size - myPmmcImage->PartitionS3Size-myPmmcImage->ReserveSize;
+    }
+
+    MSG_DEBUG("[0][0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x %d %d]\n",
+              mbr->mbrPartition[0].pteStartHead, mbr->mbrPartition[0].pteStartSector, mbr->mbrPartition[0].pteStartCylinder, mbr->mbrPartition[0].pteSystemID,
+              mbr->mbrPartition[0].pteEndHead, mbr->mbrPartition[0].pteEndSector, mbr->mbrPartition[0].pteEndCylinder, mbr->mbrPartition[0].pteFirstSector, mbr->mbrPartition[0].ptePartitionSize);
+
+    MSG_DEBUG("[1][0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x %d %d]\n",
+              mbr->mbrPartition[1].pteStartHead, mbr->mbrPartition[1].pteStartSector, mbr->mbrPartition[1].pteStartCylinder, mbr->mbrPartition[1].pteSystemID,
+              mbr->mbrPartition[1].pteEndHead, mbr->mbrPartition[1].pteEndSector, mbr->mbrPartition[1].pteEndCylinder, mbr->mbrPartition[1].pteFirstSector, mbr->mbrPartition[1].ptePartitionSize);
+
+    MSG_DEBUG("[2][0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x %d %d]\n",
+              mbr->mbrPartition[2].pteStartHead, mbr->mbrPartition[2].pteStartSector, mbr->mbrPartition[2].pteStartCylinder, mbr->mbrPartition[2].pteSystemID,
+              mbr->mbrPartition[2].pteEndHead, mbr->mbrPartition[2].pteEndSector, mbr->mbrPartition[2].pteEndCylinder, mbr->mbrPartition[2].pteFirstSector, mbr->mbrPartition[2].ptePartitionSize);
+
+    MSG_DEBUG("[3][0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x %d %d]\n",
+              mbr->mbrPartition[3].pteStartHead, mbr->mbrPartition[3].pteStartSector, mbr->mbrPartition[3].pteStartCylinder, mbr->mbrPartition[3].pteSystemID,
+              mbr->mbrPartition[3].pteEndHead, mbr->mbrPartition[3].pteEndSector, mbr->mbrPartition[3].pteEndCylinder, mbr->mbrPartition[3].pteFirstSector, mbr->mbrPartition[3].ptePartitionSize);
+
+
     mbr->mbrSignature=0xAA55;
     fmiSDWrite(0, 1, (UINT8 *)mbr);
     SendAck(10);
@@ -117,15 +247,20 @@ INT32 FormatFat32(PMBR pmbr,UINT32 nCount)
     pucPtr=pucSecBuff;
     SendAck(20);
     MSG_DEBUG("20\n");
-    for (uLogSecNo = pmbr->mbrPartition[nCount].pteFirstSector, uData1 = 0; uData1 < uRsvSecNum; ) {
-        nWrtSecNum = MIN(WriteLen, (uRsvSecNum-uData1));
-        nStatus = fmiSDWrite(uLogSecNo, nWrtSecNum, pucSecBuff);
-        if (nStatus < 0) {
-            fsFreeSector(pucSecBuff);
-            return nStatus;
+
+    if(nCount == 0) {
+        for (uLogSecNo = pmbr->mbrPartition[nCount].pteFirstSector, uData1 = 0; uData1 < uRsvSecNum; ) {
+            nWrtSecNum = MIN(WriteLen, (uRsvSecNum-uData1));
+            nStatus = fmiSDWrite(uLogSecNo, nWrtSecNum, pucSecBuff);
+            MSG_DEBUG("uRsvSecNum=%d  nWrtSecNum =%d  uLogSecNo=%d(0x%x)  uData1=%d\n", uRsvSecNum, nWrtSecNum, uLogSecNo, uLogSecNo, uData1);
+            if (nStatus < 0) {
+                fsFreeSector(pucSecBuff);
+                return nStatus;
+            }
+            uLogSecNo += nWrtSecNum;
+            uData1 += nWrtSecNum;
+            MSG_DEBUG("uLogSecNo=%d(0x%x)  uData1 =%d \n", uLogSecNo, uLogSecNo, uData1);
         }
-        uLogSecNo += nWrtSecNum;
-        uData1 += nWrtSecNum;
     }
     SendAck(25);
     MSG_DEBUG("25\n");

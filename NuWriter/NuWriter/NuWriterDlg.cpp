@@ -1242,7 +1242,7 @@ BOOL CNuWriterDlg::OneDeviceInfo(int id)
     if(WaitForSingleObject(m_ExitEvent[id], 0) != WAIT_TIMEOUT) bResult=FALSE;
     if(bResult==FALSE) {
         TRACE(_T("XXXX Error NUC_WritePipe: %d.\n"), GetLastError());
-        return FALSE;
+        //return FALSE;
     }
 
     Sleep(300);// Delay for INFO complete
@@ -1250,13 +1250,19 @@ BOOL CNuWriterDlg::OneDeviceInfo(int id)
     if(WaitForSingleObject(m_ExitEvent[id], 0) != WAIT_TIMEOUT) bResult=FALSE;
     if(bResult==FALSE) {
         TRACE(_T("XXXX Error NUC_ReadPipe: %d.\n"), GetLastError());
-        return FALSE;
+        //return FALSE;
     }
 
     NucUsb.CloseWinUsbDevice(id);
     OnCbnSelchangeComboType();
 
     GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
+
+	if(bResult==FALSE)
+	{
+		 ShowDeviceConnectState(0);//Disconnected
+	}
+
     return bResult;
 }
 

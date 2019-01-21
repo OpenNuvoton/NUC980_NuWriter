@@ -345,7 +345,7 @@ void CNANDDlg:: Read()
     int blocksize = mainWnd->m_info.Nand_uPagePerBlock*mainWnd->m_info.Nand_uPageSize;
     m_progress.SetRange(0,100);
     if(blocksize==0) {
-        AfxMessageBox(_T("Can't get NAND flash size, Please reconnet to device\n"));
+        AfxMessageBox(_T("Can't get NAND flash size, Please reconnect to device\n"));
         return;
     }
     //UpdateData(FALSE);

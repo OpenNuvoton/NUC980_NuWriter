@@ -2,6 +2,10 @@
 #define __FILESYSTEM_H_
 
 #include "nuc980.h"
+#include "sd.h"
+#include "sdglue.h"
+#include "fmi.h"
+
 
 #define BOOT_SECTOR_SIGNATURE  0x55AA
 
@@ -30,6 +34,15 @@ typedef struct _MBR {
     PTE    mbrPartition[4];            //[0]:1BEh, [1]:1CEh, [2]:1DEh, [3]:1EEh
     UINT16 mbrSignature;               // 1FEh ~ 1FFh
 } MBR, *PMBR;
+#pragma pack(pop)
+
+//CHS Value
+#pragma   pack(push,1)
+typedef struct _CHS {
+    UCHAR  chsTrack;
+    UCHAR  chsSector;
+    UCHAR  chsCylinder;
+} CHS, *PCHS;
 #pragma pack(pop)
 
 
@@ -66,6 +79,8 @@ static UINT32 TotalSector=0;
 #endif
 
 INT fmiSDWrite(UINT32 uStartSecN,UINT32 nCount,UINT8 *pucSecBuff);
-PMBR create_mbr(UINT32 TotalSize,UINT32 HideSize);
+//PMBR create_mbr(UINT32 TotalSize,UINT32 HideSize);
+PMBR create_mbr(UINT32 TotalSize, FW_MMC_IMAGE_T *myPmmcImage);
 INT32 FormatFat32(PMBR pmbr,UINT32 nCount);
+void MBR_DecodingCHS(UINT32 PartitionSize, UINT32 *CIdx, UINT32 *TIdx, UINT32 *SIdx);
 #endif /*FILESYSTEM_H_*/

@@ -246,6 +246,9 @@ void CMMCDlg:: Format()
     ret=XUSB_Format(mainWnd->m_portName);
     if(ret)
         AfxMessageBox(_T("Format successfully"));
+	else
+		m_progress.SetRange(0,0);
+
     GetDlgItem(IDC_MMC_FORMAT)->EnableWindow(TRUE);
     //UpdateData(FALSE); //shanchun moedified 20121003
     mainWnd->m_gtype.EnableWindow(TRUE);
@@ -272,7 +275,12 @@ void CMMCDlg::OnBnClickedMmcFormat()
     // TODO: Add your control notification handler code here
     CFormatDlg format_dlg;
     if(format_dlg.DoModal()==IDCANCEL) return;
-    m_space=format_dlg.space;
+    m_space=format_dlg.strResSize;
+	strPartitionNum = format_dlg.strPartitionNum;
+	strPartition1Size=format_dlg.strPartition1Size;
+	strPartition2Size=format_dlg.strPartition2Size;
+	strPartition3Size=format_dlg.strPartition3Size;
+	strPartition4Size=format_dlg.strPartition4Size;
 
     CString dlgText;
 

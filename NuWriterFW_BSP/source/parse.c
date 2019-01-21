@@ -350,7 +350,7 @@ void UXmodem_SPI(void)
                 MSG_DEBUG("erase all done \n");
                 SendAck(100);
             } else {
-                MSG_DEBUG("XXX erase all fail \n");
+                MSG_DEBUG("Error erase all fail \n");
                 SendAck(0xffffff);
             }
         }
@@ -989,16 +989,17 @@ void UXmodem_MMC()
 
         MSG_DEBUG("Burn_MMC!!!\n");
         if (pmmcImage->imageType == UBOOT) {
-            MSG_DEBUG("pmmcImage->fileLength = 0x%x  pmmcImage->initSize=0x%x, pmmcImage->flashOffset=0x%x\n", pmmcImage->fileLength, pmmcImage->initSize, pmmcImage->flashOffset);
+            MSG_DEBUG("BatchBurn_MMC() [0x%x(%d)/0x%x(%d)/1]\n", pmmcImage->fileLength+pmmcImage->initSize+IBR_HEADER_LEN, pmmcImage->fileLength+pmmcImage->initSize+IBR_HEADER_LEN, (pmmcImage->flashOffset/SD_SECTOR), (pmmcImage->flashOffset/SD_SECTOR));
             ret = BatchBurn_MMC(pmmcImage->fileLength+pmmcImage->initSize+IBR_HEADER_LEN,(pmmcImage->flashOffset/SD_SECTOR),1);
             if(ret == 1) {
-                printf("XXXX BatchBurn_MMC Device UBOOT image error !!! \n");
+                printf("Error BatchBurn_MMC Device UBOOT image error !!! \n");
                 return;
             }
         } else {
+            MSG_DEBUG("BatchBurn_MMC() [0x%x(%d)/0x%x(%d)/0]\n", pmmcImage->fileLength, pmmcImage->fileLength, pmmcImage->flashOffset/SD_SECTOR, pmmcImage->flashOffset/SD_SECTOR);
             ret = BatchBurn_MMC(pmmcImage->fileLength,(pmmcImage->flashOffset/SD_SECTOR),0);
             if(ret == 1) {
-                printf("XXXX BatchBurn_MMC Device others image error !!! \n");
+                printf("Error BatchBurn_MMC Device others image error !!! \n");
                 return;
             }
         }
@@ -1045,7 +1046,6 @@ void UXmodem_MMC()
         else
             blockCount = (pmmcImage->fileLength+((SD_SECTOR)-1))/(SD_SECTOR);
 
-        ptr=_ch;
         len=pmmcImage->fileLength;
         blockCount = (blockCount+SD_MUL-1)/SD_MUL;
         offset = pmmcImage->flashOffset/SD_SECTOR;
@@ -1207,10 +1207,37 @@ void UXmodem_MMC()
             usb_send((unsigned char*)_ack,4);//send ack to PC
         }
 
-        MSG_DEBUG("pmmcImage->ReserveSize = %d !!!   eMMCBlockSize = %d\n",pmmcImage->ReserveSize, eMMCBlockSize);
+        printf("pmmcImage->ReserveSize = %d ! eMMCBlockSize = %d\n",pmmcImage->ReserveSize, eMMCBlockSize);
+        MSG_DEBUG("PartitionNum =%d, P1=%d(0x%x)MB P2=%d(0x%x)MB P3=%d(0x%x)MB P4=%d(0x%x)MB\n", pmmcImage->PartitionNum, pmmcImage->PartitionS1Size, pmmcImage->PartitionS1Size, pmmcImage->PartitionS2Size, pmmcImage->PartitionS2Size,
+                  pmmcImage->PartitionS3Size, pmmcImage->PartitionS3Size, pmmcImage->PartitionS4Size, pmmcImage->PartitionS4Size);
         if(eMMCBlockSize>0) {
-            pmbr=create_mbr(eMMCBlockSize,pmmcImage->ReserveSize);
-            FormatFat32(pmbr,0);
+            //pmbr=create_mbr(eMMCBlockSize,pmmcImage->ReserveSize);
+            //FormatFat32(pmbr,0);
+            pmbr=create_mbr(eMMCBlockSize, pmmcImage);
+            switch(pmmcImage->PartitionNum) {
+            case 1:
+                FormatFat32(pmbr,0);
+                break;
+            case 2: {
+                FormatFat32(pmbr,0);
+                FormatFat32(pmbr,1);
+            }
+            break;
+            case 3: {
+                FormatFat32(pmbr,0);
+                FormatFat32(pmbr,1);
+                FormatFat32(pmbr,2);
+            }
+            break;
+            case 4: {
+                FormatFat32(pmbr,0);
+                FormatFat32(pmbr,1);
+                FormatFat32(pmbr,2);
+                FormatFat32(pmbr,3);
+            }
+            break;
+            }
+
             fmiSD_Read(MMC_INFO_SECTOR,1,(UINT32)ptr);
             *(ptr+125)=0x11223344;
             *(ptr+126)=pmmcImage->ReserveSize;
@@ -1378,7 +1405,7 @@ _retry_1:
             blockNum++;
             goto _retry_1;
         } else if (status == -1) {
-            MSG_DEBUG("XXXXXXX device error !! \n");
+            MSG_DEBUG("Error device error !! \n");
 
             usb_recv(ptr,Bulk_Out_Transfer_Size);  //recv data from PC
             //SendAck(0xffff);
@@ -1711,7 +1738,7 @@ int BatchBurn_NAND_BOOT(UINT32 len,UINT32 blockNo,UINT32 blockLen,UINT32 HeaderF
         }
         blockNum++;
     } else {
-        printf("XXX Device image Error !!!\n");
+        printf("Error Device image Error !!!\n");
         usb_recv(ptr, Bulk_Out_Transfer_Size);  //recv data from PC
         *_ack = 0xFFFF;
         usb_send((unsigned char*)_ack,4);//send ack to PC
@@ -2243,7 +2270,7 @@ _retry_1:
                 goto _retry_1;
             }
         } else if (status == -1) {
-            MSG_DEBUG("XXX device error !! \n");
+            MSG_DEBUG("Error device error !! \n");
             usb_recv(ptr,Bulk_Out_Transfer_Size);  //recv data from PC
             *_ack=0xffff;
             usb_send((unsigned char*)_ack,4);//send ack to PC
@@ -2466,7 +2493,7 @@ _retry_2:
             status = (status&0x0C)>>2;
             if (status != 0) {
                 if(spiNAND_bad_block_check(page)==1) {
-                    printf("XXX bad_block blockNum = 0x%x(%d)\n", blockNum, blockNum);
+                    printf("Error bad_block blockNum = 0x%x(%d)\n", blockNum, blockNum);
                     blockNum++;
                     //continue;
                     goto _retry_2;
@@ -2492,7 +2519,7 @@ _retry_2:
         }
         blockNum++;
     } else {
-        printf("XXX Device image Error !!!\n");
+        printf("Error Device image Error !!!\n");
         usb_recv(ptr, Bulk_Out_Transfer_Size);  //recv data from PC
         *_ack = 0xFFFF;
         usb_send((unsigned char*)_ack,4);//send ack to PC
@@ -2526,7 +2553,7 @@ int Read_SPINand(UINT32 dst_adr,UINT32 blockNo, UINT32 len)
             spiNAND_Normal_Read(0, 0, (uint8_t*)dst_adr, pSN->SPINand_PageSize);
             status = spiNAND_Check_Embedded_ECC_Flag();
             if(status != 0x00 && status != 0x01) {
-                printf("XXX ECC status error [0x%x]\n",status);// Check ECC status and return fail if (ECC-1, ECC0) != (0,0) or != (0,1)
+                printf("Error ECC status error [0x%x]\n",status);// Check ECC status and return fail if (ECC-1, ECC0) != (0,0) or != (0,1)
             }
             dst_adr += pSN->SPINand_PageSize;
             total -= pSN->SPINand_PageSize;
@@ -2608,7 +2635,7 @@ void UXmodem_SPINAND()
             if(pspiNandImage->imageType!=IMAGE) {
                 if(pspiNandImage->imageType == DATA_OOB) {
                     MSG_DEBUG("DATA_OOB type\n");
-					// to do
+                    // to do
                     //BatchBurn_SPINAND_Data_OOB(pSN, pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize,pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize),pspiNandImage->imageType);
                 } else {
                     MSG_DEBUG("BatchBurn_SPINAND(0x%x,  0x%x,  0x%x)\n", pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize, pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize), pspiNandImage->imageType);
@@ -2666,7 +2693,7 @@ void UXmodem_SPINAND()
                         if (SR != 0) {
                             *_ack=0xffff;
                             usb_send((unsigned char*)_ack,4);//send ack to PC
-                            printf("XXX SR = 0x%x  blockNum = %d\n", SR, blockNum); // storage error
+                            printf("Error SR = 0x%x  blockNum = %d\n", SR, blockNum); // storage error
                         } else {
                             *_ack=blockNum;
                             usb_send((unsigned char*)_ack,4);//send ack to PC
@@ -2695,7 +2722,7 @@ void UXmodem_SPINAND()
                     spiNAND_BlockErase( (PA_Num>>8)&0xFF, PA_Num&0xFF);
                     SR = spiNAND_Check_Program_Erase_Fail_Flag();
                     if (SR != 0) {
-                        printf("XXX SR = 0x%x  blockNum = %d\n", SR, blockNum); // storage error
+                        printf("Error SR = 0x%x  blockNum = %d\n", SR, blockNum); // storage error
                         *_ack=0xffff;
                         usb_send((unsigned char*)_ack,4);//send ack to PC
                     } else {
@@ -2953,7 +2980,7 @@ void UXmodem_SPINAND()
                 if(ppack.imagetype==UBOOT) {
                     ret = BatchBurn_SPINAND_BOOT(ppack.filelen,0,4,0);
                     if(ret == -1) {
-                        printf("XXX SPI Nand Device image error !!! \n");
+                        printf("Error SPI Nand Device image error !!! \n");
                         return;
                     }
                 } else {
