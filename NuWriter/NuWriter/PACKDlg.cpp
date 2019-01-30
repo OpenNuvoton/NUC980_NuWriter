@@ -149,18 +149,18 @@ void CPACKDlg::OnBnClickedPackAdd()
 
         CString ubootflashtype;
         switch(m_packtab1.m_ubootflashtype) {
-            case TYPE_NAND:
-                ubootflashtype.Format(_T("NAND"));
-                break;
-            case TYPE_SPI:
-                ubootflashtype.Format(_T("SPI"));
-                break;
-            case TYPE_EMMC:
-                ubootflashtype.Format(_T("eMMC/SD"));
-                break;
-            case TYPE_SPINAND:
-                ubootflashtype.Format(_T("SPI NAND"));
-                break;
+        case TYPE_NAND:
+            ubootflashtype.Format(_T("NAND"));
+            break;
+        case TYPE_SPI:
+            ubootflashtype.Format(_T("SPI"));
+            break;
+        case TYPE_EMMC:
+            ubootflashtype.Format(_T("eMMC/SD"));
+            break;
+        case TYPE_SPINAND:
+            ubootflashtype.Format(_T("SPI NAND"));
+            break;
         }
         FlashType.push_back(m_packtab1.m_ubootflashtype);
 
@@ -169,21 +169,19 @@ void CPACKDlg::OnBnClickedPackAdd()
 
         CString userstr;
         switch(m_packtab1.m_isUserConfig) {
-            case 1:
-            {
-                userstr.Format(_T("Yes"));
-                mainWnd->m_info.SPI_uIsUserConfig = 1;
-                mainWnd->m_info.SPINand_uIsUserConfig = 1;
-                break;
-            }
-            case 0:
-            default:
-            {
-                userstr.Format(_T("No"));
-                mainWnd->m_info.SPI_uIsUserConfig = 0;
-                mainWnd->m_info.SPINand_uIsUserConfig = 0;
-                break;
-            }
+        case 1: {
+            userstr.Format(_T("Yes"));
+            mainWnd->m_info.SPI_uIsUserConfig = 1;
+            mainWnd->m_info.SPINand_uIsUserConfig = 1;
+            break;
+        }
+        case 0:
+        default: {
+            userstr.Format(_T("No"));
+            mainWnd->m_info.SPI_uIsUserConfig = 0;
+            mainWnd->m_info.SPINand_uIsUserConfig = 0;
+            break;
+        }
         }
         UserConfig.push_back(m_packtab1.m_isUserConfig);
 
@@ -320,8 +318,8 @@ void CPACKDlg::OnBnClickedPackModify()
             filename=tmp.Mid(0,tmp.ReverseFind('.'));
         else
             filename=tmp;
-       // if(filename.GetLength()>16)
-       //     filename = filename.Mid(0,15);
+        // if(filename.GetLength()>16)
+        //     filename = filename.Mid(0,15);
 
         switch(*itemType) {
         case DATA :
@@ -342,36 +340,34 @@ void CPACKDlg::OnBnClickedPackModify()
         }
 
         switch(*itemFlash) {
-            case TYPE_NAND:
-                flashstr.Format(_T("NAND"));
-                break;
-            case TYPE_SPI:
-                flashstr.Format(_T("SPI"));
-                break;
-            case TYPE_EMMC:
-                flashstr.Format(_T("eMMC/SD"));
-                break;
-            case TYPE_SPINAND:
-                flashstr.Format(_T("SPI NAND"));
-                break;
+        case TYPE_NAND:
+            flashstr.Format(_T("NAND"));
+            break;
+        case TYPE_SPI:
+            flashstr.Format(_T("SPI"));
+            break;
+        case TYPE_EMMC:
+            flashstr.Format(_T("eMMC/SD"));
+            break;
+        case TYPE_SPINAND:
+            flashstr.Format(_T("SPI NAND"));
+            break;
         }
 
         switch(*itemUserconfig) {
-            case 1:
-            {
-                userstr.Format(_T("Yes"));
-                mainWnd->m_info.SPI_uIsUserConfig = 1;
-                mainWnd->m_info.SPINand_uIsUserConfig = 1;
-                break;
-            }
-            case 0:
-            default:
-            {
-                userstr.Format(_T("No"));
-                mainWnd->m_info.SPI_uIsUserConfig = 0;
-                mainWnd->m_info.SPINand_uIsUserConfig = 0;
-                break;
-            }
+        case 1: {
+            userstr.Format(_T("Yes"));
+            mainWnd->m_info.SPI_uIsUserConfig = 1;
+            mainWnd->m_info.SPINand_uIsUserConfig = 1;
+            break;
+        }
+        case 0:
+        default: {
+            userstr.Format(_T("No"));
+            mainWnd->m_info.SPI_uIsUserConfig = 0;
+            mainWnd->m_info.SPINand_uIsUserConfig = 0;
+            break;
+        }
         }
 
         CString len;
@@ -383,8 +379,7 @@ void CPACKDlg::OnBnClickedPackModify()
             fseek(rfp,0,SEEK_END);
             _stscanf_s(*itemStartblock,_T("%x"),&startblock);
             total=ftell(rfp)+startblock;
-            if(*itemType==UBOOT)
-            {
+            if(*itemType==UBOOT) {
                 int ddrlen;
                 UCHAR * ddrbuf;
                 ddrbuf=DDR2Buf(mainWnd->ShareDDRBuf,mainWnd->DDRLen,&ddrlen);
@@ -395,12 +390,12 @@ void CPACKDlg::OnBnClickedPackModify()
         }
 
         switch(*itemType) {
-            case DATA:
-            case ENV:
-                m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,_T(""),*itemStartblock,len,_T(""),_T(""));
-                break;
-            case UBOOT:
-                m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,flashstr,*itemStartblock,len,*itemExec,userstr);
+        case DATA:
+        case ENV:
+            m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,_T(""),*itemStartblock,len,_T(""),_T(""));
+            break;
+        case UBOOT:
+            m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,flashstr,*itemStartblock,len,*itemExec,userstr);
         }
     }
 
@@ -461,22 +456,20 @@ void CPACKDlg::OnBnClickedPackDelete()
         case UBOOT:
             flagstr.Format(_T("uBOOT"));
             switch(*itemUserconfig) {
-            case 1:
-            {
+            case 1: {
                 userstr.Format(_T("Yes"));
                 mainWnd->m_info.SPI_uIsUserConfig = 1;
                 mainWnd->m_info.SPINand_uIsUserConfig = 1;
                 break;
             }
             case 0:
-            default:
-            {
+            default: {
                 userstr.Format(_T("No"));
                 mainWnd->m_info.SPI_uIsUserConfig = 0;
                 mainWnd->m_info.SPINand_uIsUserConfig = 0;
                 break;
             }
-        }
+            }
             break;
         case PACK :
             flagstr.Format(_T("Pack"));
@@ -487,18 +480,18 @@ void CPACKDlg::OnBnClickedPackDelete()
         }
 
         switch(*itemFlash) {
-            case TYPE_NAND:
-                flashstr.Format(_T("NAND"));
-                break;
-            case TYPE_SPI:
-                flashstr.Format(_T("SPI"));
-                break;
-            case TYPE_EMMC:
-                flashstr.Format(_T("eMMC/SD"));
-                break;
-            case TYPE_SPINAND:
-                flashstr.Format(_T("SPI NAND"));
-                break;
+        case TYPE_NAND:
+            flashstr.Format(_T("NAND"));
+            break;
+        case TYPE_SPI:
+            flashstr.Format(_T("SPI"));
+            break;
+        case TYPE_EMMC:
+            flashstr.Format(_T("eMMC/SD"));
+            break;
+        case TYPE_SPINAND:
+            flashstr.Format(_T("SPI NAND"));
+            break;
         }
 
 
@@ -642,8 +635,7 @@ int CPACKDlg::Output()
                 fwrite((char *)&tmp,1,4,wfp);
 #if(1)
                 //Add IBR header for NUC980 SPI NOR/NAND
-                if(m_packtab1.m_ubootflashtype == TYPE_SPINAND) //SPI NAND
-                {
+                if(m_packtab1.m_ubootflashtype == TYPE_SPINAND) { //SPI NAND
                     tmp = mainWnd->m_info.SPINand_PageSize;
                     fwrite((char *)&tmp,1,2,wfp);
                     tmp = mainWnd->m_info.SPINand_SpareArea;
@@ -662,8 +654,7 @@ int CPACKDlg::Output()
                     fwrite((char *)&tmp,1,3,wfp);
                     tmp = 0xffffffff;
                     fwrite((char *)&tmp,1,4,wfp);
-                }
-                else //SPI NOR
+                } else //SPI NOR
 #endif
                 {
                     tmp = 0x800;
@@ -698,10 +689,17 @@ int CPACKDlg::Output()
             break;
             case ENV  :
                 memset((char *)&child,0xff,sizeof(PACK_CHILD_HEAD));
-                child.filelen=0x10000;
-                child.imagetype=ENV;
-                pBuffer=(char *)malloc(0x10000);
-                memset(pBuffer,0x0,0x10000);
+                if(*itemFlash == 3) {//spi nand
+                    child.filelen=0x20000;
+                    child.imagetype=ENV;
+                    pBuffer=(char *)malloc(0x20000);
+                    memset(pBuffer,0x0,0x20000);
+                } else {
+                    child.filelen=0x10000;
+                    child.imagetype=ENV;
+                    pBuffer=(char *)malloc(0x10000);
+                    memset(pBuffer,0x0,0x10000);
+                }
                 _stscanf_s(*itemStartblock,_T("%x"),&child.startaddr);
                 //-----------------------------------------------
                 fwrite((char *)&child,sizeof(PACK_CHILD_HEAD),1,wfp);
@@ -725,8 +723,13 @@ int CPACKDlg::Output()
 
                 }
 #endif
-                *(unsigned int *)pBuffer=mainWnd->CalculateCRC32((unsigned char *)(pBuffer+4),0x10000-4);
-                fwrite((char *)pBuffer,1,0x10000,wfp);
+                if(*itemFlash == 3) {//spi nand
+                    *(unsigned int *)pBuffer=mainWnd->CalculateCRC32((unsigned char *)(pBuffer+4),0x20000-4);
+                    fwrite((char *)pBuffer,1,0x20000,wfp);
+                } else {
+                    *(unsigned int *)pBuffer=mainWnd->CalculateCRC32((unsigned char *)(pBuffer+4),0x10000-4);
+                    fwrite((char *)pBuffer,1,0x10000,wfp);
+                }
                 break;
             case DATA : {
                 memset((char *)&child,0xff,sizeof(PACK_CHILD_HEAD));
@@ -893,36 +896,34 @@ BOOL CPACKDlg::InitFile(int flag)
             }
 
             switch(*itemFlash) {
-                case TYPE_NAND:
-                    flashstr.Format(_T("NAND"));
-                    break;
-                case TYPE_SPI:
-                    flashstr.Format(_T("SPI"));
-                    break;
-                case TYPE_EMMC:
-                    flashstr.Format(_T("eMMC/SD"));
-                    break;
-                case TYPE_SPINAND:
-                    flashstr.Format(_T("SPI NAND"));
-                    break;
+            case TYPE_NAND:
+                flashstr.Format(_T("NAND"));
+                break;
+            case TYPE_SPI:
+                flashstr.Format(_T("SPI"));
+                break;
+            case TYPE_EMMC:
+                flashstr.Format(_T("eMMC/SD"));
+                break;
+            case TYPE_SPINAND:
+                flashstr.Format(_T("SPI NAND"));
+                break;
             }
 
             switch(*itemUserConfig) {
-                case 1:
-                {
-                    userstr.Format(_T("Yes"));
-                    mainWnd->m_info.SPI_uIsUserConfig = 1;
-                    mainWnd->m_info.SPINand_uIsUserConfig = 1;
-                    break;
-                }
-                case 0:
-                default:
-                {
-                    userstr.Format(_T("No"));
-                    mainWnd->m_info.SPI_uIsUserConfig = 0;
-                    mainWnd->m_info.SPINand_uIsUserConfig = 0;
-                    break;
-                }
+            case 1: {
+                userstr.Format(_T("Yes"));
+                mainWnd->m_info.SPI_uIsUserConfig = 1;
+                mainWnd->m_info.SPINand_uIsUserConfig = 1;
+                break;
+            }
+            case 0:
+            default: {
+                userstr.Format(_T("No"));
+                mainWnd->m_info.SPI_uIsUserConfig = 0;
+                mainWnd->m_info.SPINand_uIsUserConfig = 0;
+                break;
+            }
             }
 
             CString filename,tmp;
@@ -1076,22 +1077,22 @@ void CPACKDlg::OnNMDblclkPackImagelist(NMHDR *pNMHDR, LRESULT *pResult)
     ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_3))->SetCheck(FALSE);
     ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_4))->SetCheck(FALSE);
     switch((*itemFlash)) {
-        case TYPE_NAND:
-            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_1 ))->SetCheck(TRUE);
-            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->EnableWindow(FALSE);
-            break;
-        case TYPE_SPI:
-            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_2))->SetCheck(TRUE);
-            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->EnableWindow(TRUE);
-            break;
-        case TYPE_EMMC:
-            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_3))->SetCheck(TRUE);
-            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->EnableWindow(FALSE);
-            break;
-        case TYPE_SPINAND:
-            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_4))->SetCheck(TRUE);
-            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->EnableWindow(TRUE);
-            break;
+    case TYPE_NAND:
+        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_1 ))->SetCheck(TRUE);
+        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->EnableWindow(FALSE);
+        break;
+    case TYPE_SPI:
+        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_2))->SetCheck(TRUE);
+        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->EnableWindow(TRUE);
+        break;
+    case TYPE_EMMC:
+        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_3))->SetCheck(TRUE);
+        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->EnableWindow(FALSE);
+        break;
+    case TYPE_SPINAND:
+        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_FLASHTYPE_4))->SetCheck(TRUE);
+        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->EnableWindow(TRUE);
+        break;
     }
     //-----------------------------------------------------------------------------
     itemExec=ImageExec.begin()+modify_idx;
@@ -1102,21 +1103,19 @@ void CPACKDlg::OnNMDblclkPackImagelist(NMHDR *pNMHDR, LRESULT *pResult)
     //------------------------------------------------------------------------------
     itemUserConfig=UserConfig.begin()+modify_idx;
     switch((*itemUserConfig)) {
-        case 1:
-        {
-            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->SetCheck(TRUE);
-            mainWnd->m_info.SPI_uIsUserConfig = 1;
-            mainWnd->m_info.SPINand_uIsUserConfig = 1;
-            break;
-        }
-        case 0:
-        default:
-        {
-            ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->SetCheck(FALSE);
-            mainWnd->m_info.SPI_uIsUserConfig = 0;
-            mainWnd->m_info.SPINand_uIsUserConfig = 0;
-            break;
-        }
+    case 1: {
+        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->SetCheck(TRUE);
+        mainWnd->m_info.SPI_uIsUserConfig = 1;
+        mainWnd->m_info.SPINand_uIsUserConfig = 1;
+        break;
+    }
+    case 0:
+    default: {
+        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_USRCONFIG ))->SetCheck(FALSE);
+        mainWnd->m_info.SPI_uIsUserConfig = 0;
+        mainWnd->m_info.SPINand_uIsUserConfig = 0;
+        break;
+    }
     }
 }
 

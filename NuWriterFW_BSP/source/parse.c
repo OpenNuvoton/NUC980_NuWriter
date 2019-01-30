@@ -3093,6 +3093,7 @@ void UXmodem_INFO()
 
     usb_send((UINT8 *)&info, sizeof(INFO_T));
     printf("\nFinish get INFO!!\n");
+    SendAck((UINT32)0x90); // get INFO done
 }
 
 INT ParseFlashType()

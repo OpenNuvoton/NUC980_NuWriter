@@ -291,7 +291,11 @@ BOOL CNuWriterDlg::OnInitDialog()
             m_version.SetWindowText(m_initdlg.GetVersion());
             g_iCurDevNum =  g_iDeviceNum;
             Sleep(FirstDelay);
-            GetInfo();
+            //GetInfo();
+            for(int i=0; i < NucUsb.WinUsbNumber; i++) {
+                TRACE("Info_proc:idevice =%d\n",i);
+                OneDeviceInfo(i);
+            }
         }
     }
 
@@ -400,8 +404,8 @@ void CNuWriterDlg::OnBnClickedReconnect()
         return;
     } else {
         m_version.SetWindowText(m_initdlg.GetVersion());
-        GetInfo();
-#if(0)
+        //GetInfo();
+#if(1)
         TRACE("CNuWriterDlg::OnBnClickedReconnect:g_iDeviceNum =%d\n",g_iDeviceNum);
         for(i=0;  i < g_iDeviceNum; i++) {
            OneDeviceInfo(i);
@@ -1037,6 +1041,8 @@ BOOL CNuWriterDlg::OneDeviceInfo(int id)
 {
     BOOL bResult, bRet;
     int count=0;
+    CString tmp;
+    unsigned int ack;
 
     //TRACE(_T("\n@@@@@(%d) CNuWriterDlg::OneDeviceInfo\n"), id);
     ResetEvent(m_ExitEvent[id]);
@@ -1244,8 +1250,7 @@ BOOL CNuWriterDlg::OneDeviceInfo(int id)
         TRACE(_T("XXXX Error NUC_WritePipe: %d.\n"), GetLastError());
         //return FALSE;
     }
-
-    Sleep(300);// Delay for INFO complete
+    Sleep(500);// Delay for emmc INFO complete
     bResult=NucUsb.NUC_ReadPipe(id,(UCHAR *)&m_info, sizeof(INFO_T));
     if(WaitForSingleObject(m_ExitEvent[id], 0) != WAIT_TIMEOUT) bResult=FALSE;
     if(bResult==FALSE) {
@@ -1253,15 +1258,53 @@ BOOL CNuWriterDlg::OneDeviceInfo(int id)
         //return FALSE;
     }
 
+    tmp.Format(_T("%x"),m_info.SPI_QuadReadCmd);
+    m_inifile.SetValue(_T("SPI_INFO"),_T("QuadReadCmd"), tmp);
+    tmp.Format(_T("%x"),m_info.SPI_ReadStatusCmd);
+    m_inifile.SetValue(_T("SPI_INFO"),_T("ReadStatusCmd"), tmp);
+    tmp.Format(_T("%x"),m_info.SPI_WriteStatusCmd);
+    m_inifile.SetValue(_T("SPI_INFO"),_T("WriteStatusCmd"), tmp);
+    tmp.Format(_T("%x"),m_info.SPI_StatusValue);
+    m_inifile.SetValue(_T("SPI_INFO"),_T("StatusValue"), tmp);
+    tmp.Format(_T("%x"),m_info.SPI_dummybyte);
+    m_inifile.SetValue(_T("SPI_INFO"),_T("dummybyte"), tmp);
+
+    tmp.Format(_T("%d"),m_info.SPINand_PageSize);
+    m_inifile.SetValue(_T("SPINAND_INFO"),_T("PageSize"), tmp);
+    tmp.Format(_T("%d"),m_info.SPINand_SpareArea);
+    m_inifile.SetValue(_T("SPINAND_INFO"),_T("SpareArea"), tmp);
+    tmp.Format(_T("%x"),m_info.SPINand_QuadReadCmd);
+    m_inifile.SetValue(_T("SPINAND_INFO"),_T("QuadReadCmd"), tmp);
+    tmp.Format(_T("%x"),m_info.SPINand_ReadStatusCmd);
+    m_inifile.SetValue(_T("SPINAND_INFO"),_T("ReadStatusCmd"), tmp);
+    tmp.Format(_T("%x"),m_info.SPINand_WriteStatusCmd);
+    m_inifile.SetValue(_T("SPINAND_INFO"),_T("WriteStatusCmd"), tmp);
+    tmp.Format(_T("%x"),m_info.SPINand_dummybyte);
+    m_inifile.SetValue(_T("SPINAND_INFO"),_T("dummybyte"), tmp);
+    tmp.Format(_T("%x"),m_info.SPINand_StatusValue);
+    m_inifile.SetValue(_T("SPINAND_INFO"),_T("StatusValue"), tmp);
+    tmp.Format(_T("%d"),m_info.SPINand_BlockPerFlash);
+    m_inifile.SetValue(_T("SPINAND_INFO"),_T("BlockPerFlash"), tmp);
+    tmp.Format(_T("%d"),m_info.SPINand_PagePerBlock);
+    m_inifile.SetValue(_T("SPINAND_INFO"),_T("PagePerBlock"), tmp);
+
+    m_inifile.WriteFile();
+
+    bResult=NucUsb.NUC_ReadPipe(id,(UCHAR *)&ack,4);
+    TRACE(_T("(%d) bResult=%d, ack=0x%x\n"), id, bResult, ack);
+    if(bResult==FALSE || ack!=0x90) {
+        bResult=FALSE;
+    }
+    
     NucUsb.CloseWinUsbDevice(id);
     OnCbnSelchangeComboType();
 
     GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
 
-	if(bResult==FALSE)
-	{
-		 ShowDeviceConnectState(0);//Disconnected
-	}
+    if(bResult==FALSE)
+    {
+        ShowDeviceConnectState(0);//Disconnected
+    }
 
     return bResult;
 }
@@ -1283,9 +1326,10 @@ unsigned WINAPI CNuWriterDlg::Info_proc(void* args)
     TRACE("Info_proc:: %d   %d\n",pThis->g_iDeviceNum, NucUsb.WinUsbNumber);
     //if(pThis->g_iDeviceNum < NucUsb.WinUsbNumber) {
     //if(pThis->iDevice <= pThis->g_iDeviceNum) {
+    for(int i=0; i < NucUsb.WinUsbNumber; i++) {
         TRACE("Info_proc:idevice =%d\n",pThis->iDevice);
         pThis->OneDeviceInfo(pThis->iDevice++);
-    //}
+    }
 #endif
     return 0;
 }

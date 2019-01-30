@@ -15,7 +15,7 @@
 
 
 #define SD_BLOCK_SIZE   512
-
+#define SD_RSTCNT       0x100
 
 // global variables
 // For response R3 (such as ACMD41, CRC-7 is invalid; but SD controller will still
@@ -191,9 +191,8 @@ int SD_Init(FMI_SD_INFO_T *pSD)
     unsigned int CIDBuffer[4];
     unsigned int volatile u32CmdTimeOut;
 
-    // set the clock to 200KHz
-    //SD_Set_clock(200);
-    SD_Set_clock(1000); //1MHz
+    // set the clock to 1000KHz
+    SD_Set_clock(1000);
 
     // power ON 74 clock
     outpw(REG_FMI_EMMCCTL, inpw(REG_FMI_EMMCCTL) | SD_CSR_CLK74_OE);
@@ -203,7 +202,7 @@ int SD_Init(FMI_SD_INFO_T *pSD)
     }
 
     SD_SDCommand(pSD, 0, 0);        // reset all cards
-    for (i=0x100; i>0; i--);
+    for (i=SD_RSTCNT; i>0; i--);
 
     // initial SDHC
     _sd_uR7_CMD = 1;
@@ -224,61 +223,45 @@ int SD_Init(FMI_SD_INFO_T *pSD)
             resp = inpw(REG_FMI_EMMCRESP0);
         }
 
-        if (resp & 0x00400000)
+        if ((resp & 0x00400000ul) == 0x00400000ul)
             pSD->uCardType = SD_TYPE_SD_HIGH;
         else
             pSD->uCardType = SD_TYPE_SD_LOW;
     } else {
         // SD 1.1
         SD_SDCommand(pSD, 0, 0);        // reset all cards
-        for (i=0x100; i>0; i--);
+        for (i=0x100ul; i>0ul; i--);
 
         i = SD_SDCmdAndRsp(pSD, 55, 0x00, u32CmdTimeOut);
         if (i == 2) { // MMC memory
             SD_SDCommand(pSD, 0, 0);        // reset
-            for (i=0x100; i>0; i--);
+            for (i=0x100ul; i>0ul; i--);
 
             _sd_uR3_CMD = 1;
-            if (SD_SDCmdAndRsp(pSD, 1, 0x40ff8080, u32CmdTimeOut) != 2) { // eMMC memory
+            if (SD_SDCmdAndRsp(pSD, 1, 0x40ff8000ul, u32CmdTimeOut) != 2) { // eMMC memory
                 resp = inpw(REG_FMI_EMMCRESP0);
 
-                while (!(resp & 0x00800000)) { // check if card is ready
+                while ((resp & 0x00800000ul) != 0x00800000ul) { // check if card is ready
                     _sd_uR3_CMD = 1;
-                    SD_SDCmdAndRsp(pSD, 1, 0x40ff8080, u32CmdTimeOut);      // high voltage
+                    SD_SDCmdAndRsp(pSD, 1, 0x40ff8000ul, u32CmdTimeOut);      // high voltage
                     resp = inpw(REG_FMI_EMMCRESP0);
                 }
-                MSG_DEBUG("#245 card is ready SD_TYPE_EMMC\n");
-                pSD->uCardType = SD_TYPE_EMMC;
-            } else {
-                SD_SDCommand(pSD, 0, 0);        // reset
-                for (i=0x100; i>0; i--) {
-                    ;
-                }
-                i=SD_SDCmdAndRsp(pSD, 1, 0x80ff8000, u32CmdTimeOut);
-                MSG_DEBUG("i=SD_SDCmdAndRs i=%d\n",i);
-                if ( i!= 2) { // MMC memory
-                    resp = inpw(REG_FMI_EMMCRESP0);
-                    //MSG_DEBUG("check if card is ready\n");
-                    while (!(resp & 0x00800000)) { // check if card is ready
-                        _sd_uR3_CMD = 1;
-                        SD_SDCmdAndRsp(pSD, 1, 0x80ff8000, u32CmdTimeOut);      // high voltage
-                        resp = inpw(REG_FMI_EMMCRESP0);
-                    }
-                    MSG_DEBUG("#262 SD_TYPE_MMC\n");
+                if ((resp & 0x00400000ul) == 0x00400000ul)
+                    pSD->uCardType = SD_TYPE_EMMC;
+                else
                     pSD->uCardType = SD_TYPE_MMC;
-                } else {
-                    pSD->uCardType = SD_TYPE_UNKNOWN;
-                    return SD_ERR_DEVICE;
-                }
+            } else {
+                pSD->uCardType = SD_TYPE_UNKNOWN;
+                return SD_ERR_DEVICE;
             }
         } else if (i == 0) { // SD Memory
             _sd_uR3_CMD = 1;
-            SD_SDCmdAndRsp(pSD, 41, 0x00ff8000, u32CmdTimeOut); // 3.0v-3.4v
+            SD_SDCmdAndRsp(pSD, 41, 0x00ff8000ul, u32CmdTimeOut); // 3.0v-3.4v
             resp = inpw(REG_FMI_EMMCRESP0);
-            while (!(resp & 0x00800000)) {
+            while ((resp & 0x00800000ul) != 0x00800000ul) {
                 SD_SDCmdAndRsp(pSD, 55, 0x00,u32CmdTimeOut);
                 _sd_uR3_CMD = 1;
-                SD_SDCmdAndRsp(pSD, 41, 0x00ff8000, u32CmdTimeOut); // 3.0v-3.4v
+                SD_SDCmdAndRsp(pSD, 41, 0x00ff8000ul, u32CmdTimeOut); // 3.0v-3.4v
                 resp = inpw(REG_FMI_EMMCRESP0);
             }
             pSD->uCardType = SD_TYPE_SD_LOW;
@@ -294,7 +277,7 @@ int SD_Init(FMI_SD_INFO_T *pSD)
         if ((pSD->uCardType == SD_TYPE_MMC) || (pSD->uCardType == SD_TYPE_EMMC)) {
             if ((status = SD_SDCmdAndRsp(pSD, 3, 0x10000, 0)) != Successful)        // set RCA
                 return status;
-            pSD->uRCA = 0x10000;
+            pSD->uRCA = 0x10000ul;
         } else {
             if ((status = SD_SDCmdAndRsp(pSD, 3, 0x00, 0)) != Successful)       // get RCA
                 return status;

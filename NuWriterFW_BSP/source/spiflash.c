@@ -432,7 +432,7 @@ int usiEraseSector(UINT32 addr, UINT32 secCount)
 extern void SendAck(UINT32 status);
 int usiEraseAll()
 {
-    unsigned int volatile count;
+    unsigned int volatile count, pos;
 
     // send Command: 0x06, Write enable
     usiWriteEnable();
@@ -456,35 +456,49 @@ int usiEraseAll()
     //////////////////////////////////////////
     // check status
     ETIMER_Delay(0, 10);
-    // /CS: active
-    QSPI_SET_SS_LOW(QSPI_FLASH_PORT);
-
-    // send Command: 0x05, Read status register
-    QSPI_WRITE_TX(QSPI_FLASH_PORT, 0x05);
-
-    usiActive();
 
     // get status
     count=0;
+    pos=0;
     while(1) {
+        // /CS: active
+        QSPI_SET_SS_LOW(QSPI_FLASH_PORT);
+
+        // send Command: 0x05, Read status register
+        QSPI_WRITE_TX(QSPI_FLASH_PORT, 0x05);
+
+        usiActive();
+
         // read status
         QSPI_WRITE_TX(QSPI_FLASH_PORT, 0x00);
 
         // wait tx finish
         usiActive();
 
-        if ((QSPI_READ_RX(QSPI_FLASH_PORT) & 0xff) != 0x01) break;
-        (count)++;
-        if (count > 95) count = 95;
-        ETIMER_Delay(0, 100);
-        SendAck(count);
-        printf(" %2d\r",count);
-    }
-    printf("  \r");
+        // skip first rx data
+        QSPI_READ_RX(QSPI_FLASH_PORT);
 
-    // /CS: de-active
-    QSPI_SET_SS_HIGH(QSPI_FLASH_PORT);
-    ETIMER_Delay(0, 100);
+        (count)++;
+        if ((QSPI_READ_RX(QSPI_FLASH_PORT) & 0x1) != 0x01) {
+            SendAck(100);
+            // /CS: de-active
+            QSPI_SET_SS_HIGH(QSPI_FLASH_PORT);
+            break;
+        }
+
+        if(count % 20000 == 0) {
+            if (pos > 95) {
+                SendAck(95);
+            } else {
+                SendAck(pos++);
+                printf(" %2d\r",pos);
+            }
+        }
+        // /CS: de-active
+        QSPI_SET_SS_HIGH(QSPI_FLASH_PORT);
+    }
+    printf("   \r");
+    //ETIMER_Delay(0, 100);
 
     return Successful;
 }
@@ -543,7 +557,7 @@ UINT16 usiReadID()
 
     if(id != 0xffff) {
         printf("SPI NOR ID=0x%08x  _spi_type =%d, %s\n",id, _spi_type, (info.SPI_uIsUserConfig==1)?"User Configure":"Auto Detect");
-        if(info.SPI_uIsUserConfig == 0) {
+        if(info.SPI_uIsUserConfig != 1) { // Auto Detect
             if(((id & 0xff00) >> 8) == 0x1C || ((id & 0xff00) >> 8) == 0xC2) { /* mxic */
                 info.SPI_ReadStatusCmd = 0x05; // Read Status Register
                 info.SPI_WriteStatusCmd = 0x1;// Write Status Register
