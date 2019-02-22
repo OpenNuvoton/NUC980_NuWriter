@@ -1295,7 +1295,7 @@ BOOL CNuWriterDlg::OneDeviceInfo(int id)
     if(bResult==FALSE || ack!=0x90) {
         bResult=FALSE;
     }
-    
+
     NucUsb.CloseWinUsbDevice(id);
     OnCbnSelchangeComboType();
 

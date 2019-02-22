@@ -62,15 +62,17 @@ extern INFO_T info;
 #define FORMAT_MODE   6
 #define PACK_VERIFY_MODE   7
 
-#define DATA      0
-#define ENV       1
-#define UBOOT     2
-#define PACK      3
-#define IMAGE     4
-#define DATA_OOB  5
-#define YAFFS2  41
-#define UBIFS   42
-#define PMTP    15
+#define DATA           0
+#define ENV            1
+#define UBOOT          2
+#define PARTITION      3
+#define PACK           3
+#define IMAGE          4
+#define DATA_OOB       5
+
+#define YAFFS2         41
+#define UBIFS          42
+#define PMTP           15
 
 #define WDT_RSTCNT    outpw(REG_WDT_RSTCNT, 0x5aa5)
 
@@ -567,7 +569,7 @@ void UXmodem_SPI(void)
                         usb_send((unsigned char*)_ack,4);//send ack to PC
                     }
                 } while((ptr-_ch)<ppack.filelen);
-                if(ppack.imagetype!=PMTP) {
+                if(ppack.imagetype!=PARTITION) {
                     Burn_SPI(ppack.filelen,((ppack.startaddr+SPI_BLOCK_SIZE-1)/SPI_BLOCK_SIZE)*SPI_BLOCK_SIZE);
                 }
             }
@@ -914,12 +916,12 @@ int BatchBurn_MMC(UINT32 len,UINT32 offset,UINT32 HeaderFlag)
         fmiSD_Write(offset,(tmplen+SD_SECTOR-1)/SD_SECTOR,(UINT32)ptr);
     }
     /* restore image 0 and offset 0 */
-    if (pmmcImage->imageType == 3) { // system image, burn normal image
+    if (pmmcImage->imageType == PACK) { // system image, burn normal image
         if((pmmcImage)->macaddr[7]==1)
             memcpy((UINT8 *)infoBuf+0x190,(UCHAR *)((pmmcImage)->macaddr),6);  // MAC Address
     }
 
-    if ((pmmcImage->flashOffset != 2) || (pmmcImage->imageType == 3)) {
+    if ((pmmcImage->flashOffset != 2) || (pmmcImage->imageType == PACK)) {
         /* set MMC information */
         MSG_DEBUG("SetMMCImageInfo\n");
         SetMMCImageInfo(pmmcImage);
@@ -1310,8 +1312,8 @@ void UXmodem_MMC()
                         break;
                     }
                 }
-                MSG_DEBUG("ppack.filelen=0x%x, ppack.startaddr=0x%08x!!!\n",ppack.filelen,ppack.startaddr);
-                if(ppack.imagetype!=PMTP) {
+                MSG_DEBUG("ppack.filelen=0x%x, ppack.imagetype %d  ppack.startaddr=0x%08x!!!\n",ppack.filelen,ppack.imagetype,ppack.startaddr);
+                if(ppack.imagetype!=PARTITION) {
                     if(ppack.imagetype==UBOOT)
                         ppack.startaddr=0x400;
                     BatchBurn_MMC(ppack.filelen,ppack.startaddr/SD_SECTOR,0);

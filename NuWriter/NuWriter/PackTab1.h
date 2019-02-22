@@ -34,13 +34,13 @@ public:
 	CString m_filename;
 	CString	m_imagename;
 	CString	m_startblock;
-	CString	m_execaddr;	
+	CString	m_execaddr;
 	int	m_type;
 	int m_ubootflashtype;
 	int m_isUserConfig;
 
 	CString TmpOffset;
-	int TmpOffsetFlag;	
+	int TmpOffsetFlag;
 	int modifyflag;
 	CButton m_packuserconfig;
 	afx_msg void OnBnClickedPackFlashtype1();
@@ -48,6 +48,9 @@ public:
 	afx_msg void OnBnClickedPackFlashtype3();
 	afx_msg void OnBnClickedPackFlashtype4();
 	afx_msg void OnBnClickedPackUsrconfig();
+	MMC_FORMAT_INFO mmcfomat_info;
+	void mmcFormat();
+	afx_msg void OnBnClickedPackTypeA3();
 };
 
 #endif //__PACTAB1_H__

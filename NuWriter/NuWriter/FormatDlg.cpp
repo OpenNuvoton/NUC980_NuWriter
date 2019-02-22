@@ -81,6 +81,10 @@ void CFormatDlg::InitDialogWnd(bool bShow)
         resSizeMB = 0;
         ParTotalMB = 0;
         m_bInit = TRUE;
+		strPartition1Size = _T("0");
+		strPartition2Size = _T("0");
+		strPartition3Size = _T("0");
+		strPartition4Size = _T("0");
     }
 }
 
@@ -302,8 +306,6 @@ void CFormatDlg::OnBnClickedFormatBtnadd()
 		GetDlgItem(IDOK)->EnableWindow(FALSE);
         AfxMessageBox(_T("Partition number > 4, please press Reset"));
     }
-	
-
 
     //AfxMessageBox(_T("Please press Set to apply parameter."));
 }

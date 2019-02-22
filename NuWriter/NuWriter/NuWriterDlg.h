@@ -35,7 +35,7 @@ extern "C" {
 #include "NucWinUsb.h"
 #include "afxwin.h"
 
-#define PROJECT_NAME _T("Nuvoton NuWriter v1.11")
+#define PROJECT_NAME _T("Nuvoton NuWriter v1.12")
 
 #define LINE_BUFF_LEN       4096
 

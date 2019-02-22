@@ -63,6 +63,7 @@ BEGIN_MESSAGE_MAP(CPackTab1, CDialog)
     ON_BN_CLICKED(IDC_PACK_FLASHTYPE_3, &CPackTab1::OnBnClickedPackFlashtype3)
     ON_BN_CLICKED(IDC_PACK_FLASHTYPE_4, &CPackTab1::OnBnClickedPackFlashtype4)
     ON_BN_CLICKED(IDC_PACK_USRCONFIG, &CPackTab1::OnBnClickedPackUsrconfig)
+	ON_BN_CLICKED(IDC_PACK_TYPE_A3, &CPackTab1::OnBnClickedPackTypeA3)
 END_MESSAGE_MAP()
 
 
@@ -119,13 +120,47 @@ void CPackTab1::OnBnClickedPackBrowse()
     mainWnd->m_inifile.WriteFile();
 }
 
+void CPackTab1::mmcFormat()
+{
+    CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
+    CFormatDlg format_dlg;
+    CString tmp;
+
+    if(format_dlg.DoModal()==IDCANCEL) return;
+	mmcfomat_info.EMMC_FormatFSType = 0;// fat32
+
+    swscanf_s(format_dlg.strResSize,_T("%d"),&mmcfomat_info.EMMC_Reserved);
+	swscanf_s(format_dlg.strPartitionNum,_T("%d"),&mmcfomat_info.EMMC_PartitionNum);
+	swscanf_s(format_dlg.strPartition1Size,_T("%d"),&mmcfomat_info.EMMC_Partition1Size);
+	swscanf_s(format_dlg.strPartition2Size,_T("%d"),&mmcfomat_info.EMMC_Partition2Size);
+	swscanf_s(format_dlg.strPartition3Size,_T("%d"),&mmcfomat_info.EMMC_Partition3Size);
+	swscanf_s(format_dlg.strPartition4Size,_T("%d"),&mmcfomat_info.EMMC_Partition4Size);
+
+	// eMMC/SD & uBoot :  Partition information
+	mainWnd->m_inifile.SetValue(_T("PACK"),_T("MMCFTFS"),_T("0"));
+	tmp.Format(_T("%d"),mmcfomat_info.EMMC_PartitionNum);
+	mainWnd->m_inifile.SetValue(_T("PACK"),_T("MMCFTPNUM"),tmp);
+	tmp.Format(_T("%d"),mmcfomat_info.EMMC_Reserved);
+	mainWnd->m_inifile.SetValue(_T("PACK"),_T("MMCFTPREV"),tmp);
+	tmp.Format(_T("%d"),mmcfomat_info.EMMC_Partition1Size);
+	mainWnd->m_inifile.SetValue(_T("PACK"),_T("MMCFTP1"),tmp);
+	tmp.Format(_T("%d"),mmcfomat_info.EMMC_Partition2Size);
+	mainWnd->m_inifile.SetValue(_T("PACK"),_T("MMCFTP2"),tmp);
+	tmp.Format(_T("%d"),mmcfomat_info.EMMC_Partition3Size);
+	mainWnd->m_inifile.SetValue(_T("PACK"),_T("MMCFTP3"),tmp);
+	tmp.Format(_T("%d"),mmcfomat_info.EMMC_Partition4Size);
+	mainWnd->m_inifile.SetValue(_T("PACK"),_T("MMCFTP4"),tmp);
+	mainWnd->m_inifile.WriteFile();
+
+	TRACE("%d  %d  %d  %d  %d  %d\n",  mmcfomat_info.EMMC_PartitionNum, mmcfomat_info.EMMC_Reserved, mmcfomat_info.EMMC_Partition1Size, mmcfomat_info.EMMC_Partition2Size, mmcfomat_info.EMMC_Partition3Size, mmcfomat_info.EMMC_Partition4Size);
+}
+
 BOOL CPackTab1::OnCommand(WPARAM wParam, LPARAM lParam)
 {
     //TmpOffset
     UpdateData(TRUE);
     if(m_type==UBOOT)
     {
-
         if(m_packuserconfig.GetCheck()==TRUE)
             m_isUserConfig = 1;
         else
@@ -146,9 +181,37 @@ BOOL CPackTab1::OnCommand(WPARAM wParam, LPARAM lParam)
 
         }
     }
+	else if(m_type==ENV)
+	{
+        GetDlgItem(IDC_PACK_FLASHTYPE_1)->EnableWindow(TRUE);
+        GetDlgItem(IDC_PACK_FLASHTYPE_2)->EnableWindow(TRUE);
+        GetDlgItem(IDC_PACK_FLASHTYPE_3)->EnableWindow(TRUE);
+        GetDlgItem(IDC_PACK_FLASHTYPE_4)->EnableWindow(TRUE);
+        GetDlgItem(IDC_PACK_USRCONFIG)->EnableWindow(FALSE);
+
+        if(TmpOffsetFlag==1)
+        {
+            TmpOffsetFlag=0;
+            GetDlgItem(IDC_PACK_FLASHOFFSET_A)->SetWindowText(TmpOffset);
+            GetDlgItem(IDC_PACK_FLASHOFFSET_A)->EnableWindow(TRUE);
+        }
+
+        if(m_type==PACK)
+        {
+            GetDlgItem(IDC_PACK_EXECADDR_A)->EnableWindow(FALSE);
+            GetDlgItem(IDC_PACK_FLASHOFFSET_A)->EnableWindow(FALSE);
+        }else{
+            GetDlgItem(IDC_PACK_EXECADDR_A)->EnableWindow(FALSE);
+            GetDlgItem(IDC_PACK_FLASHOFFSET_A)->EnableWindow(TRUE);
+
+            CString tmp;
+            GetDlgItem(IDC_PACK_EXECADDR_A)->GetWindowText(tmp);
+            if(tmp.IsEmpty())
+                GetDlgItem(IDC_PACK_EXECADDR_A)->SetWindowText(_T("0"));
+        }
+	}
     else
     {
-
         GetDlgItem(IDC_PACK_FLASHTYPE_1)->EnableWindow(FALSE);
         GetDlgItem(IDC_PACK_FLASHTYPE_2)->EnableWindow(FALSE);
         GetDlgItem(IDC_PACK_FLASHTYPE_3)->EnableWindow(FALSE);
@@ -320,4 +383,10 @@ void CPackTab1::OnBnClickedPackUsrconfig()
         mainWnd->m_info.SPINand_BlockPerFlash=_wtoi(mainWnd->m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
         mainWnd->m_info.SPINand_PagePerBlock=_wtoi(mainWnd->m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
     }
+}
+
+
+void CPackTab1::OnBnClickedPackTypeA3()
+{
+	mmcFormat();
 }

@@ -102,7 +102,7 @@ void CMMCDlg::Download()
     CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
 
     //UpdateData(FALSE);
-	ResetEvent(m_ExitEvent);
+    ResetEvent(m_ExitEvent);
     if(!m_filename.IsEmpty()) {
         int len,startblock,endblock;
         mainWnd->m_gtype.EnableWindow(FALSE);
@@ -141,11 +141,25 @@ void CMMCDlg::Download()
                 m_imagelist.InsertItem(0,m_imagename,flagstr,_startblock,_endblock);
             }
             else
-			{
-				m_progress.SetPos(0);
-				TRACE(_T("Burn Failed!! Please check device\n"));
-			}
+            {
+                m_progress.SetPos(0);
+                TRACE(_T("Burn Failed!! Please check device\n"));
+            }
         } else {
+            ret = XUSB_PackErase(0, mainWnd->m_portName,m_filename);
+            if(ret) {
+                //AfxMessageBox(_T("Burn successfully"));
+                TRACE(_T("Format Done.\n"));
+            }
+            else
+            {
+                m_progress.SetPos(0);
+                GetDlgItem(IDC_MMC_DOWNLOAD)->EnableWindow(TRUE);
+                GetDlgItem(IDC_MMC_DOWNLOAD)->SetWindowText(_T("Program"));
+                mainWnd->m_gtype.EnableWindow(TRUE);
+                AfxMessageBox(_T("Burn Failed!! Please check device\n"));
+                return;
+            }
             ret=XUSB_Pack(mainWnd->m_portName,m_filename,&len);
             if(ret) {
                 GetDlgItem(IDC_MMC_VERIFY)->EnableWindow(TRUE);
@@ -160,10 +174,10 @@ void CMMCDlg::Download()
 
         //if(ret)
         //{
-        //	CSPIComDlg* parent=(CSPIComDlg*)GetParent();
+        //  CSPIComDlg* parent=(CSPIComDlg*)GetParent();
 
-        //	if(parent)
-        //		parent->PostMessage(WM_SPI_UPDATE_LIST,0,0);
+        //  if(parent)
+        //      parent->PostMessage(WM_SPI_UPDATE_LIST,0,0);
         //}
 
     } else
@@ -185,7 +199,7 @@ void CMMCDlg::OnBnClickedMmcDownload()
     CString dlgText;
     int _startblock=0;
 
-//	UpdateData(TRUE);
+//  UpdateData(TRUE);
 
     if((m_type!=UBOOT)&&((m_execaddr.IsEmpty())||(m_startblock.IsEmpty())) && (m_type!=PACK) ) {
 
@@ -246,8 +260,8 @@ void CMMCDlg:: Format()
     ret=XUSB_Format(mainWnd->m_portName);
     if(ret)
         AfxMessageBox(_T("Format successfully"));
-	else
-		m_progress.SetRange(0,0);
+    else
+        m_progress.SetRange(0,0);
 
     GetDlgItem(IDC_MMC_FORMAT)->EnableWindow(TRUE);
     //UpdateData(FALSE); //shanchun moedified 20121003
@@ -273,16 +287,26 @@ unsigned WINAPI CMMCDlg:: Format_proc(void* args)
 void CMMCDlg::OnBnClickedMmcFormat()
 {
     // TODO: Add your control notification handler code here
+    CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
     CFormatDlg format_dlg;
+    CString dlgText;
+
     if(format_dlg.DoModal()==IDCANCEL) return;
     m_space=format_dlg.strResSize;
-	strPartitionNum = format_dlg.strPartitionNum;
-	strPartition1Size=format_dlg.strPartition1Size;
-	strPartition2Size=format_dlg.strPartition2Size;
-	strPartition3Size=format_dlg.strPartition3Size;
-	strPartition4Size=format_dlg.strPartition4Size;
+    strPartitionNum = format_dlg.strPartitionNum;
+    strPartition1Size=format_dlg.strPartition1Size;
+    strPartition2Size=format_dlg.strPartition2Size;
+    strPartition3Size=format_dlg.strPartition3Size;
+    strPartition4Size=format_dlg.strPartition4Size;
 
-    CString dlgText;
+    mainWnd->m_inifile.SetValue(_T("PACK"),_T("MMCFTFS"),_T("0"));
+    mainWnd->m_inifile.SetValue(_T("PACK"),_T("MMCFTPNUM"),strPartitionNum);
+    mainWnd->m_inifile.SetValue(_T("PACK"),_T("MMCFTPREV"),m_space);
+    mainWnd->m_inifile.SetValue(_T("PACK"),_T("MMCFTP1"),strPartition1Size);
+    mainWnd->m_inifile.SetValue(_T("PACK"),_T("MMCFTP2"),strPartition2Size);
+    mainWnd->m_inifile.SetValue(_T("PACK"),_T("MMCFTP3"),strPartition3Size);
+    mainWnd->m_inifile.SetValue(_T("PACK"),_T("MMCFTP4"),strPartition4Size);
+    mainWnd->m_inifile.WriteFile();
 
     UpdateData(TRUE);
 
@@ -380,10 +404,10 @@ void CMMCDlg:: Read()
         if(XUSB_Read(mainWnd->m_portName,m_filename2,sblocks,blocks*(0x200)))
             AfxMessageBox(_T("Read OK !"));
         else
-		{
+        {
             AfxMessageBox(_T("Read Error !"));
-			m_progress.SetPos(0);
-		}
+            m_progress.SetPos(0);
+        }
         GetDlgItem(IDC_MMC_READ)->EnableWindow(TRUE);
 
         //UpdateData(FALSE);
@@ -451,10 +475,10 @@ void CMMCDlg::Verify()
         if(ret)
             AfxMessageBox(_T("Verify OK !"));
         else
-		{
+        {
             AfxMessageBox(_T("Verify Error !"));
-			m_progress.SetPos(0);
-		}
+            m_progress.SetPos(0);
+        }
         GetDlgItem(IDC_MMC_VERIFY)->EnableWindow(TRUE);
         GetDlgItem(IDC_MMC_VERIFY)->SetWindowText(_T("Verify"));
         //UpdateData(FALSE);
@@ -596,7 +620,7 @@ BOOL CMMCDlg::InitFile(int flag)
         tmp.Format(_T("%d"),m_type);
         mainWnd->m_inifile.SetValue(_T("MMC"),_T("TYPE"),tmp);
         mainWnd->m_inifile.SetValue(_T("MMC"),_T("EXECADDR"),m_execaddr);
-        mainWnd->m_inifile.SetValue(_T("MMC"),_T("OFFSET"),m_startblock);        
+        mainWnd->m_inifile.SetValue(_T("MMC"),_T("OFFSET"),m_startblock);
         mainWnd->m_inifile.WriteFile();
         break;
     default:

@@ -529,7 +529,7 @@ BOOL CSPIDlg::OnCommand(WPARAM wParam, LPARAM lParam)
             GetDlgItem(IDC_SPI_FLASHOFFSET_A)->SetWindowText(_T("0"));
             GetDlgItem(IDC_SPI_FLASHOFFSET_A)->EnableWindow(FALSE);
             GetDlgItem(IDC_SPI_EXECADDR_A)->EnableWindow(TRUE);
-			GetDlgItem(IDC_SPINOR_USRCONFIG)->EnableWindow(TRUE);
+            GetDlgItem(IDC_SPINOR_USRCONFIG)->EnableWindow(TRUE);
         }
 
     } else {
@@ -548,7 +548,7 @@ BOOL CSPIDlg::OnCommand(WPARAM wParam, LPARAM lParam)
             GetDlgItem(IDC_SPI_EXECADDR_A)->EnableWindow(FALSE);
             GetDlgItem(IDC_SPI_FLASHOFFSET_A)->EnableWindow(TRUE);
         }
-		GetDlgItem(IDC_SPINOR_USRCONFIG)->EnableWindow(FALSE);
+        GetDlgItem(IDC_SPINOR_USRCONFIG)->EnableWindow(FALSE);
     }
 
 

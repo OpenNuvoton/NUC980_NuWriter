@@ -37,13 +37,13 @@ FastDlg::~FastDlg()
 
 void FastDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_FAST_IMAGENAME, m_imagename);
-	DDX_Radio(pDX, IDC_RADIO_FAST_NAND, m_type);
-	DDX_Control(pDX, IDC_COMBO_FAST_ID, m_FastDeviceID);
-	DDX_Control(pDX, IDC_FAST_NAND_USRCONFIG, m_nandflashInfo_check);
-	DDX_Control(pDX, IDC_FAST_SPINAND_USRCONFIG, m_spinandflashInfo_check);
-	DDX_Control(pDX, IDC_FAST_SPINOR_USRCONFIG, m_spinor_check);
+    CDialog::DoDataExchange(pDX);
+    DDX_Text(pDX, IDC_FAST_IMAGENAME, m_imagename);
+    DDX_Radio(pDX, IDC_RADIO_FAST_NAND, m_type);
+    DDX_Control(pDX, IDC_COMBO_FAST_ID, m_FastDeviceID);
+    DDX_Control(pDX, IDC_FAST_NAND_USRCONFIG, m_nandflashInfo_check);
+    DDX_Control(pDX, IDC_FAST_SPINAND_USRCONFIG, m_spinandflashInfo_check);
+    DDX_Control(pDX, IDC_FAST_SPINOR_USRCONFIG, m_spinor_check);
 }
 
 
@@ -71,9 +71,9 @@ BEGIN_MESSAGE_MAP(FastDlg, CDialog)
     ON_BN_CLICKED(IDC_RADIO_FAST_SPI, &FastDlg::OnBnClickedRadioFastSpi)
     ON_BN_CLICKED(IDC_RADIO_FAST_eMMC, &FastDlg::OnBnClickedRadioFastemmc)
     ON_BN_CLICKED(IDC_RADIO_FAST_SPINAND, &FastDlg::OnBnClickedRadioFastSpinand)
-	ON_BN_CLICKED(IDC_FAST_NAND_USRCONFIG, &FastDlg::OnBnClickedFastNandUsrconfig)
-	ON_BN_CLICKED(IDC_FAST_SPINAND_USRCONFIG, &FastDlg::OnBnClickedFastSpinandUsrconfig)
-	ON_BN_CLICKED(IDC_FAST_SPINOR_USRCONFIG, &FastDlg::OnBnClickedFastSpinorUsrconfig)
+    ON_BN_CLICKED(IDC_FAST_NAND_USRCONFIG, &FastDlg::OnBnClickedFastNandUsrconfig)
+    ON_BN_CLICKED(IDC_FAST_SPINAND_USRCONFIG, &FastDlg::OnBnClickedFastSpinandUsrconfig)
+    ON_BN_CLICKED(IDC_FAST_SPINOR_USRCONFIG, &FastDlg::OnBnClickedFastSpinorUsrconfig)
 END_MESSAGE_MAP()
 
 
@@ -120,20 +120,20 @@ BOOL FastDlg::OnInitDialog()
 
 
     m_FastDeviceID.SetCurSel(0);
-	if(m_type == TYPE_NAND)	
-	    GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(TRUE);
-	else
-	    GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
+    if(m_type == TYPE_NAND)
+        GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(TRUE);
+    else
+        GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
 
-	if(m_type == TYPE_SPINAND)
-	    GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(TRUE);
-	else
-	    GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
+    if(m_type == TYPE_SPINAND)
+        GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(TRUE);
+    else
+        GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
 
-	if(m_type == TYPE_SPI)
-	    GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(TRUE);
-	else
-	    GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
+    if(m_type == TYPE_SPI)
+        GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(TRUE);
+    else
+        GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
 
     UpdateData(FALSE);
     return TRUE;  // return TRUE unless you set the focus to a control
@@ -260,27 +260,27 @@ BOOL FastDlg::InitFile(int flag)
         switch(_wtoi(tmp)) {
         case 0: {
             ((CButton *)GetDlgItem(IDC_RADIO_FAST_NAND))->SetCheck(TRUE);
-			GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(TRUE);
-			GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
-			GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(TRUE);
+            GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
             timeoutsec = NAND_TIMEOUT_SEC;
-			m_type = TYPE_NAND;
+            m_type = TYPE_NAND;
             break;
         }
         case 1: {
             ((CButton *)GetDlgItem(IDC_RADIO_FAST_SPI))->SetCheck(TRUE);
-			GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
-			GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(TRUE);
-			GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(TRUE);
+            GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
             timeoutsec = SPI_TIMEOUT_SEC;
-			m_type = TYPE_SPI;
+            m_type = TYPE_SPI;
             break;
         }
         case 2: {
             ((CButton *)GetDlgItem(IDC_RADIO_FAST_eMMC))->SetCheck(TRUE);
-			GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
-			GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
-			GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
             timeoutsec = MMC_TIMEOUT_SEC;
             m_type =TYPE_EMMC;
             break;
@@ -288,8 +288,8 @@ BOOL FastDlg::InitFile(int flag)
         case 3: {
             ((CButton *)GetDlgItem(IDC_RADIO_FAST_SPINAND))->SetCheck(TRUE);
             GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
-			GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
-			GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(TRUE);
+            GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(TRUE);
             timeoutsec = SPINAND_TIMEOUT_SEC;
             m_type = TYPE_SPINAND;
             break;
@@ -305,30 +305,30 @@ BOOL FastDlg::InitFile(int flag)
         switch (m_type) {
         case 0:
             timeoutsec = NAND_TIMEOUT_SEC;
-			GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(TRUE);
-			GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
-			GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(TRUE);
+            GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
             m_type = TYPE_NAND;
             break;
         case 1:
             timeoutsec = SPI_TIMEOUT_SEC;
-			GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
-			GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(TRUE);
-			GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(TRUE);
+            GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
             m_type = TYPE_SPI;
             break;
         case 2:
             timeoutsec = MMC_TIMEOUT_SEC;
             GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
-			GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
-			GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
             m_type = TYPE_EMMC;
             break;
         case 3:
             timeoutsec = SPINAND_TIMEOUT_SEC;
             GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
-			GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
-			GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(TRUE);
+            GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
+            GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(TRUE);
             m_type = TYPE_SPINAND;
             break;
         }
@@ -385,7 +385,7 @@ BOOL FastDlg:: FastErase(int id, int storagetype)
         break;
 
     case TYPE_EMMC:
-        ret=XUSB_FasteMMCErase(id, mainWnd->m_portName);
+        ret=XUSB_FasteMMCErase(id, mainWnd->m_portName,m_filename);
         break;
 
     case TYPE_SPINAND:
@@ -508,7 +508,8 @@ void FastDlg::Start(int id)
             Sleep(100);//for Mass production
             if(bResult == FALSE) {
                 TRACE(_T("XXXX (%d) RESET NUC980 failed\n"), id);
-                continue;
+                //continue;
+                goto _fail_stop;
             }
             //else
             //    TRACE(_T("RESET(%d) NUC980 FW PASS\n"), id);
@@ -519,7 +520,8 @@ void FastDlg::Start(int id)
             Sleep(200);//for Mass production
             if(bResult == FALSE) {
                 TRACE(_T("XXXX (%d) Download FW failed\n"), id);
-                continue;
+                //continue;
+                goto _fail_stop;
             }
             //else
             //    TRACE(_T("Download (%d) FW PASS\n"), id);
@@ -531,29 +533,29 @@ void FastDlg::Start(int id)
         //TRACE(_T("(%d) RETRY Count= %d, flag = %d\n"), id, retrycnt[id], timeoutflag[id]);
         ((CStatic *)GetDlgItem((IDC_STATIC_FAST_MSG1+id)))->SetWindowText(_T("Erase ..."));
         if(m_type != TYPE_SPI)
-		{
+        {
             ret = FastErase(id, m_type);
             if (ret != 1) {
                 continue;
             }
-		}
+        }
 #endif
 
 #if(1)  //FastBurn
-		((CProgressCtrl *)GetDlgItem(iId_Array[id]))->SetRange(0,0);
-		((CStatic *)GetDlgItem((IDC_STATIC_FAST_MSG1+id)))->SetWindowText(_T("Download ..."));
-		ret = FastBurn(id, m_type);
+        ((CProgressCtrl *)GetDlgItem(iId_Array[id]))->SetRange(0,0);
+        ((CStatic *)GetDlgItem((IDC_STATIC_FAST_MSG1+id)))->SetWindowText(_T("Download ..."));
+        ret = FastBurn(id, m_type);
         if (ret == ERR_PACK_FORMAT) { // Image is not pack format
-			((CProgressCtrl *)GetDlgItem(iId_Array[id]))->SetRange(0,0);
+            ((CProgressCtrl *)GetDlgItem(iId_Array[id]))->SetRange(0,0);
             AfxMessageBox(_T("This file is not pack image\n"));
-			goto _fail_stop;
+            goto _fail_stop;
         }
         else if (ret == ERR_DDRINI_DATACOM) { // DDR Init VS. pack image ini data compare error
-			((CProgressCtrl *)GetDlgItem(iId_Array[id]))->SetRange(0,0);
+            ((CProgressCtrl *)GetDlgItem(iId_Array[id]))->SetRange(0,0);
             AfxMessageBox(_T("DDR Init select error\n"));
-			goto _fail_stop;
-        }		
-		else if (ret != 1) {
+            goto _fail_stop;
+        }
+        else if (ret != 1) {
             continue;
         }
 #endif
@@ -563,12 +565,12 @@ void FastDlg::Start(int id)
         ((CStatic *)GetDlgItem((IDC_STATIC_FAST_MSG1+id)))->SetWindowText(_T("Verify ..."));
         ret=FastVerify(id, m_type);
         if (ret == ERR_VERIFY_DATACOM) { // data compare error
-			((CProgressCtrl *)GetDlgItem(iId_Array[id]))->SetRange(0,0);
+            ((CProgressCtrl *)GetDlgItem(iId_Array[id]))->SetRange(0,0);
             AfxMessageBox(_T("Verify error\n"));
-			//break;
-			goto _fail_stop;
+            //break;
+            goto _fail_stop;
         }
-		else if (ret != 1) {
+        else if (ret != 1) {
             continue;
         }
 #endif
@@ -606,15 +608,15 @@ void FastDlg::OnBnClickedBtnFastStart()
         return;
     }
 
-	if(m_type == TYPE_NAND)
-	    GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(TRUE);
-	else
-	    GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
+    if(m_type == TYPE_NAND)
+        GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(TRUE);
+    else
+        GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
 
-	if(m_type == TYPE_SPINAND)
-	    GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(TRUE);
-	else
-	    GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
+    if(m_type == TYPE_SPINAND)
+        GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(TRUE);
+    else
+        GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
 
     mainWnd->GetDlgItem(IDC_COMPORT)->GetWindowText(connectText);
     GetDlgItem(IDC_BTN_FAST_START)->GetWindowText(dlgText);
@@ -882,8 +884,14 @@ BOOL FastDlg:: FWDownload(int id)
 
     if(!bResult) {
         NucUsb.CloseWinUsbDevice(id);
+        return FALSE;
     }
 
+    bResult = mainWnd->OneDeviceInfo(id);
+    if(!bResult) {
+        NucUsb.CloseWinUsbDevice(id);
+        //return FALSE;
+    }
     return bResult;
 }
 
@@ -1135,104 +1143,98 @@ BOOL FastDlg::XUSB(int id, CString& m_BinName)
 
 void FastDlg::OnBnClickedRadioFastNand()
 {
-    // TODO: 北兜矪瞶盽Α祘Α絏
     m_type = TYPE_NAND;
     timeoutsec = NAND_TIMEOUT_SEC;
-	GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(TRUE);
-	GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
-	GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
+    GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(TRUE);
+    GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
+    GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
     TRACE(_T("Nand timeoutsec =%d, m_type = %d\n"), timeoutsec, m_type);
 }
 
 
 void FastDlg::OnBnClickedRadioFastSpi()
 {
-    // TODO: 北兜矪瞶盽Α祘Α絏
     m_type = TYPE_SPI;
     timeoutsec = SPI_TIMEOUT_SEC;
-	GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
-	GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(TRUE);
-	GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
+    GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
+    GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(TRUE);
+    GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
     TRACE(_T("SPI timeoutsec =%d, m_type = %d\n"), timeoutsec, m_type);
 }
 
 
 void FastDlg::OnBnClickedRadioFastemmc()
 {
-    // TODO: 北兜矪瞶盽Α祘Α絏
     m_type = TYPE_EMMC;
     timeoutsec = MMC_TIMEOUT_SEC;
-	GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
-	GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
-	GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
+    GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
+    GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
+    GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
     TRACE(_T("eMMC/SD timeoutsec =%d, m_type = %d\n"), timeoutsec, m_type);
 }
 
 
 void FastDlg::OnBnClickedRadioFastSpinand()
 {
-    // TODO: 北兜矪瞶盽Α祘Α絏
     m_type = TYPE_SPINAND;
     timeoutsec = SPINAND_TIMEOUT_SEC;
-	GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
-	GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
-	GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(TRUE);
+    GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
+    GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
+    GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(TRUE);
     TRACE(_T("SPI NAND timeoutsec =%d, m_type = %d\n"), timeoutsec, m_type);
 }
 
 
 void FastDlg::OnBnClickedFastNandUsrconfig()
 {
-	// TODO: 北兜矪瞶盽Α祘Α絏
-	CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
-	CNandInfoDlg nandinfo_dlg;   
+    CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
+    CNandInfoDlg nandinfo_dlg;
     int i;
 
-    TRACE(_T("FastDlg::OnBnClickedFastNandUsrconfig  mainWnd->g_iDeviceNum =%d\n"), mainWnd->g_iDeviceNum);    
-	if(m_nandflashInfo_check.GetCheck()==TRUE)
-	{
-	    nandinfo_dlg.DoModal();
-	}
-    
+    TRACE(_T("FastDlg::OnBnClickedFastNandUsrconfig  mainWnd->g_iDeviceNum =%d\n"), mainWnd->g_iDeviceNum);
+    if(m_nandflashInfo_check.GetCheck()==TRUE)
+    {
+        nandinfo_dlg.DoModal();
+    }
+
     for(i = 0; i<mainWnd->g_iDeviceNum; i++) {
-	    mainWnd->OneDeviceInfo(i);// Update nand parameters	
-	}
+        mainWnd->OneDeviceInfo(i);// Update nand parameters
+    }
 }
 
 
 void FastDlg::OnBnClickedFastSpinandUsrconfig()
 {
-	// TODO: 北兜矪瞶盽Α祘Α絏
-	CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
-	CSPINandInfoDlg spinandinfo_dlg;
+
+    CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
+    CSPINandInfoDlg spinandinfo_dlg;
     int i;
 
-    TRACE(_T("FastDlg::OnBnClickedFastSPINandUsrconfig  mainWnd->g_iDeviceNum =%d\n"), mainWnd->g_iDeviceNum);    
-	if(m_spinandflashInfo_check.GetCheck()==TRUE)
-	{
-	    spinandinfo_dlg.DoModal();
-	}
-    
+    TRACE(_T("FastDlg::OnBnClickedFastSPINandUsrconfig  mainWnd->g_iDeviceNum =%d\n"), mainWnd->g_iDeviceNum);
+    if(m_spinandflashInfo_check.GetCheck()==TRUE)
+    {
+        spinandinfo_dlg.DoModal();
+    }
+
     for(i = 0; i<mainWnd->g_iDeviceNum; i++) {
-	    mainWnd->OneDeviceInfo(i);// Update SPI nand parameters	
-	}
+        mainWnd->OneDeviceInfo(i);// Update SPI nand parameters
+    }
 }
 
 
 void FastDlg::OnBnClickedFastSpinorUsrconfig()
 {
-	// TODO: 北兜矪瞶盽Α祘Α絏
-	CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
-	SPINORInfo spinorinfo_dlg;
+    CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
+    SPINORInfo spinorinfo_dlg;
     int i;
 
-    TRACE(_T("FastDlg::OnBnClickedFastSpinorUsrconfig  mainWnd->g_iDeviceNum =%d\n"), mainWnd->g_iDeviceNum);    
-	if(m_spinor_check.GetCheck()==TRUE)
-	{
-	    spinorinfo_dlg.DoModal();
-	}
-    
+    TRACE(_T("FastDlg::OnBnClickedFastSpinorUsrconfig  mainWnd->g_iDeviceNum =%d\n"), mainWnd->g_iDeviceNum);
+    if(m_spinor_check.GetCheck()==TRUE)
+    {
+        spinorinfo_dlg.DoModal();
+    }
+
     for(i = 0; i<mainWnd->g_iDeviceNum; i++) {
-	    mainWnd->OneDeviceInfo(i);// Update SPI NOR parameters	
-	}
+        mainWnd->OneDeviceInfo(i);// Update SPI NOR parameters
+    }
 }

@@ -50,7 +50,7 @@ public:
 	static unsigned WINAPI Format_proc(void* args);
 	void Format();
 
-
+	BOOL XUSB_PackErase(int id, CString& portName, CString& m_pathName);
 	afx_msg void OnBnClickedMmcDownload();
 	afx_msg void OnBnClickedMmcFormat();
 	afx_msg void OnBnClickedMmcVerify();

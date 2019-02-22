@@ -188,6 +188,7 @@ typedef struct fw_mmc_image_t {
     UINT32  ReserveSize;  //unit of sector
     UCHAR   macaddr[8];
     UINT32  initSize;
+    UCHAR   FSType;
     UINT32  PartitionNum;
     UINT32  Partition1Size;  //unit of MB
     UINT32  Partition2Size;  //unit of MB
