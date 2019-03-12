@@ -1051,6 +1051,7 @@ INT fmiSM_Write_large_page(UINT32 uSector, UINT32 ucColAddr, UINT32 uSAddr)
     outpw(REG_FMI_DMASA, uSAddr);   // set DMA transfer starting address
 
     // set the spare area configuration
+    memset((void *)REG_NANDRA0, 0xFF, 64);
     /* write byte 2050, 2051 as used page */
     outpw(REG_NANDRA0, 0x0000FFFF);
 

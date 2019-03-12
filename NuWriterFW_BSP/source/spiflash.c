@@ -432,7 +432,7 @@ int usiEraseSector(UINT32 addr, UINT32 secCount)
 extern void SendAck(UINT32 status);
 int usiEraseAll()
 {
-    unsigned int volatile count, pos;
+    unsigned int volatile count, pos, timeoutcnt;
 
     // send Command: 0x06, Write enable
     usiWriteEnable();
@@ -460,6 +460,8 @@ int usiEraseAll()
     // get status
     count=0;
     pos=0;
+    timeoutcnt = 0;
+
     while(1) {
         // /CS: active
         QSPI_SET_SS_LOW(QSPI_FLASH_PORT);
@@ -479,19 +481,30 @@ int usiEraseAll()
         QSPI_READ_RX(QSPI_FLASH_PORT);
 
         (count)++;
-        if ((QSPI_READ_RX(QSPI_FLASH_PORT) & 0x1) != 0x01) {
-            SendAck(100);
+
+        if(timeoutcnt > 0x8000) { // timeout
+            SendAck(0xffffff);
             // /CS: de-active
             QSPI_SET_SS_HIGH(QSPI_FLASH_PORT);
-            break;
-        }
+            printf("   \r");
+            return Fail;
+        } else {
+            if ((QSPI_READ_RX(QSPI_FLASH_PORT) & 0x1) != 0x01) {
+                SendAck(100);
+                // /CS: de-active
+                QSPI_SET_SS_HIGH(QSPI_FLASH_PORT);
+                break;
+            }
 
-        if(count % 20000 == 0) {
-            if (pos > 95) {
-                SendAck(95);
-            } else {
-                SendAck(pos++);
-                printf(" %2d\r",pos);
+            if(count % 20000 == 0) {
+            //if(count % 10000 == 0) {
+                timeoutcnt++;
+                if (pos > 95) {
+                    SendAck(95);
+                } else {
+                    SendAck(pos++);
+                    printf(" %2d\r",pos);
+                }
             }
         }
         // /CS: de-active

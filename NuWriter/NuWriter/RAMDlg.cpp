@@ -100,8 +100,8 @@ BOOL CRAMDlg::InitFile(int flag)
     CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
     if(!mainWnd->m_inifile.ReadFile()) return false;
 
-    if(mainWnd->DtbEn==1)
-    {
+    //if(mainWnd->DtbEn==1)
+    //{
         GetDlgItem(IDC_DTB_EN)->ShowWindow(SW_SHOW);
         GetDlgItem(IDC_STATIC_DTB)->ShowWindow(SW_SHOW);
         GetDlgItem(IDC_DTB_FILENAME)->ShowWindow(SW_SHOW);
@@ -109,14 +109,14 @@ BOOL CRAMDlg::InitFile(int flag)
         GetDlgItem(IDC_DTB_BUFFER_ADDRESS)->ShowWindow(SW_SHOW);
         GetDlgItem(IDC_STATIC_DTB2)->ShowWindow(SW_SHOW);
 
-    }else{
-        GetDlgItem(IDC_DTB_EN)->ShowWindow(SW_HIDE);
-        GetDlgItem(IDC_STATIC_DTB)->ShowWindow(SW_HIDE);
-        GetDlgItem(IDC_DTB_FILENAME)->ShowWindow(SW_HIDE);
-        GetDlgItem(IDC_DTB_BROWSE)->ShowWindow(SW_HIDE);
-        GetDlgItem(IDC_DTB_BUFFER_ADDRESS)->ShowWindow(SW_HIDE);
-        GetDlgItem(IDC_STATIC_DTB2)->ShowWindow(SW_HIDE);
-    }
+    //}else{
+    //    GetDlgItem(IDC_DTB_EN)->ShowWindow(SW_HIDE);
+    //    GetDlgItem(IDC_STATIC_DTB)->ShowWindow(SW_HIDE);
+    //    GetDlgItem(IDC_DTB_FILENAME)->ShowWindow(SW_HIDE);
+    //    GetDlgItem(IDC_DTB_BROWSE)->ShowWindow(SW_HIDE);
+    //    GetDlgItem(IDC_DTB_BUFFER_ADDRESS)->ShowWindow(SW_HIDE);
+    //    GetDlgItem(IDC_STATIC_DTB2)->ShowWindow(SW_HIDE);
+    //}
 
     switch(flag)
     {
@@ -144,7 +144,8 @@ BOOL CRAMDlg::InitFile(int flag)
             GetDlgItem(IDC_DTB_BUFFER_ADDRESS)->SetWindowText(tmp);
             m_dtbaddress=tmp;
 
-            tmp=mainWnd->m_inifile.GetValue(_T("SDRAM"),_T("DTB_UIEN"));
+            tmp=mainWnd->m_inifile.GetValue(_T("SDRAM"),_T("DTBEN"));
+			tmp=mainWnd->m_inifile.GetValue(_T("SDRAM"),_T("DTB_UIEN"));
             m_dtb_en.SetCheck(_wtoi(tmp));
             if(_wtoi(tmp)==1)
             {
@@ -175,6 +176,8 @@ BOOL CRAMDlg::InitFile(int flag)
             mainWnd->m_inifile.SetValue(_T("SDRAM"),_T("DTBADDR"),m_dtbaddress);
 
             tmp.Format(_T("%d"),m_dtb_en.GetCheck());
+            mainWnd->m_inifile.SetValue(_T("SDRAM"),_T("DTBEN"),tmp);
+			tmp.Format(_T("%d"),m_dtb_en.GetCheck());
             mainWnd->m_inifile.SetValue(_T("SDRAM"),_T("DTB_UIEN"),tmp);
 
             mainWnd->m_inifile.WriteFile();
@@ -324,7 +327,8 @@ void CRAMDlg:: Download()
         //load nuc980 ddr init
         mainWnd->UpdateBufForDDR();
 
-        if(mainWnd->DtbEn!=1 || m_autorun!=1){
+        //if(mainWnd->DtbEn!=1 || m_autorun!=1){
+        if(m_dtb_en.GetCheck()!=1 || m_autorun!=1){
             if(XUSB(mainWnd->m_portName,m_filename,m_address,m_autorun))
             {
                 GetDlgItem(IDC_SDRAMSTATUS)->SetWindowText(_T("Download successfully"));
@@ -433,12 +437,22 @@ void CRAMDlg::OnBnClickedDtbBrowse()
 
 void CRAMDlg::OnBnClickedDtbEn()
 {
+	CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
+
     if(m_dtb_en.GetCheck())
     {
         GetDlgItem(IDC_DTB_BROWSE)->EnableWindow(TRUE);
         GetDlgItem(IDC_DTB_BUFFER_ADDRESS)->EnableWindow(TRUE);
+		
+		mainWnd->m_inifile.SetValue(_T("SDRAM"),_T("DTBEN"),_T("1"));
+		mainWnd->m_inifile.SetValue(_T("SDRAM"),_T("DTB_UIEN"),_T("1"));
+		
+        mainWnd->m_inifile.WriteFile();
     }else{
         GetDlgItem(IDC_DTB_BROWSE)->EnableWindow(FALSE);
         GetDlgItem(IDC_DTB_BUFFER_ADDRESS)->EnableWindow(FALSE);
+		mainWnd->m_inifile.SetValue(_T("SDRAM"),_T("DTBEN"),_T("0"));
+		mainWnd->m_inifile.SetValue(_T("SDRAM"),_T("DTB_UIEN"),_T("0"));
+        mainWnd->m_inifile.WriteFile();
     }
 }
