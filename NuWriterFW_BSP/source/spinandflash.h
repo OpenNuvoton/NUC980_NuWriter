@@ -80,3 +80,4 @@ uint8_t SPIin(uint8_t DI);
 
 int spiNANDInit(void);
 INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN);
+void spiNANDMarkBadBlock(uint32_t page_address);

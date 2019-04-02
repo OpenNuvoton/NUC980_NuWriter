@@ -127,6 +127,19 @@ void spiNAND_LUT_Read(uint16_t* LBA, uint16_t* PBA)
     return;
 }
 
+void spiNANDMarkBadBlock(uint32_t page_address)
+{
+    unsigned char data;
+
+    spiNAND_BlockErase(page_address/0x100, page_address%0x100);
+
+    /* Set byte 2048 to 0xF0 */
+    data = 0xF0;
+    spiNAND_Pageprogram_Pattern(8, 0, &data, 1);
+    spiNAND_Program_Excute(page_address /0x100, page_address %0x100);
+
+}
+
 /********************\
 Function: Serial NAND Bad block mark check
 Argument:

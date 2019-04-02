@@ -37,9 +37,10 @@ SPINAND_INFO_T SNInfo, *pSN;
 //-------------------------
 extern int usiInit(void);
 extern int usiEraseAll(void);
-extern int usiWrite(UINT32 addr, UINT32 len, UINT16 *buf);
+extern int usiWrite(UINT32 addr, UINT32 len, UINT8 *buf);
 extern int usiRead(UINT32 addr, UINT32 len, UINT8 *buf);
 extern int usiEraseSector(UINT32 addr, UINT32 secCount);
+extern int spiNorReset(void);
 
 extern int ChangeSpiImageType(UINT32 imageNo, UINT32 imageType);
 extern int DelSpiImage(UINT32 imageNo);
@@ -188,9 +189,10 @@ void addNUC980MagicHeader(unsigned char u8IsSPINOR)
 int Burn_SPI(UINT32 len,UINT32 imageoffset)
 {
     int volatile tmplen=0;
-    int i, offset=0, blockCount, spiSourceAddr;
+    int i, offset=0, blockCount;
+    uint32_t spiSourceAddr;
 
-    MSG_DEBUG("Burn_SPI: len=%d     imageoffset= %d\n", len, imageoffset);
+    MSG_DEBUG("Burn_SPI: Enable4ByteFlag=%d len=%d(0x%x)     imageoffset= %d(0x%x)\n", Enable4ByteFlag, len, len, imageoffset, imageoffset);
     /* set up interface */
     if (usiInit() < 0) {
         SendAck(0xFFFFFFFF);
@@ -200,7 +202,7 @@ int Burn_SPI(UINT32 len,UINT32 imageoffset)
     spiSourceAddr = (DOWNLOAD_BASE | NON_CACHE);
     blockCount = len / SPI_BLOCK_SIZE;
     offset = imageoffset;
-    MSG_DEBUG("Burn_SPI: offset=0x%x  len=%d   blockCount= %d  spiSourceAddr = 0x%x\n", offset, len, blockCount, spiSourceAddr);
+    MSG_DEBUG("Burn_SPI: Enable4ByteFlag=%d offset=0x%x  len=%d   blockCount= %d  spiSourceAddr = 0x%x\n", Enable4ByteFlag, offset, len, blockCount, spiSourceAddr);
 
     for (i=0; i<blockCount; i++) {
         MSG_DEBUG("Burn_SPI  offset=0x%x(%d)\n", offset, offset);
@@ -215,7 +217,7 @@ int Burn_SPI(UINT32 len,UINT32 imageoffset)
             MSG_DEBUG("Enable4ByteFlag %d:  offset=0x%08x(%d)\n", Enable4ByteFlag, offset, offset);
 
         usiEraseSector(offset, 1);
-        usiWrite(offset, SPI_BLOCK_SIZE, (UINT16 *)spiSourceAddr);
+        usiWrite(offset, SPI_BLOCK_SIZE, (UINT8 *)spiSourceAddr);
 
         spiSourceAddr += SPI_BLOCK_SIZE;
         offset += SPI_BLOCK_SIZE;
@@ -225,7 +227,7 @@ int Burn_SPI(UINT32 len,UINT32 imageoffset)
         SendAck((tmplen * 95) / len);
     }
     if ((len % (SPI_BLOCK_SIZE)) != 0) {
-        MSG_DEBUG("Burn_SPI  offset=0x%x(%d)\n", offset, offset);
+        MSG_DEBUG("remin Burn_SPI  offset=0x%x(%d)\n", offset, offset);
         // 4Byte Address Mode (>16MByte)
         Enable4ByteFlag = 0;
         if((offset + SPI_BLOCK_SIZE) > SPI_FLASH_SIZE)
@@ -238,7 +240,7 @@ int Burn_SPI(UINT32 len,UINT32 imageoffset)
 
         len = len - blockCount*SPI_BLOCK_SIZE;
         usiEraseSector(offset, 1);
-        usiWrite(offset, len, (UINT16 *)spiSourceAddr);
+        usiWrite(offset, len, (UINT8 *)spiSourceAddr);
     }
     //ack status
     SendAck(100);
@@ -275,9 +277,11 @@ void UXmodem_SPI(void)
         }
     }
 
-    MSG_DEBUG("Action flag: %s, image %d, len=%d exec=0x%08x type=%d\n",
+    MSG_DEBUG("Action flag: %s, image %d, len=%d exec=0x%08x type=%d",
               au8ActionFlagName[pSpiImage->actionFlag], pSpiImage->imageNo,pSpiImage->fileLength,pSpiImage->executeAddr,pSpiImage->imageType);
     usiInit();
+    spiNorReset();
+    MSG_DEBUG("  Enable4ByteFlag=%d\n",Enable4ByteFlag);
     switch(pSpiImage->actionFlag) {
     case WRITER_MODE: { // normal write
         MSG_DEBUG("SPI normal write !!!\n");
@@ -601,6 +605,11 @@ int Run_SDRAM(UINT32 address,UINT32 offset,UINT32 tmpAddr,UINT32 dtbEn,UINT32 dt
     sysFlushCache(I_D_CACHE);
 //  outpw(REG_USBD_PHY_CTL, inpw(REG_USBD_PHY_CTL) & ~0x200);    // offset 0x704
 
+    outpw(REG_SYS_AHBIPRST,1<<19);  //USBD reset
+    outpw(REG_SYS_AHBIPRST,0<<19);
+    outpw(REG_USBD_PHYCTL, inpw(REG_USBD_PHYCTL) & ~0x100);
+    outpw(REG_CLK_HCLKEN, inpw(REG_CLK_HCLKEN) & ~0x80000);
+	
     MSG_DEBUG("run ... %x\n", address);
 
     SYS_UnlockReg();
@@ -867,7 +876,7 @@ int BatchBurn_MMC(UINT32 len,UINT32 offset,UINT32 HeaderFlag)
     }
 
     /* check image 0 / offset 0 and back up */
-    //if (pmmcImage->imageType == UBOOT)  // system image, burn nomal image
+    //if (pmmcImage->imageType == UBOOT)  // system image, burn normal image
     //    fmiSD_Read(MMC_INFO_SECTOR,1,(UINT32)pInfo);
 
     mmcSourceAddr = (DOWNLOAD_BASE | NON_CACHE);
@@ -2260,45 +2269,47 @@ int BatchBurn_SPINAND(UINT32 len,UINT32 blockNo,UINT32 type)
         } while(remainlen!=0);
 
         MSG_DEBUG(">>>>>> remainlen OK\n");
+
 _retry_1:
-        block_idx = (blockNum+j)*pSN->SPINand_PagePerBlock;
+        block_idx = blockNum*pSN->SPINand_PagePerBlock;
         addr = address | NON_CACHE;
-        page = pSN->SPINand_PagePerBlock * (blockNum);
-        MSG_DEBUG("fmiSM_BlockErase page = %d   blockNum = %d   addr =0x%x\n", page, blockNum, addr);
-        spiNAND_BlockErase(((block_idx>>8)&0xFF), (block_idx&0xFF)); // block erase
-        status = spiNAND_StatusRegister(3);
-        status = (status&0x0C)>>2;
-        if (status == 1) {
-            if(spiNAND_bad_block_check(page) == 1) {
-                MSG_DEBUG("bad_block:%d\n", blockNum);
+        page = pSN->SPINand_PagePerBlock * blockNum;
+        MSG_DEBUG("fmiSM_BlockErase page = %d   blockNum = %d  j=%d  addr =0x%x\n", page, blockNum, j, addr);
+
+        if(spiNAND_bad_block_check(page) == 1) {
+            printf("bad block = %d\n", blockNum);
+            blockNum++;
+            goto _retry_1;
+        } else {
+            spiNAND_BlockErase(((block_idx>>8)&0xFF), (block_idx&0xFF)); // block erase
+            status = spiNAND_Check_Program_Erase_Fail_Flag();
+            if (status == 1) {
+                printf("Error erase status! spiNANDMarkBadBlock blockNum = %d\n", blockNum);
+                spiNANDMarkBadBlock(blockNum*pSN->SPINand_PagePerBlock);
                 blockNum++;
                 goto _retry_1;
             }
-        } else if (status == -1) {
-            usb_recv(ptr,Bulk_Out_Transfer_Size);  //recv data from PC
-            *_ack=0xffff;
-            usb_send((unsigned char*)_ack,4);//send ack to PC
-            return status;
         }
+
         MSG_DEBUG("pSN->SPINand_PagePerBlock=%08d\n",pSN->SPINand_PagePerBlock);
         // write block
         for (i=0; i<pSN->SPINand_PagePerBlock; i++) {
-            MSG_DEBUG("page+i=%d\n",page+i);
+            MSG_DEBUG("blockNum=%d,  page+i=%d\n",blockNum, page+i);
             spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
             spiNAND_Program_Excute((((page+i)>>8)&0xFF), (page+i)&0xFF);
             status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
             if (status == 1) {
-                if(spiNAND_bad_block_check(page) == 1) {
-                    blockNum++;
-                    addr+=(pSN->SPINand_PageSize* pSN->SPINand_PagePerBlock);
-                    MSG_DEBUG("bad_block:%d\n", blockNum);
-                    goto _retry_1;
-                }
+                spiNANDMarkBadBlock(blockNum*pSN->SPINand_PagePerBlock);
+                printf("Error write status! spiNANDMarkBadBlock blockNum = %d\n", blockNum);
+                blockNum++;
+                addr+=(pSN->SPINand_PageSize* pSN->SPINand_PagePerBlock);
+                goto _retry_1;
             }
             addr += pSN->SPINand_PageSize;
         }
         blockNum++;
     }
+
     MSG_DEBUG("page_count=%d,pSM->uPagePerBlock=%d, blockNum=%d\n",page_count,pSN->SPINand_PagePerBlock, blockNum);
     if ((page_count % pSN->SPINand_PagePerBlock) != 0) {
         MSG_DEBUG("Cnt=%d\n",page_count % pSN->SPINand_PagePerBlock);
@@ -2321,42 +2332,42 @@ _retry_1:
         MSG_DEBUG("page_count=%d\n",page_count);
 _retry_2:
         addr = address | NON_CACHE;
-        page =  pSN->SPINand_PagePerBlock * (blockNum);
-        // erase block
-        spiNAND_BlockErase( ((page>>8)&0xFF), (page&0xFF));
-        status = spiNAND_StatusRegister(3);
-        status = (status&0x0C)>>2;
-        if (status == 1) {
-            if(spiNAND_bad_block_check(page) == 1) {
+        page =  pSN->SPINand_PagePerBlock * blockNum;
+
+        if(spiNAND_bad_block_check(page) == 1) {
+            printf("bad_block:%d\n", blockNum);
+            blockNum++;
+            goto _retry_2;
+        } else {
+            spiNAND_BlockErase( ((page>>8)&0xFF), (page&0xFF));
+            status = spiNAND_Check_Program_Erase_Fail_Flag();
+            if (status == 1) {
+                spiNANDMarkBadBlock(blockNum*pSN->SPINand_PagePerBlock);
+                printf("Error erase status! bad_block:%d\n", blockNum);
                 blockNum++;
-                printf("bad_block:%d\n", blockNum);
                 goto _retry_2;
             }
-        } else if (status == -1) {
-            MSG_DEBUG("device error !! \n");
-            SendAck(0xffff);
-            return status;
-        }
 
-        // write block
-        MSG_DEBUG("page_count=%d,type=%d\n",page_count,type);
-        for (i=0; i<page_count; i++) {
-            MSG_DEBUG("page+i=%d\n",page+i);
-            spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
-            spiNAND_Program_Excute((((page+i)>>8)&0xFF), ((page+i)&0xFF));
-            status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
-            if (status != 0) {
-                if(spiNAND_bad_block_check(page) == 1) {
+            // write block
+            MSG_DEBUG("page_count=%d,type=%d\n",page_count,type);
+            for (i=0; i<page_count; i++) {
+                MSG_DEBUG("blockNum=%d,  page+i=%d\n",blockNum, page+i);
+                spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
+                spiNAND_Program_Excute((((page+i)>>8)&0xFF), ((page+i)&0xFF));
+                status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
+                if (status != 0) {
+                    spiNANDMarkBadBlock(blockNum*pSN->SPINand_PagePerBlock);
+                    printf("Error write status! spiNANDMarkBadBlock blockNum = %d\n", blockNum);
                     blockNum++;
                     addr+=(pSN->SPINand_PageSize* pSN->SPINand_PagePerBlock);
-                    MSG_DEBUG("bad_block:%d\n", blockNum);
                     goto _retry_2;
                 }
+                addr += pSN->SPINand_PageSize;
             }
-            addr += pSN->SPINand_PageSize;
+            blockNum++;
         }
-        blockNum++;
     }
+
     MSG_DEBUG("BatchBurn_SPINAND() End blockNum-blockNo=%d\n", blockNum-blockNo);
     SendAck(blockNum-blockNo);
     return status;
@@ -2365,42 +2376,32 @@ _retry_2:
 int BatchBurn_SPINAND_Data_OOB(UINT32 len,UINT32 blockNo,UINT32 type)
 {
     int volatile status = 0;
-
-#if(0) // to do
-
-    int volatile page_count, block_count, page, addr, blockNum, total;
-    int volatile i, j, pagetmp=0;
+    int volatile page_count, block_count, page, addr;
+    int volatile i, j;
     unsigned int address = DOWNLOAD_BASE;
-    unsigned int BurnLen;
-    unsigned int sparesize;  //Put yaffs2 tag on the oob(sparesize).
-
     unsigned char *_ch,*ptr;
     unsigned int *_ack,ack=0;
-    unsigned int reclen,remainlen;
+    unsigned int reclen,remainlen, block_idx, blockNum, total;
     _ch=((unsigned char*)(((unsigned int)DOWNLOAD_BASE)|NON_CACHE));
     _ack=((unsigned int*)(((unsigned int)ack)|NON_CACHE));
     ptr=_ch;
 
-    sparesize=pSN->SPINand_SpareArea;
-    page_count = len / (pSN->SPINand_PageSize+sparesize);
-    if(len%(pSN->SPINand_PageSize+sparesize)!=0) page_count++;
+    page_count = len / (pSN->SPINand_PageSize+pSN->SPINand_SpareArea);
+    if(len%(pSN->SPINand_PageSize+pSN->SPINand_SpareArea)!=0) page_count++;
     // erase needed blocks
     block_count = page_count / (pSN->SPINand_PagePerBlock);
-
 
     // write into flash
     blockNum = blockNo;
     total = len;
-    BurnLen=(pSN->SPINand_PageSize+sparesize);
-    MSG_DEBUG("blockNum=%d,total=%d,block_count=%d\n",blockNum,total,block_count);
+    MSG_DEBUG(">>>>>> blockNum=%d    total=%d    block_count=%d   sparesize =%d\n",blockNum,total, block_count, pSN->SPINand_SpareArea);
     for (j=0; j<block_count; j++) {
-        MSG_DEBUG("%d,%d\n",j,block_count);
         ptr=_ch;
-        remainlen=MIN(total,pSN->SPINand_PagePerBlock*(pSN->SPINand_PageSize+sparesize));
+        remainlen=MIN(total,pSN->SPINand_PagePerBlock*(pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
         do {
             if(Bulk_Out_Transfer_Size>0) {
-                MSG_DEBUG("total=%08d,remainlen=%08d\n",total,remainlen);
-                reclen=MIN(BurnLen,remainlen);
+                MSG_DEBUG("total=%d,remainlen=%d\n",total,remainlen);
+                reclen=MIN(TRANSFER_LEN,remainlen);
                 usb_recv(ptr,reclen);  //recv data from PC
                 ptr+=reclen;
                 remainlen-=reclen;
@@ -2410,32 +2411,108 @@ int BatchBurn_SPINAND_Data_OOB(UINT32 len,UINT32 blockNo,UINT32 type)
             }
         } while(remainlen!=0);
 
-        MSG_DEBUG("remainlen OK\n");
-//_retry_1:
+        MSG_DEBUG(">>>>>> remainlen OK\n");
+
+_retry_1:
+        block_idx = (blockNum+j)*pSN->SPINand_PagePerBlock;
         addr = address | NON_CACHE;
-        page = pSN->SPINand_PagePerBlock * (blockNum);
-        status = fmiSM_BlockEraseBad(pSM, blockNum); // block erase
+        page = pSN->SPINand_PagePerBlock * blockNum;
+        MSG_DEBUG("fmiSM_BlockErase page = %d   blockNum = %d   addr =0x%x\n", page, blockNum, addr);
+
+        if(spiNAND_bad_block_check(page) == 1) {
+            MSG_DEBUG("bad block = %d\n", blockNum);
+            blockNum++;
+            goto _retry_1;
+        } else {
+            spiNAND_BlockErase(((block_idx>>8)&0xFF), (block_idx&0xFF)); // block erase
+            status = spiNAND_Check_Program_Erase_Fail_Flag();
+            if (status == 1) {
+                MSG_DEBUG("Error erase status! blockNum = %d\n", blockNum);
+                spiNANDMarkBadBlock(blockNum*pSN->SPINand_PagePerBlock);
+                blockNum++;
+                goto _retry_1;
+            }
+        }
+
+        MSG_DEBUG("pSN->SPINand_PagePerBlock=%08d\n",pSN->SPINand_PagePerBlock);
         // write block
         for (i=0; i<pSN->SPINand_PagePerBlock; i++) {
-            status = fmiSM_Write_large_page_oob2(page+i, 0, addr);
-//             if (status != 0)
-//             {
-//                 fmiMarkBadBlock(pSM, blockNum);
-//                 blockNum++;
-//                 goto _retry_1;
-//             }
-            addr += pSN->SPINand_PageSize+sparesize;
-            pagetmp++;
-            //SendAck((pagetmp * 95) / total);
+            MSG_DEBUG("blockNum+j=%d,  page+i=%d\n",blockNum, page+i);
+            spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, (pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
+            spiNAND_Program_Excute((((page+i)>>8)&0xFF), (page+i)&0xFF);
+            status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
+            if (status == 1) {
+                spiNANDMarkBadBlock(blockNum*pSN->SPINand_PagePerBlock);
+                MSG_DEBUG("Error write status! bad_block:%d\n", blockNum);
+                blockNum++;
+                addr+=((pSN->SPINand_PageSize+pSN->SPINand_SpareArea) * pSN->SPINand_PagePerBlock);
+                goto _retry_1;
+            }
+            addr += (pSN->SPINand_PageSize+pSN->SPINand_SpareArea);
         }
         blockNum++;
     }
-    MSG_DEBUG("page_count=%d,pSN->SPINand_PagePerBlock=%d\n",page_count,pSN->SPINand_PagePerBlock);
 
-    //SendAck(100);
+    MSG_DEBUG("page_count=%d,pSM->uPagePerBlock=%d, blockNum=%d\n",page_count,pSN->SPINand_PagePerBlock, blockNum);
+    if ((page_count % pSN->SPINand_PagePerBlock) != 0) {
+        MSG_DEBUG("Cnt=%d\n",page_count % pSN->SPINand_PagePerBlock);
+        memset(_ch,0xff,pSN->SPINand_PagePerBlock*(pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
+        ptr=_ch;
+        remainlen=total;
+        do {
+            if(Bulk_Out_Transfer_Size>0) {
+                MSG_DEBUG("remainlen=%d\n",remainlen);
+                reclen=MIN(TRANSFER_LEN,remainlen);
+                usb_recv(ptr,reclen);  //recv data from PC
+                ptr+=reclen;
+                remainlen-=reclen;
+                total-=reclen;
+                *_ack=reclen;
+                usb_send((unsigned char*)_ack,4);//send ack to PC
+            }
+        } while(remainlen!=0);
+        page_count = page_count - (block_count *  pSN->SPINand_PagePerBlock);
+        MSG_DEBUG("page_count=%d\n",page_count);
+_retry_2:
+        addr = address | NON_CACHE;
+        page =  pSN->SPINand_PagePerBlock * (blockNum);
+
+        if(spiNAND_bad_block_check(page) == 1) {
+            MSG_DEBUG("bad_block:%d\n", blockNum);
+            blockNum++;
+            goto _retry_2;
+        } else {
+            spiNAND_BlockErase( ((page>>8)&0xFF), (page&0xFF));
+            status = spiNAND_Check_Program_Erase_Fail_Flag();
+            if (status == 1) {
+                spiNANDMarkBadBlock(blockNum*pSN->SPINand_PagePerBlock);
+                MSG_DEBUG("Error erase status! bad_block:%d\n", blockNum);
+                blockNum++;
+                goto _retry_2;
+            }
+
+            // write block
+            MSG_DEBUG("page_count=%d,type=%d\n",page_count,type);
+            for (i=0; i<page_count; i++) {
+                MSG_DEBUG("page+i=%d\n",page+i);
+                spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, (pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
+                spiNAND_Program_Excute((((page+i)>>8)&0xFF), ((page+i)&0xFF));
+                status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
+                if (status != 0) {
+                    spiNANDMarkBadBlock(blockNum*pSN->SPINand_PagePerBlock);
+                    MSG_DEBUG("Error write status! bad_block:%d\n", blockNum);
+                    blockNum++;
+                    addr+=((pSN->SPINand_PageSize+pSN->SPINand_SpareArea)* pSN->SPINand_PagePerBlock);
+                    goto _retry_2;
+                }
+                addr += (pSN->SPINand_PageSize+pSN->SPINand_SpareArea);
+            }
+            blockNum++;
+        }
+    }
+
+    MSG_DEBUG("BatchBurn_SPINAND_Data_OOB() End blockNum-blockNo=%d\n", blockNum-blockNo);
     SendAck(blockNum-blockNo);
-
-#endif
     return status;
 }
 
@@ -2445,7 +2522,6 @@ int BatchBurn_SPINAND_BOOT(UINT32 len,UINT32 blockNo,UINT32 blockLen,UINT32 Head
     int volatile page_count, block_count, page, addr, blockNum, total;
     int volatile blkindx,i, j, pagetmp=0;
     unsigned int address = DOWNLOAD_BASE;
-
     unsigned char *_ch,*ptr;
     unsigned int *_ack,ack=0;
     unsigned int reclen,remainlen;
@@ -2467,15 +2543,11 @@ int BatchBurn_SPINAND_BOOT(UINT32 len,UINT32 blockNo,UINT32 blockLen,UINT32 Head
     blockNum = blockNo;
     total = page_count*blockLen;
 
-    // define for USB ack
-    addr = address | NON_CACHE;
-
     // erase needed blocks
     block_count = page_count / (pSN->SPINand_PagePerBlock);
     MSG_DEBUG(">>>>>> len=%d  blockLen=%d  blockNum=%d    total=%d    block_count=%d  page_count =%d\n",len, blockLen, blockNum, total, block_count, page_count);
 
     if (page_count <= pSN->SPINand_PagePerBlock) {
-        //page_count = page_count - block_count * pSM->uPagePerBlock;
         memset(_ch+headlen,0xff,(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize));
         ptr=_ch+headlen;
         remainlen=len-(block_count*pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize)-headlen;
@@ -2495,37 +2567,45 @@ _retry_2:
         for(blkindx=blockNum; blkindx<blockLen; blkindx++) {
             addr = address | NON_CACHE;
             page = pSN->SPINand_PagePerBlock * (blkindx);
-            MSG_DEBUG("blkindx = %d   page = %d   page_count=%d\n", blkindx, page, page_count);
-            spiNAND_BlockErase(((page>>8)&0xFF), (page&0xFF)); // block erase
-            status = spiNAND_StatusRegister(3);
-            status = (status&0x0C)>>2;
-            if (status != 0) {
-                if(spiNAND_bad_block_check(page)==1) {
-                    printf("bad_block:%d\n", blockNum);
-                    blockNum++;
-                    //continue;
-                    goto _retry_2;
-                }
-            }
-            // write block
-            for (i=0; i<page_count; i++) {
-                MSG_DEBUG("page+i=%d\n",page+i);
-                spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
-                spiNAND_Program_Excute((((page+i)>>8)&0xFF), (page+i)&0xFF);
-                status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
+
+            if(spiNAND_bad_block_check(page) == 1) {
+                MSG_DEBUG("bad_block:%d\n", blockNum);
+                blockNum++;
+                goto _retry_2;
+            } else {
+                MSG_DEBUG("blkindx = %d   page = %d   page_count=%d\n", blkindx, page, page_count);
+                spiNAND_BlockErase(((page>>8)&0xFF), (page&0xFF)); // block erase
+                status = spiNAND_Check_Program_Erase_Fail_Flag();
                 if (status != 0) {
                     if(spiNAND_bad_block_check(page)==1) {
-                        //spiNAND_bad_block_check(page);
+                        MSG_DEBUG("Error erase status! bad_block:%d\n", blockNum);
+                        spiNANDMarkBadBlock(page);
                         blockNum++;
-                        addr = (address + block_count * pSN->SPINand_PagePerBlock * pSN->SPINand_PageSize) | NON_CACHE;
                         goto _retry_2;
                     }
                 }
-                addr += pSN->SPINand_PageSize;
-                pagetmp++;
+
+                // write block
+                for (i=0; i<page_count; i++) {
+                    MSG_DEBUG("page+i=%d\n",page+i);
+                    spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
+                    spiNAND_Program_Excute((((page+i)>>8)&0xFF), (page+i)&0xFF);
+                    status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
+                    if (status != 0) {
+                        MSG_DEBUG("Error write status! bad_block:%d\n", blockNum);
+                        spiNANDMarkBadBlock(page);
+                        blockNum++;
+                        //addr = (address + block_count * pSN->SPINand_PagePerBlock * pSN->SPINand_PageSize) | NON_CACHE;
+                        addr+=(pSN->SPINand_PageSize* pSN->SPINand_PagePerBlock);
+                        goto _retry_2;
+                        //}
+                    }
+                    addr += pSN->SPINand_PageSize;
+                    pagetmp++;
+                }
             }
+            blockNum++;
         }
-        blockNum++;
     } else {
         printf("Error Device image Error !!!\n");
         usb_recv(ptr, Bulk_Out_Transfer_Size);  //recv data from PC
@@ -2562,7 +2642,8 @@ _retry_:
             spiNAND_Normal_Read(0, 0, (uint8_t*)dst_adr, pSN->SPINand_PageSize);
             status = spiNAND_Check_Embedded_ECC_Flag();
             if(status != 0x00 && status != 0x01) {
-                printf("Error ECC status error[0x%x].\n", status);// Check ECC status and return fail if (ECC-1, ECC0) != (0,0) or != (0,1)
+                //spiNANDMarkBadBlock(page_no);
+                MSG_DEBUG("Error ECC status error[0x%x].\n", status);// Check ECC status and return fail if (ECC-1, ECC0) != (0,0) or != (0,1)
                 blockNum++;
                 total = len;
                 goto _retry_;
@@ -2580,6 +2661,49 @@ _retry_:
     return 0;
 }
 
+int Read_SPINand_Redunancy(UINT32 dst_adr,UINT32 blockNo, UINT32 len)
+{
+    int volatile status = 0;
+    int volatile page_count, blockNum;
+    int volatile page_no, total, i=0, j=0, k;
+    unsigned int block_count;
+    int spareSize;
+
+    MSG_DEBUG("Read_SPINand_Redunancy %d len =%d, blockNo=%d    %d\n", pSN->SPINand_PageSize+spareSize, len, blockNo, ((pSN->SPINand_PageSize+spareSize)*pSN->SPINand_PagePerBlock));
+    spareSize = pSN->SPINand_SpareArea;
+    block_count = len / ((pSN->SPINand_PageSize+spareSize)*pSN->SPINand_PagePerBlock);
+    page_count = len / (pSN->SPINand_PageSize+spareSize);
+    if ((len % ((pSN->SPINand_PageSize+spareSize)*pSN->SPINand_PagePerBlock)) != 0) block_count++;
+    blockNum = blockNo;
+    total = len;
+
+    while(1) {
+_retry_:
+        for (i=0; i<pSN->SPINand_PagePerBlock; i++) {
+            page_no = (blockNum * pSN->SPINand_PagePerBlock) + i;
+            MSG_DEBUG("blockNum =%d  page_no = %d   total=%d  pageSize=%d\n", blockNum, page_no, total, pSN->SPINand_PageSize+64);
+            spiNAND_PageDataRead((page_no>>8)&0xFF, (page_no&0xFF));// Read verify
+            spiNAND_Normal_Read(0, 0, (uint8_t*)dst_adr, pSN->SPINand_PageSize+spareSize);
+            status = spiNAND_Check_Embedded_ECC_Flag();
+            if(status != 0x00 && status != 0x01) {
+                MSG_DEBUG("Error ECC status error[0x%x].\n", status);// Check ECC status and return fail if (ECC-1, ECC0) != (0,0) or != (0,1)
+                blockNum++;
+                total = len;
+                goto _retry_;
+            }
+            dst_adr += (pSN->SPINand_PageSize+spareSize);
+            total -= (pSN->SPINand_PageSize-spareSize);
+        }
+        j++;
+        blockNum++;
+        if ((j >= block_count) || (total <= 0))
+            break;
+    }
+
+    MSG_DEBUG("End Read_SPINand_Redunancy  total = %d\n", total);
+    return 0;
+}
+
 void UXmodem_SPINAND()
 {
     int i,offset=0, ret;
@@ -2587,11 +2711,13 @@ void UXmodem_SPINAND()
     unsigned char buf[80];
     unsigned char *_ch;
     unsigned int *_ack;
-    unsigned int len, offblk=0;
+    unsigned int len;
     PACK_CHILD_HEAD ppack;
     unsigned int volatile blockNum, total, block_cnt, totalblock;
     unsigned int volatile PA_Num, badBlock = 0;
     unsigned int ddrlen;
+    unsigned int volatile offblk=0;
+    unsigned int volatile page_count;
 
     MSG_DEBUG("\n SPI NAND flash...\n");
     /* Initial SPI NAND */
@@ -2647,7 +2773,8 @@ void UXmodem_SPINAND()
             if(pspiNandImage->imageType!=IMAGE) {
                 if(pspiNandImage->imageType == DATA_OOB) {
                     MSG_DEBUG("DATA_OOB type\n");
-                    // to do  (ChipWriteWithOOB)
+                    // ChipWriteWithOOB
+					//BatchBurn_SPINAND_Data_OOB(pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize,pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSM->uPageSize),pspiNandImage->imageType);
                 } else {
                     MSG_DEBUG("BatchBurn_SPINAND(0x%x,  0x%x,  0x%x)\n", pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize, pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize), pspiNandImage->imageType);
                     BatchBurn_SPINAND(pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize,pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSM->uPageSize),pspiNandImage->imageType);
@@ -2670,6 +2797,7 @@ void UXmodem_SPINAND()
         MSG_DEBUG("SPI NAND modify !!!\n");
     }
     break;
+
     case ERASE_MODE: {  // erase
         MSG_DEBUG("SPI NAND erase !!!\n");
         /* for debug or delay */
@@ -2688,9 +2816,9 @@ void UXmodem_SPINAND()
         MSG_DEBUG("SPINand_PageSize=0x%08x(%d)\n",pSN->SPINand_PageSize, pSN->SPINand_PageSize);
 
         if(pspiNandImage->imageType==0) { //all chip erase
+            uint8_t volatile SR;
             usb_send((unsigned char*)&pSN->SPINand_BlockPerFlash,4);//send Erase block size to PC
             if (pspiNandImage->imageNo == 0xFFFFFFFF) {
-                uint8_t volatile SR;
                 for(blockNum=0; blockNum < pSN->SPINand_BlockPerFlash; blockNum++) {
                     PA_Num = blockNum*pSN->SPINand_PagePerBlock;
                     if(spiNAND_bad_block_check(PA_Num) == 1) {
@@ -2702,9 +2830,12 @@ void UXmodem_SPINAND()
                         spiNAND_BlockErase( (PA_Num>>8)&0xFF, PA_Num&0xFF);
                         SR = spiNAND_Check_Program_Erase_Fail_Flag();
                         if (SR != 0) {
-                            *_ack=0xffff;
+                            spiNANDMarkBadBlock(PA_Num);
+                            badBlock++;
+                            //*_ack=0xffff;
+                            *_ack=blockNum;
                             usb_send((unsigned char*)_ack,4);//send ack to PC
-                            printf("Error SR = 0x%x  blockNum = %d\n", SR, blockNum); // storage error
+                            printf("Error erase status! bad_block:%d\n", blockNum);
                         } else {
                             *_ack=blockNum;
                             usb_send((unsigned char*)_ack,4);//send ack to PC
@@ -2712,48 +2843,94 @@ void UXmodem_SPINAND()
                         }
                     }
                 }
-            } else { // To do  (ChipEraseWithBad)
-                //fmiSM_ChipEraseBad(0);
+            } else { // ChipEraseWithBad
+                for(blockNum=0; blockNum < pSN->SPINand_BlockPerFlash; blockNum++) {
+                    PA_Num = blockNum*pSN->SPINand_PagePerBlock;
+                    spiNAND_BlockErase( (PA_Num>>8)&0xFF, PA_Num&0xFF);
+                    SR = spiNAND_Check_Program_Erase_Fail_Flag();
+                    if (SR != 0) {
+                        spiNANDMarkBadBlock(PA_Num);
+                        //*_ack=0xffff;
+                        *_ack=blockNum;
+                        usb_send((unsigned char*)_ack,4);//send ack to PC
+                        printf("Error erase status! bad_block:%d\n", blockNum);
+                    } else {
+                        *_ack=blockNum;
+                        usb_send((unsigned char*)_ack,4);//send ack to PC
+                        MSG_DEBUG("BlockErase %d Done\n", blockNum);
+                    }
+                }
             }
         } else { // Erase accord start and length blocks
+            uint8_t volatile SR;
+            uint32_t volatile cnt = 0;
             usb_send((unsigned char*)&pspiNandImage->executeAddr,4);// send Erase block size to PC
             MSG_DEBUG("pspiNandImage->executeAddr = 0x%x   pspiNandImage->blockNo= %d\n",  pspiNandImage->executeAddr, pspiNandImage->blockNo);
             if (pspiNandImage->imageNo == 0xFFFFFFFF) {
-                uint8_t volatile SR;
-                uint32_t volatile cnt = 0;
                 for(blockNum=pspiNandImage->blockNo; blockNum < (pspiNandImage->blockNo+pspiNandImage->executeAddr); blockNum++) {
+                    cnt++;
                     PA_Num = blockNum*pSN->SPINand_PagePerBlock;
                     if(spiNAND_bad_block_check(PA_Num) == 1) {
                         printf("bad_block:%d\n", blockNum);
                         badBlock++;
+                        *_ack = blockNum /pspiNandImage->executeAddr;
+                        usb_send((unsigned char*)_ack,4);//send ack to PC
                         continue;
                     }
                     spiNAND_BlockErase( (PA_Num>>8)&0xFF, PA_Num&0xFF);
                     SR = spiNAND_Check_Program_Erase_Fail_Flag();
                     if (SR != 0) {
-                        printf("Error SR = 0x%x  blockNum = %d\n", SR, blockNum); // storage error
-                        *_ack=0xffff;
+                        printf("Error erase status! bad_block:%d\n", blockNum);
+                        spiNANDMarkBadBlock(PA_Num);
+                        badBlock++;
+                        //*_ack=0xffff;
+                        //*_ack=((cnt+1)*100) /pspiNandImage->executeAddr;
+                        *_ack=((blockNum+1)*100) /((pspiNandImage->blockNo+pspiNandImage->executeAddr));
                         usb_send((unsigned char*)_ack,4);//send ack to PC
                     } else {
                         /* send status */
+                        //*_ack=((cnt+1)*100) /pspiNandImage->executeAddr;
                         *_ack=((blockNum+1)*100) /((pspiNandImage->blockNo+pspiNandImage->executeAddr));
                         usb_send((unsigned char*)_ack,4);//send ack to PC
-                        MSG_DEBUG("blockNum = %d \n", *_ack);
+                        MSG_DEBUG("blockNum = %d  cnt=%d\n", *_ack, cnt);
                     }
                 }
             }
-#if(0) // To do  (ChipEraseWithBad)
+#if(0)
+            // ChipEraseWithBad - OOB
             else {
-
-                //fmiSM_EraseBad(0,pspiNandImage->blockNo,pspiNandImage->executeAddr);
-                MSG_DEBUG("fmiSM_EraseBad\n");
+                MSG_DEBUG("ChipEraseWithBad\n");
+                for(blockNum=pspiNandImage->blockNo; blockNum < (pspiNandImage->blockNo+pspiNandImage->executeAddr); blockNum++) {
+                    cnt++;
+                    PA_Num = blockNum*pSN->SPINand_PagePerBlock;
+                    spiNAND_BlockErase( (PA_Num>>8)&0xFF, PA_Num&0xFF);
+                    SR = spiNAND_Check_Program_Erase_Fail_Flag();
+                    if (SR != 0) {
+                        printf("Error erase status! bad_block:%d\n", blockNum);
+                        //spiNANDMarkBadBlock(PA_Num);
+                        badBlock++;
+                        //*_ack=0xffff;
+                        //*_ack=((cnt+1)*100) /pspiNandImage->executeAddr;
+                        *_ack=((blockNum+1)*100) /((pspiNandImage->blockNo+pspiNandImage->executeAddr));
+                        usb_send((unsigned char*)_ack,4);//send ack to PC
+                        //continue;
+                    } else {
+                        /* send status */
+                        //*_ack=((cnt+1)*100) /pspiNandImage->executeAddr;
+                        *_ack=((blockNum+1)*100) /((pspiNandImage->blockNo+pspiNandImage->executeAddr));
+                        usb_send((unsigned char*)_ack,4);//send ack to PC
+                        MSG_DEBUG("blockNum = %d  cnt=%d\n", *_ack, cnt);
+                    }
+                }
             }
 #endif
         }
     }
     break;
+
     case VERIFY_MODE: { // verify
         MSG_DEBUG("SPI NAND normal verify !!!\n");
+
         /* for debug or delay */
         {
             usleep(1000);
@@ -2762,14 +2939,18 @@ void UXmodem_SPINAND()
         }
         {
             if (pspiNandImage->imageType == UBOOT) {   // system image
-                int volatile offblk=0;
+                offblk=0;
                 _ch=((unsigned char*)(((unsigned int)DOWNLOAD_BASE)|NON_CACHE));
                 ptr=_ch;
-                while(spiNAND_bad_block_check(pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize)+offblk) == 1) {
+                PA_Num = pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize);
+_retry3_:
+                page_count = (PA_Num+offblk)*pSN->SPINand_PagePerBlock;
+                while(spiNAND_bad_block_check(page_count) == 1) {
                     offblk++;
+                    goto _retry3_;
                 }
                 MSG_DEBUG("offblk %d\n", offblk);
-                Read_SPINand(DOWNLOAD_BASE,pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize)+offblk,pspiNandImage->fileLength+IBR_HEADER_LEN+pspiNandImage->initSize);
+                Read_SPINand(DOWNLOAD_BASE,PA_Num+offblk,pspiNandImage->fileLength+IBR_HEADER_LEN+pspiNandImage->initSize);
                 MSG_DEBUG("Read_SPINand   0x%x, 0x%x, 0x%x\n", DOWNLOAD_BASE, pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize)+offblk, pspiNandImage->fileLength+IBR_HEADER_LEN+pspiNandImage->initSize);
 
                 memmove(_ch,_ch+IBR_HEADER_LEN+pspiNandImage->initSize,pspiNandImage->fileLength);
@@ -2781,21 +2962,23 @@ void UXmodem_SPINAND()
                     ptr += (*_ack);
                 } while((ptr-_ch)<(pspiNandImage->fileLength));
             } else {
-                int volatile total,offblk=0;
-                int volatile page_count;
+                offblk=0;
                 total=pspiNandImage->fileLength;
                 do {
                     _ch=((unsigned char*)(((unsigned int)DOWNLOAD_BASE)|NON_CACHE));
                     ptr=_ch;
                     len=MIN(total,pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize);
                     memset(ptr, 0xff, pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize);
-
                     PA_Num = pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize);
-                    while(spiNAND_bad_block_check(PA_Num+offblk) == 1) {
+                    MSG_DEBUG("verify :%d   %d   %d \n", PA_Num+offblk, PA_Num, offblk);
+_retry4_:
+                    page_count = (PA_Num+offblk)*pSN->SPINand_PagePerBlock;
+                    while(spiNAND_bad_block_check(page_count) == 1) {
+                        MSG_DEBUG("verify read bad_block:%d   %d  %d   %d \n", PA_Num+offblk, page_count, PA_Num, offblk);
                         offblk++;
-                        printf("bad_block:%d\n", PA_Num+offblk);
+                        goto _retry4_;
                     }
-                    Read_SPINand(DOWNLOAD_BASE,pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize)+offblk,len);
+                    Read_SPINand(DOWNLOAD_BASE,PA_Num+offblk,len);
                     MSG_DEBUG("Read_SPINand(DOWNLOAD_BASE, %d, %d)\n\n", pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize)+offblk,len);
                     do {
                         usb_send(ptr,TRANSFER_LEN); //send data to PC
@@ -2812,6 +2995,7 @@ void UXmodem_SPINAND()
         }
     }
     break;
+
     case PACK_VERIFY_MODE: { // verify
         MSG_DEBUG("\n SPI NAND PACK verify !!!\n");
         /* for debug or delay */
@@ -2834,12 +3018,20 @@ void UXmodem_SPINAND()
             }
 
             if (ppack.imagetype == UBOOT) {   // system image
-                int offblk=0;
                 int rawfilelen = 0;
+                offblk=0;
                 _ch=((unsigned char*)(((unsigned int)DOWNLOAD_BASE)|NON_CACHE));
                 ptr=_ch;
-                while(spiNAND_bad_block_check(pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize)+offblk) == 1) {
+                len=MIN(total,pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize);
+                memset(ptr, 0xff, pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize);
+                PA_Num = pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize);
+                MSG_DEBUG("pack verify :%d   %d   %d \n", PA_Num+offblk, PA_Num, offblk);
+_retry5_:
+                page_count = (PA_Num+offblk)*pSN->SPINand_PagePerBlock;
+                while(spiNAND_bad_block_check(page_count) == 1) {
+                    MSG_DEBUG("pack verify read bad_block:%d\n", PA_Num+offblk);
                     offblk++;
+                    goto _retry5_;
                 }
                 // Get DDR parameter length
                 usb_recv(ptr,4);
@@ -2862,19 +3054,25 @@ void UXmodem_SPINAND()
                 } while((ptr-_ch)<(rawfilelen));
 
             } else {
-                int total,offblk=0;
+                //int total,offblk=0;
+                offblk = 0;
                 total=ppack.filelen;
                 pspiNandImage->blockNo = ppack.startaddr;
                 do {
                     _ch=((unsigned char*)(((unsigned int)DOWNLOAD_BASE)|NON_CACHE));
                     ptr=_ch;
-
                     len=MIN(total,pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize);
                     memset(ptr, 0xff, pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize);
-                    while(spiNAND_bad_block_check(pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize)+offblk) == 1) {
+                    PA_Num = pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize);
+_retry6_:
+                    page_count = (PA_Num+offblk)*pSN->SPINand_PagePerBlock;
+                    //printf("pack verify :%d   %d   %d   page_count=%d\n", PA_Num+offblk, PA_Num, offblk, page_count);
+                    while(spiNAND_bad_block_check(page_count) == 1) {// || (page_count == 24*pSN->SPINand_PagePerBlock)) {
                         offblk++;
+                        goto _retry6_;
                     }
-                    Read_SPINand(DOWNLOAD_BASE,pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize)+offblk,len);
+                    //printf("pack verify :%d   %d   %d   page_count=%d\n", PA_Num+offblk, PA_Num, offblk, page_count);
+                    Read_SPINand(DOWNLOAD_BASE,PA_Num+offblk,len);
                     MSG_DEBUG("Read_SPINAND offblk=%d,len=%d\n",offblk,len);
                     do {
                         usb_send(ptr,TRANSFER_LEN); //send data to PC
@@ -2891,6 +3089,7 @@ void UXmodem_SPINAND()
         }
     }
     break;
+
     case READ_MODE: { // read
         MSG_DEBUG("SPI NAND normal read !!!\n");
         /* for debug or delay */
@@ -2900,7 +3099,8 @@ void UXmodem_SPINAND()
             usb_send((unsigned char*)_ack,4);//send ack to PC
         }
 
-        MSG_DEBUG("offset=%d,blockNo=%d,fileLength=%d\n",offset,pspiNandImage->blockNo,pspiNandImage->fileLength);
+        MSG_DEBUG("READ_MODE offset=%d,blockNo=%d,fileLength=%d\n",offset,pspiNandImage->blockNo,pspiNandImage->fileLength);
+        offblk=0;
         block_cnt = 0;
         total=pspiNandImage->fileLength;
         totalblock = pspiNandImage->fileLength/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize);
@@ -2912,14 +3112,14 @@ void UXmodem_SPINAND()
             if(pspiNandImage->initSize==0) { //0: read good block , others : read redundancy area,good block and bad block
                 len=MIN(total,pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize);
                 memset(ptr, 0, len);
-                PA_Num = blockNum*pSN->SPINand_PagePerBlock;
-                MSG_DEBUG("PA_Num=0x%x(%d)  offblk=%d  blockNum=%d\n",PA_Num, PA_Num, offblk, blockNum);
-#if(1)
-                //while(spiNAND_bad_block_check(pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize)+offblk) == 1) {
-                while(spiNAND_bad_block_check(PA_Num+offblk) == 1) {
+_retry7_:
+                page_count = (blockNum+offblk)*pSN->SPINand_PagePerBlock;
+                MSG_DEBUG("page_count=0x%x(%d)  offblk=%d  blockNum=%d\n",page_count, page_count, offblk, blockNum+offblk);
+                while(spiNAND_bad_block_check(page_count) == 1) {
                     offblk++;
+                    goto _retry7_;
                 }
-#endif
+
                 MSG_DEBUG("blockIdx =%d\n", blockNum+offblk);
                 Read_SPINand(DOWNLOAD_BASE, blockNum+offblk ,len);
                 do {
@@ -2931,27 +3131,23 @@ void UXmodem_SPINAND()
                 total-=len;
                 offblk+=1;
             } else {
-#if(0) //To do (ChipReadWithBad)
+                MSG_DEBUG("ChipReadWithBad\n");
                 len=MIN(total,pSN->SPINand_PagePerBlock*(pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
                 memset(ptr, 0, len);
-                Read_Nand_Redunancy(DOWNLOAD_BASE,pNandImage->blockNo+offblk,len);
+                Read_SPINand_Redunancy(DOWNLOAD_BASE,blockNum+offblk,len);
                 do {
-                    usb_send(ptr,pSN->SPINand_PageSize); //send data to PC
+                    usb_send(ptr,4096); //send data to PC
                     while(Bulk_Out_Transfer_Size==0) {}
                     usb_recv((unsigned char*)_ack,4); //recv data from PC
-                    ptr += (*_ack);
-                    usb_send(ptr,pSN->SPINand_SpareArea); //send redundancy data to PC
-                    while(Bulk_Out_Transfer_Size==0) {}
-                    usb_recv((unsigned char*)_ack,4); //recv redundancy data from PC
                     ptr += (*_ack);
                 } while((ptr-_ch)<len);
                 total-=(len);
                 offblk+=1;
-#endif
             }
         } while(total!=0);
     }
     break;
+
     case PACK_MODE: {
         MSG_DEBUG("SPI NAND pack mode !!!\n");
         /* for debug or delay */

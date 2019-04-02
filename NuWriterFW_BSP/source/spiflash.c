@@ -9,6 +9,7 @@
 
 #define TIMEOUT  (1000000)   /* unit of timeout is micro second */
 #define QSPI_FLASH_PORT    QSPI0
+#define SPI_64K     (64*1024)
 
 unsigned int volatile u32PowerOn;
 
@@ -23,6 +24,7 @@ typedef struct {
 
 
 UINT8 usiStatusRead(void);
+int spiNorReset(void);
 int wbSpiWrite(UINT32 addr, UINT32 len, UINT8 *buf);
 int sstSpiWrite(UINT32 addr, UINT32 len, UINT8 *buf);
 int usiEnable4ByteAddressMode(void);
@@ -41,6 +43,47 @@ spiflash_t spiflash[]= {
 
 INT32 volatile _spi_type = -1;
 
+int spiNorReset()
+{
+    /* reset SPI flash */
+    // /CS: active
+    QSPI_SET_SS_LOW(QSPI_FLASH_PORT);
+
+    QSPI_WRITE_TX(QSPI_FLASH_PORT, 0x66);
+
+    usiActive();
+
+    // /CS: de-active
+    QSPI_SET_SS_HIGH(QSPI_FLASH_PORT);
+
+    DelayMicrosecond(50);
+
+    // /CS: active
+    QSPI_SET_SS_LOW(QSPI_FLASH_PORT);
+    QSPI_WRITE_TX(QSPI_FLASH_PORT, 0x99);
+
+    usiActive();
+
+    // /CS: de-active
+    QSPI_SET_SS_HIGH(QSPI_FLASH_PORT);
+
+    DelayMicrosecond(50);
+
+    outpw(REG_SPI0_SSCTL, 0x01);	// CS0 low
+
+    // /CS: active
+    QSPI_SET_SS_LOW(QSPI_FLASH_PORT);
+    QSPI_WRITE_TX(QSPI_FLASH_PORT, 0xf0);
+
+    usiActive();
+
+    // /CS: de-active
+    QSPI_SET_SS_HIGH(QSPI_FLASH_PORT);
+    DelayMicrosecond(50);
+
+    return 0;
+
+}
 
 int usiActive()
 {
@@ -383,7 +426,7 @@ int usiEraseSector(UINT32 addr, UINT32 secCount)
 
     if(Enable4ByteFlag==1)  usiEnable4ByteAddressMode();
 
-    if ((addr % (64*1024)) != 0)
+    if ((addr % SPI_64K) != 0)
         return -1;
 
     for (i=0; i<secCount; i++) {
@@ -399,7 +442,7 @@ int usiEraseSector(UINT32 addr, UINT32 secCount)
         usiActive();
 
         // send 24-bit start address
-        StartAddress = addr + (i*64*1024);
+        StartAddress = addr + (i*SPI_64K);
         if(Enable4ByteFlag==1) {
             // send 32-bit start address
             QSPI_WRITE_TX(QSPI_FLASH_PORT, (StartAddress>>24) & 0xFF);
@@ -489,6 +532,7 @@ int usiEraseAll()
             printf("   \r");
             return Fail;
         } else {
+            ETIMER_Delay(0, 300);
             if ((QSPI_READ_RX(QSPI_FLASH_PORT) & 0x1) != 0x01) {
                 SendAck(100);
                 // /CS: de-active
@@ -496,8 +540,9 @@ int usiEraseAll()
                 break;
             }
 
-            if(count % 20000 == 0) {
-            //if(count % 10000 == 0) {
+
+            //if(count % 20000 == 0) {
+            if(count % 2500 == 0) {
                 timeoutcnt++;
                 if (pos > 95) {
                     SendAck(95);
@@ -664,7 +709,7 @@ int usiInit()
         /* Configure multi function pins to QSPI0 */
         outpw(REG_SYS_GPD_MFPL, (inpw(REG_SYS_GPD_MFPL) & ~0xFFFFFF00) | 0x11111100); // PD.2 ~ PD.7
 
-        /* Configure QQSPI_FLASH_PORT as a master, MSB first, 8-bit transaction, QSPI Mode-0 timing, clock is 20MHz */
+        /* Configure QSPI_FLASH_PORT as a master, MSB first, 8-bit transaction, QSPI Mode-0 timing, clock is 20MHz */
         QSPI_Open(QSPI_FLASH_PORT, QSPI_MASTER, QSPI_MODE_0, 8, 20000000);
         /* Disable auto SS function, control SS signal manually. */
         QSPI_DisableAutoSS(QSPI_FLASH_PORT);
@@ -685,7 +730,7 @@ int DelSpiSector(UINT32 start, UINT32 len)
 {
     int i;
     for(i=0; i<len; i++) {
-        usiEraseSector((start+i)*64*1024, 1);
+        usiEraseSector((start+i)*SPI_64K, 1);
         SendAck(((i+1)*100)/len);
     }
     return Successful;
@@ -697,12 +742,12 @@ int DelSpiImage(UINT32 imageNo)
     unsigned int startOffset=0, length=0;
     unsigned char *pbuf;
     unsigned int *ptr;
-    UCHAR _fmi_ucBuffer[64*1024];
+    UCHAR _fmi_ucBuffer[SPI_64K];
 
     pbuf = (UINT8 *)((UINT32)_fmi_ucBuffer | 0x80000000);
     ptr = (unsigned int *)((UINT32)_fmi_ucBuffer | 0x80000000);
     SendAck(10);
-    usiRead( (SPI_HEAD_ADDR-1)*64*1024, 64*1024, (UINT8 *)pbuf);
+    usiRead( (SPI_HEAD_ADDR-1)*SPI_64K, SPI_64K, (UINT8 *)pbuf);
     ptr = (unsigned int *)(pbuf + 63*1024);
     SendAck(30);
     if (((*(ptr+0)) == 0xAA554257) && ((*(ptr+3)) == 0x63594257)) {
@@ -723,19 +768,19 @@ int DelSpiImage(UINT32 imageNo)
         memcpy((char *)ptr, (char *)(ptr+8), (count-i-1)*32);
     }
     SendAck(40);
-    usiEraseSector((SPI_HEAD_ADDR-1)*64*1024, 1);   /* erase sector 0 */
+    usiEraseSector((SPI_HEAD_ADDR-1)*SPI_64K, 1);   /* erase sector 0 */
 
     /* send status */
     SendAck(50);
 
-    usiWrite((SPI_HEAD_ADDR-1)*64*1024, 64*1024, pbuf);
+    usiWrite((SPI_HEAD_ADDR-1)*SPI_64K, SPI_64K, pbuf);
     SendAck(80);
     // erase the sector
     {
         int tmpCnt=0;
         if (startOffset != 0) {
-            tmpCnt = length / (64 * 1024);
-            if ((length % (64 * 1024)) != 0)
+            tmpCnt = length / SPI_64K;
+            if ((length % SPI_64K) != 0)
                 tmpCnt++;
 
             usiEraseSector(startOffset, tmpCnt);
@@ -750,12 +795,12 @@ int ChangeSpiImageType(UINT32 imageNo, UINT32 imageType)
     int i, count;
     unsigned char *pbuf;
     unsigned int *ptr;
-    UCHAR _fmi_ucBuffer[64*1024];
+    UCHAR _fmi_ucBuffer[SPI_64K];
 
     pbuf = (UINT8 *)((UINT32)_fmi_ucBuffer | 0x80000000);
     ptr = (unsigned int *)((UINT32)_fmi_ucBuffer | 0x80000000);
 
-    usiRead( (SPI_HEAD_ADDR-1)*64*1024, 64*1024, (UINT8 *)pbuf);
+    usiRead( (SPI_HEAD_ADDR-1)*SPI_64K, SPI_64K, (UINT8 *)pbuf);
     ptr = (unsigned int *)(pbuf + 63*1024);
 
     if (((*(ptr+0)) == 0xAA554257) && ((*(ptr+3)) == 0x63594257)) {
@@ -773,9 +818,9 @@ int ChangeSpiImageType(UINT32 imageNo, UINT32 imageType)
         }
     }
 
-    usiEraseSector((SPI_HEAD_ADDR-1)*64*1024, 1);   /* erase sector 0 */
+    usiEraseSector((SPI_HEAD_ADDR-1)*SPI_64K, 1);   /* erase sector 0 */
 
-    usiWrite((SPI_HEAD_ADDR-1)*64*1024, 64*1024, pbuf);
+    usiWrite((SPI_HEAD_ADDR-1)*SPI_64K, SPI_64K, pbuf);
 
     return Successful;
 }
