@@ -251,14 +251,22 @@ int SD_Init(FMI_SD_INFO_T *pSD)
                 else
                     pSD->uCardType = SD_TYPE_MMC;
             } else {
+                pSD->bIsCardInsert = FALSE;
                 pSD->uCardType = SD_TYPE_UNKNOWN;
                 return SD_ERR_DEVICE;
             }
         } else if (i == 0) { // SD Memory
+            unsigned int u32ReadyTimeOut = 0xfful;
             _sd_uR3_CMD = 1;
             SD_SDCmdAndRsp(pSD, 41, 0x00ff8000ul, u32CmdTimeOut); // 3.0v-3.4v
             resp = inpw(REG_FMI_EMMCRESP0);
             while ((resp & 0x00800000ul) != 0x00800000ul) {
+                if(u32ReadyTimeOut-- == 0ul)
+                {
+                    pSD->bIsCardInsert = FALSE;
+                    pSD->uCardType = SD_TYPE_UNKNOWN;
+                    return SD_INIT_ERROR;
+                }
                 SD_SDCmdAndRsp(pSD, 55, 0x00,u32CmdTimeOut);
                 _sd_uR3_CMD = 1;
                 SD_SDCmdAndRsp(pSD, 41, 0x00ff8000ul, u32CmdTimeOut); // 3.0v-3.4v
@@ -266,6 +274,7 @@ int SD_Init(FMI_SD_INFO_T *pSD)
             }
             pSD->uCardType = SD_TYPE_SD_LOW;
         } else {
+            pSD->bIsCardInsert = FALSE;
             pSD->uCardType = SD_TYPE_UNKNOWN;
             return SD_INIT_ERROR;
         }
