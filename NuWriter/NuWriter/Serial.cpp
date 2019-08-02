@@ -1225,7 +1225,7 @@ BYTE CSerial::ChooseMethod (DOWNMETHOD method)
 			m_lLastError = ::GetLastError();
 
 			// Display a warning
-			AfxMessageBox(_T("ChooseMethod - Unable to set flash method"));
+			AfxMessageBox(_T("Error! ChooseMethod - Unable to set flash method"));
 			return 0;
 
 		}

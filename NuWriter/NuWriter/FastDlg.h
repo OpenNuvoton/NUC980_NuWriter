@@ -38,6 +38,7 @@ public:
     HANDLE hThread[8];
 
     int m_type;
+	int m_filename_len;
     int iId_Array[8];
     int m_DeviceId;
     int m_Downloadcnt;

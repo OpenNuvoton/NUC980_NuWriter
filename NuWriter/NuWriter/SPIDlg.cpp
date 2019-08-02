@@ -74,7 +74,8 @@ BOOL CSPIDlg::OnInitDialog()
     m_progress.SetRange(0,100);
     m_progress.SetBkColor(COLOR_DOWNLOAD);
     m_filename="";
-    GetDlgItem(IDC_SPI_VERIFY)->EnableWindow(FALSE);
+    //GetDlgItem(IDC_SPI_VERIFY)->EnableWindow(FALSE);
+	GetDlgItem(IDC_SPI_VERIFY)->EnableWindow(TRUE);
 
     COLORREF col = RGB(0xFF, 0x00, 0xFF);
     m_eraseall.setBitmapId(IDB_ERASEALL, col);
@@ -181,7 +182,7 @@ void CSPIDlg::Download()
         //}
 
     } else
-        AfxMessageBox(_T("Please choose image file !"));
+        AfxMessageBox(_T("Error! Please choose image file."));
     return ;
 
 }
@@ -201,20 +202,20 @@ void CSPIDlg::OnBnClickedSpiDownload()
 
     //UpdateData(TRUE);
     if(m_imagename.IsEmpty()) {
-        AfxMessageBox(_T("Please input image file"));
+        AfxMessageBox(_T("Error! Please input image file"));
         return;
     }
 
     if( (m_type!=UBOOT)&&((m_execaddr.IsEmpty())||(m_startblock.IsEmpty()) ) && (m_type!=PACK)) {
 
-        AfxMessageBox(_T("Please input image information"));
+        AfxMessageBox(_T("Error! Please input image information"));
         return;
     }
 
     _stscanf_s(m_startblock,_T("%x"),&_startblock);
 
     if((m_type!=UBOOT)&&(_startblock%(SPI64K)!=0) && (m_type!=PACK)) {
-        AfxMessageBox(_T("Start offset must be 64K (0x10000) boundary !"));
+        AfxMessageBox(_T("Error! Start offset must be 64K(0x10000) boundary."));
         return;
     }
 
@@ -225,7 +226,7 @@ void CSPIDlg::OnBnClickedSpiDownload()
 
         UpdateData(TRUE);
 
-        if(::MessageBox(this->m_hWnd,_T("Do you confirm this operation ?"),_T("Nu Writer"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
+        if(::MessageBox(this->m_hWnd,_T("Do you confirm this operation ?"),_T("NuWriter"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
             return;
 
         unsigned Thread1;
@@ -268,11 +269,11 @@ void CSPIDlg:: Verify()
         GetDlgItem(IDC_SPI_VERIFY)->SetWindowText(_T("Abort"));
         ret=XUSB_Verify(mainWnd->m_portName,m_filename);
         if(ret)
-            AfxMessageBox(_T("Verify OK !"));
+            AfxMessageBox(_T("Verify OK"));
         else
         {
             m_progress.SetPos(0);
-            AfxMessageBox(_T("Verify Error !"));
+            AfxMessageBox(_T("Verify Error."));
         }
         GetDlgItem(IDC_SPI_VERIFY)->EnableWindow(TRUE);
         GetDlgItem(IDC_SPI_VERIFY)->SetWindowText(_T("Verify"));
@@ -281,7 +282,7 @@ void CSPIDlg:: Verify()
 
 
     } else
-        AfxMessageBox(_T("Please choose comparing file !"));
+        AfxMessageBox(_T("Error! Please choose comparing file."));
 
     return ;
 
@@ -296,7 +297,7 @@ void CSPIDlg::OnBnClickedSpiVerify()
 
     if(m_type==PACK) {
 
-        AfxMessageBox(_T("Pack image can't verify"));
+        AfxMessageBox(_T("Error! Pack image can't verify"));
         return;
     }
 
@@ -334,11 +335,11 @@ void CSPIDlg:: Read()
         _stscanf_s(m_blocks,_T("%d"),&blocks);
         _stscanf_s(m_sblocks,_T("%d"),&sblocks);
         if(XUSB_Read(mainWnd->m_portName,m_filename2,sblocks*64*1024,blocks*64*1024))
-            AfxMessageBox(_T("Read OK !"));
+            AfxMessageBox(_T("Read OK."));
         else
         {
             m_progress.SetPos(0);
-            AfxMessageBox(_T("Read Error !"));
+            AfxMessageBox(_T("Read Error!"));
         }
 
         GetDlgItem(IDC_SPI_READ)->EnableWindow(TRUE);
@@ -347,7 +348,7 @@ void CSPIDlg:: Read()
         mainWnd->m_gtype.EnableWindow(TRUE);
 
     } else
-        AfxMessageBox(_T("Please choose read file !"));
+        AfxMessageBox(_T("Error! Please choose read file."));
 
     return ;
 }
@@ -442,7 +443,7 @@ void CSPIDlg::OnBnClickedSpiEraseall()
     m_sblocks=erase_dlg.sblock;
     m_erase_flag=erase_dlg.m_erase_type;
 #else
-    if(::MessageBox(this->m_hWnd,_T("Do you confirm this operation ?"),_T("Nu Writer"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
+    if(::MessageBox(this->m_hWnd,_T("Do you confirm this operation ?"),_T("NuWriter"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
         return;
 #endif
     UpdateData(TRUE);

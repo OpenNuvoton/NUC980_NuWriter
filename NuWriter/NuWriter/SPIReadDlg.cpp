@@ -141,13 +141,13 @@ void CReadDlg::OnBnClickedOk()
     m_filepath.GetWindowText(m_filename2);
     if(block.IsEmpty() || sblock.IsEmpty())
     {
-        AfxMessageBox(_T("Read blocks can't empty"));
+        AfxMessageBox(_T("Error! Read blocks can't empty"));
         return;
     }
 
     if(m_filename2.IsEmpty())
     {
-        AfxMessageBox(_T("Please select save file"));
+        AfxMessageBox(_T("Error! Please select save file"));
         return;
     }
 

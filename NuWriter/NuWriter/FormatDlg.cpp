@@ -128,7 +128,7 @@ void CFormatDlg::OnBnClickedOk()
     resSizeMB = (_wtoi(strResSize)/2/1024);
 
     if(strResSize.IsEmpty()) {
-        AfxMessageBox(_T("Please input reserve space"));
+        AfxMessageBox(_T("Error! Please input reserve space"));
         return ;
     }
 
@@ -138,7 +138,7 @@ void CFormatDlg::OnBnClickedOk()
         m_Edit1.GetWindowText(strPartition1Size);
         Partition1Size = _wtoi(strPartition1Size);
         if(Partition1Size != ParTotalMB) {
-            //AfxMessageBox(_T("Partition size != Total size !"));
+            //AfxMessageBox(_T("Error! Partition size != Total size !"));
             Partition1Size = ParTotalMB;
             strPartition1Size.Format(_T("%d"), Partition1Size);
             m_Edit1.SetWindowTextW(strPartition1Size);
@@ -150,7 +150,7 @@ void CFormatDlg::OnBnClickedOk()
         m_Edit2.GetWindowText(strPartition2Size);
         Partition2Size = _wtoi(strPartition2Size);
         if((Partition1Size+Partition2Size) != ParTotalMB) {
-            //AfxMessageBox(_T("Partition size != Total size !"));
+            //AfxMessageBox(_T("Error! Partition size != Total size !"));
             Partition2Size = (ParTotalMB-Partition1Size);
             strPartition2Size.Format(_T("%d"), Partition2Size);
             m_Edit2.SetWindowTextW(strPartition2Size);
@@ -164,7 +164,7 @@ void CFormatDlg::OnBnClickedOk()
         m_Edit3.GetWindowText(strPartition3Size);
         Partition3Size = _wtoi(strPartition3Size);
         if((Partition1Size+Partition2Size+Partition3Size) != ParTotalMB) {
-            //AfxMessageBox(_T("Partition size != Total size !"));
+            //AfxMessageBox(_T("Error! Partition size != Total size !"));
             Partition3Size = (ParTotalMB-Partition1Size-Partition2Size);
             strPartition3Size.Format(_T("%d"), Partition3Size);
             m_Edit3.SetWindowTextW(strPartition3Size);
@@ -180,7 +180,7 @@ void CFormatDlg::OnBnClickedOk()
         m_Edit4.GetWindowText(strPartition4Size);
         Partition4Size = _wtoi(strPartition4Size);
         if((Partition1Size+Partition2Size+Partition3Size+Partition4Size) != ParTotalMB) {
-            //AfxMessageBox(_T("Partition size != Total size !"));
+            //AfxMessageBox(_T("Error! Partition size != Total size !"));
             Partition4Size = (ParTotalMB-Partition1Size-Partition2Size-Partition3Size);
             strPartition4Size.Format(_T("%d"), Partition4Size);
             m_Edit4.SetWindowTextW(strPartition4Size);
@@ -203,7 +203,7 @@ BOOL CFormatDlg::OnInitDialog()
     TotalMB = TotalSize/2/1024;
 
     if(TotalMB == 0)
-        AfxMessageBox(_T("Please reset device and press Re-connect button now !!!\n"));
+        AfxMessageBox(_T("Error! Please reset device and press Re-connect button now !!!\n"));
 
     str.Format(_T("Total Size : %dMB(%d sectors)"), TotalMB, mainWnd->m_info.EMMC_uBlock);
     GetDlgItem(IDC_STATIC_FORMAT_TotalSize)->SetWindowTextW(str);
@@ -234,7 +234,7 @@ void CFormatDlg::OnBnClickedFormatBtnadd()
     Partition1Size = _wtoi(strPartition1Size);
     if(Partition1Size >= ParTotalMB) {
         m_BtnSet.EnableWindow(FALSE);
-        AfxMessageBox(_T("Partition Size = Total size, Can't add partition.  Please press Reset"));
+        AfxMessageBox(_T("Error! Partition Size = Total size, Can't add partition.  Please press Reset"));
         return;
     }
     if(m_CtrlCnt == 4) {
@@ -243,7 +243,7 @@ void CFormatDlg::OnBnClickedFormatBtnadd()
         m_BtnAdd.EnableWindow(FALSE);
         m_BtnSet.EnableWindow(FALSE);
         m_BtnRst.EnableWindow(TRUE);
-        AfxMessageBox(_T("Partition number > 4, please press Reset"));
+        AfxMessageBox(_T("Error! Partition number > 4, please press Reset"));
     }
 
 
@@ -266,7 +266,7 @@ void CFormatDlg::OnBnClickedFormatBtnadd()
 
 		if((Partition1Size+Partition2Size) >= ParTotalMB) {
             m_BtnSet.EnableWindow(FALSE);
-            AfxMessageBox(_T("Partition Size = Total size, Can't add partition.  Please press Reset"));
+            AfxMessageBox(_T("Error! Partition Size = Total size, Can't add partition.  Please press Reset"));
             return;
         }
         m_Slider3.EnableWindow(TRUE);
@@ -289,7 +289,7 @@ void CFormatDlg::OnBnClickedFormatBtnadd()
 
 		if((Partition1Size+Partition2Size+Partition3Size) >= ParTotalMB) {
             m_BtnSet.EnableWindow(FALSE);
-            AfxMessageBox(_T("Partition Size = Total size, Can't add partition.  Please press Reset"));
+            AfxMessageBox(_T("Error! Partition Size = Total size, Can't add partition.  Please press Reset"));
             return;
         }
         m_Slider4.EnableWindow(TRUE);
@@ -304,10 +304,10 @@ void CFormatDlg::OnBnClickedFormatBtnadd()
         m_BtnSet.EnableWindow(FALSE);
         m_BtnRst.EnableWindow(TRUE);
 		GetDlgItem(IDOK)->EnableWindow(FALSE);
-        AfxMessageBox(_T("Partition number > 4, please press Reset"));
+        AfxMessageBox(_T("Error! Partition number > 4, please press Reset"));
     }
 
-    //AfxMessageBox(_T("Please press Set to apply parameter."));
+    //AfxMessageBox(_T("Error! Please press Set to apply parameter."));
 }
 
 
@@ -324,7 +324,7 @@ void CFormatDlg::OnBnClickedFormatBtnset()
         TRACE(_T("Btnset strResSize = %s , resSizeMB = %d\n"), strResSize, resSizeMB);
 		
         if(strResSize.IsEmpty()) {
-            AfxMessageBox(_T("Please input reserve space"));
+            AfxMessageBox(_T("Error! Please input reserve space"));
             return ;
         }
 
@@ -357,7 +357,7 @@ void CFormatDlg::OnBnClickedFormatBtnset()
             m_BtnAdd.EnableWindow(FALSE);
             m_BtnSet.EnableWindow(TRUE);
             m_Slider1.EnableWindow(TRUE);
-            AfxMessageBox(_T("Partition size = 0 !"));
+            AfxMessageBox(_T("Error! Partition size = 0 !"));
             return;
         }
 
@@ -385,7 +385,7 @@ void CFormatDlg::OnBnClickedFormatBtnset()
         }
 
         if((Partition1Size+Partition2Size+Partition3Size+Partition4Size) > ParTotalMB) {
-            AfxMessageBox(_T("Partition size > Total size !"));
+            AfxMessageBox(_T("Error! Partition size > Total size !"));
             str.Format(_T("%d"), (ParTotalMB-Partition1Size-Partition2Size-Partition3Size));
             m_Edit4.SetWindowTextW(str);
             m_Slider4.SetSlidePos(Partition4Size);

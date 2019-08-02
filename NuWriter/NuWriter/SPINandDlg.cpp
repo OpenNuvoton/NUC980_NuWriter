@@ -300,7 +300,7 @@ void CSPINandDlg::Download()
         mainWnd->m_gtype.EnableWindow(TRUE);
 
     } else
-        AfxMessageBox(_T("Please choose image file !"));
+        AfxMessageBox(_T("Error! Please choose image file."));
     return ;
 
 }
@@ -321,7 +321,7 @@ void CSPINandDlg::OnBnClickedSpinandDownload()
 
     //UpdateData(TRUE);
     if(m_imagename.IsEmpty()) {
-        AfxMessageBox(_T("Please input image file"));
+        AfxMessageBox(_T("Error! Please input image file"));
         return;
     }
 
@@ -339,7 +339,7 @@ void CSPINandDlg::OnBnClickedSpinandDownload()
                 AfxMessageBox(tmp);
                 return;
 #else
-                if(::MessageBox(this->m_hWnd,tmp,_T("Nu Writer"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
+                if(::MessageBox(this->m_hWnd,tmp,_T("NuWriter"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
                     return;
 #endif
 
@@ -351,7 +351,7 @@ void CSPINandDlg::OnBnClickedSpinandDownload()
                 AfxMessageBox(tmp);
                 return;
 #else
-                if(::MessageBox(this->m_hWnd,tmp,_T("Nu Writer"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
+                if(::MessageBox(this->m_hWnd,tmp,_T("NuWriter"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
                     return;
 #endif
             }
@@ -368,7 +368,7 @@ void CSPINandDlg::OnBnClickedSpinandDownload()
 
         UpdateData(TRUE);
 
-        if(::MessageBox(this->m_hWnd,_T("Do you confirm this operation ?"),_T("Nu Writer"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
+        if(::MessageBox(this->m_hWnd,_T("Do you confirm this operation ?"),_T("NuWriter"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
             return;
 
         unsigned Thread1;
@@ -415,14 +415,14 @@ void CSPINandDlg:: Verify()
         GetDlgItem(IDC_SPINAND_VERIFY)->SetWindowText(_T("Abort"));
         ret=XUSB_Verify(mainWnd->m_portName,m_filename);
         if(ret==1)
-            AfxMessageBox(_T("Verify OK !"));
+            AfxMessageBox(_T("Verify OK."));
         else {
             if(ret==NAND_VERIFY_FILESYSTEM_ERROR)
-                AfxMessageBox(_T("This File System can't verify"));
+                AfxMessageBox(_T("Error! This File System can't verify"));
             else if(ret==NAND_VERIFY_PACK_ERROR)
-                AfxMessageBox(_T("Pack image can't verify"));
+                AfxMessageBox(_T("Error! Pack image can't verify"));
             else
-                AfxMessageBox(_T("Verify Error !"));
+                AfxMessageBox(_T("Verify Error! "));
             m_progress.SetPos(0);
         }
         GetDlgItem(IDC_SPINAND_VERIFY)->EnableWindow(TRUE);
@@ -432,7 +432,7 @@ void CSPINandDlg:: Verify()
 
 
     } else
-        AfxMessageBox(_T("Please choose comparing file !"));
+        AfxMessageBox(_T("Error! Please choose comparing file !"));
 
     return ;
 
@@ -566,7 +566,7 @@ void CSPINandDlg::OnBnClickedSpinandEraseall()
     m_sblocks=erase_dlg.sblock;
     m_erase_flag=erase_dlg.m_erase_type;
 #else
-    if(::MessageBox(this->m_hWnd,_T("Do you confirm this operation ?"),_T("Nu Writer"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
+    if(::MessageBox(this->m_hWnd,_T("Do you confirm this operation ?"),_T("NuWriter"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
         return;
 #endif
     UpdateData(TRUE);
@@ -601,7 +601,7 @@ void CSPINandDlg:: Read()
     m_progress.SetRange(0,100);
 	blocksize = mainWnd->m_info.SPINand_PagePerBlock*mainWnd->m_info.SPINand_PageSize;
     if(blocksize==0) {
-        AfxMessageBox(_T("Can't get SPI NAND flash size, Please reconnect to device\n"));
+        AfxMessageBox(_T("Error! Can't get SPI NAND flash size, Please reconnect to device\n"));
         return;
     }
     //UpdateData(FALSE);
@@ -619,23 +619,24 @@ void CSPINandDlg:: Read()
 			blocksize = mainWnd->m_info.SPINand_PagePerBlock*mainWnd->m_info.SPINand_PageSize;
 			TRACE(_T("SPINAND %d  %d  %d  %d\n"), blocks, sblocks, blocksize, blocks*blocksize);
             if(XUSB_Read(mainWnd->m_portName,m_filename2,sblocks,blocks*blocksize))
-                AfxMessageBox(_T("Read OK !"));
+                AfxMessageBox(_T("Read OK."));
             else
             {
                 m_progress.SetPos(0);
-                AfxMessageBox(_T("Read Error !"));
+                AfxMessageBox(_T("Read Error! "));
             }
         } else { //read redunancy data, good block and bad block
 			//AfxMessageBox(_T("Can't Read redundancy data!"));
-#if(1)
+#if(1) //cfli to do
 			blocksize = mainWnd->m_info.SPINand_PagePerBlock*(mainWnd->m_info.SPINand_PageSize+64);
 			TRACE(_T("SPINAND redunancy %d  %d  %d  %d\n"), blocks, sblocks, blocksize, blocks*blocksize);
 			if(XUSB_Read_Redunancy(mainWnd->m_portName,m_filename2,sblocks,blocks*blocksize))
-                AfxMessageBox(_T("Read OK !"));
+            //if(XUSB_Read_Redunancy(mainWnd->m_portName,m_filename2,sblocks,blocks))
+                AfxMessageBox(_T("Read OK."));
             else
             {
                 m_progress.SetPos(0);
-                AfxMessageBox(_T("Read Error !"));
+                AfxMessageBox(_T("Read Error!"));
             }
 #endif
         }
@@ -645,7 +646,7 @@ void CSPINandDlg:: Read()
         mainWnd->m_gtype.EnableWindow(TRUE);
 
     } else
-        AfxMessageBox(_T("Please choose read file !"));
+        AfxMessageBox(_T("Error! Please choose read file !"));
 
     return ;
 }

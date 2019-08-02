@@ -216,7 +216,7 @@ void CRAMDlg::OnBnClickedSdramDownload()
     InitFile(1);
     if(m_address.IsEmpty())
     {
-        AfxMessageBox(_T("Please input execute address"));
+        AfxMessageBox(_T("Error! Please input execute address"));
         return;
     }
 
@@ -353,7 +353,7 @@ void CRAMDlg:: Download()
 
     }
     else
-        AfxMessageBox(_T("Please choose image file !"));
+        AfxMessageBox(_T("Error! Please choose image file"));
 
     return ;
 

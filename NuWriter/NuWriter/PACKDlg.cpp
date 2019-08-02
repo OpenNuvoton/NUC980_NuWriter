@@ -134,13 +134,13 @@ void CPACKDlg::OnBnClickedPackAdd()
         //sList.push_back(szFileName); // 將完整路徑加到 sList 裡頭
         if(m_packtab1.m_type != PARTITION) {
             if(m_packtab1.m_imagename.IsEmpty()) {
-                AfxMessageBox(_T("Please input image file"));
+                AfxMessageBox(_T("Error! Please input image file"));
                 return;
             }
 
             if((m_packtab1.m_type!=UBOOT)&&((m_packtab1.m_execaddr.IsEmpty())||(m_packtab1.m_startblock.IsEmpty()) )) {
 
-                AfxMessageBox(_T("Please input image information"));
+                AfxMessageBox(_T("Error! Please input image information"));
                 return;
             }
         }
@@ -273,7 +273,7 @@ void CPACKDlg::OnBnClickedPackModify()
         m_packtab1.UpdateData(TRUE);
 
         if(m_packtab1.m_imagename.IsEmpty()) {
-            AfxMessageBox(_T("Please input image file"));
+            AfxMessageBox(_T("Error! Please input image file"));
             return;
         }
 
@@ -295,7 +295,7 @@ void CPACKDlg::OnBnClickedPackModify()
                 break;
         }
         if(i==imagelen || imagelen==0) {
-            AfxMessageBox(_T("Please select image item to modify first"));
+            AfxMessageBox(_T("Error! Please select image item to modify first"));
             return;
         }
         modify_idx=i;
@@ -450,7 +450,7 @@ void CPACKDlg::OnBnClickedPackDelete()
             break;
     }
     if(i==imagelen || imagelen==0) {
-        AfxMessageBox(_T("Please select image item to modify first"));
+        AfxMessageBox(_T("Error! Please select image item to modify first"));
         return;
     }
     modify_idx=i;
@@ -585,7 +585,7 @@ int CPACKDlg::Output()
     //-----------------------------------
     wfp=_wfopen(m_filename2,_T("w+b"));
     if(!wfp) {
-        AfxMessageBox(_T("File Open error\n"));
+        AfxMessageBox(_T("Error! File Open error\n"));
         return FALSE;
     }
     //-----------------------------------
@@ -609,7 +609,7 @@ int CPACKDlg::Output()
         if(*itemType==UBOOT) break;
     }
     if(i==imagelen) {
-        AfxMessageBox(_T("Can't find uBoot image, please input uboot for startup"));
+        AfxMessageBox(_T("Error! Can't find uBoot image, please input uboot for startup"));
     }
     //-----------------------------------------
 
@@ -868,7 +868,7 @@ void CPACKDlg::OnBnClickedPackOutput()
 {
     InitFile(1);
     if(m_imagelist.GetItemCount()==0) {
-        AfxMessageBox(_T("Please add image item to output binary file\n"));
+        AfxMessageBox(_T("Error! Please add image item to output binary file\n"));
         return;
     }
 
@@ -942,7 +942,7 @@ BOOL CPACKDlg::InitFile(int flag)
 
             if((FileExist(NameTemp)==NULL) && (NameTemp!=_T("Partition_INFO")))
             {
-                AfxMessageBox(_T("Please check file is exist"));
+                AfxMessageBox(_T("Error! Please check file is exist"));
                 return true;
                 //continue;
             }
@@ -1139,7 +1139,7 @@ void CPACKDlg::OnNMDblclkPackImagelist(NMHDR *pNMHDR, LRESULT *pResult)
             break;
     }
     if(i==imagelen || imagelen==0) {
-        AfxMessageBox(_T("Please select image item to modify first"));
+        AfxMessageBox(_T("Error! Please select image item to modify first"));
         return;
     }
     modify_idx=i;
@@ -1177,7 +1177,7 @@ void CPACKDlg::OnNMDblclkPackImagelist(NMHDR *pNMHDR, LRESULT *pResult)
         break;
     case PARTITION:
         ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A ))->SetCheck(TRUE);
-        //AfxMessageBox(_T("Please delete this item and re-format"));
+        //AfxMessageBox(_T("Error! Please delete this item and re-format"));
         break;
     }
     //-----------------------------------------------------------------------------

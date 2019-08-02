@@ -364,7 +364,7 @@ void CNuWriterDlg::OnBnClickedReconnect()
     g_iDeviceNum = NucUsb.UsbDevice_Detect();
     TRACE(_T("\n@@@@@ CNuWriterDlg::OnBnClickedReconnect, g_iDeviceNum =%d\n"), g_iDeviceNum);
     if(!g_iDeviceNum) {
-        AfxMessageBox(_T("No VCOM Port found !"));
+        AfxMessageBox(_T("Error! No VCOM Port found."));
         ShowDeviceConnectState(0);//Disconnected
         GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
         g_iCurDevNum = 0;
@@ -374,7 +374,7 @@ void CNuWriterDlg::OnBnClickedReconnect()
             FastMode_ProgressControl(8, 1); // HIDE
         }
 
-        //AfxMessageBox(_T("Please reset device and Re-connect now !!!\n"));
+        //AfxMessageBox(_T("Error! Please reset device and Re-connect now !!!\n"));
         return ;
     } else {
         ShowDeviceConnectState(1);//Connected
@@ -557,7 +557,7 @@ void CNuWriterDlg::LoadDDRInit(CString pathName,int *len)
     Read.open(pathName,ios::binary | ios::in);
 
     if(!Read.is_open())
-        AfxMessageBox(_T("open DDR initial file error\n"));
+        AfxMessageBox(_T("Error! Open DDR initial file error\n"));
 
     Read.seekg (0, Read.end);
     length=(int)Read.tellg();
@@ -572,7 +572,7 @@ void CNuWriterDlg::LoadDDRInit(CString pathName,int *len)
         Read.getline(tmp,256);
         ptmp=strchr(tmp,'=');
         if(ptmp==NULL) {
-            AfxMessageBox(_T("DDR initial format error\n"));
+            AfxMessageBox(_T("Error! DDR initial format error\n"));
             break;
         }
         strncpy(cvt,tmp,(unsigned int)ptmp-(unsigned int)tmp);
@@ -952,7 +952,7 @@ BOOL CNuWriterDlg:: Info()
     bResult = NucUsb.EnableWinUsbDevice();
     if(!bResult) {
         //AfxMessageBox(_T("CNuWriterDlg:: Info(): Device Enable error\n"));
-        //AfxMessageBox(_T("Please reset device and Re-connect now !!!\n"));
+        //AfxMessageBox(_T("Error! Please reset device and Re-connect now !!!\n"));
         return FALSE;
     }
 
@@ -960,7 +960,7 @@ BOOL CNuWriterDlg:: Info()
     bResult=NucUsb.NUC_CheckFw(0);
     ResetEvent(m_ExitEvent[0]);
     if(bResult==FALSE) {
-        AfxMessageBox(_T("Please reset device and Re-connect now !!!\n"));
+        AfxMessageBox(_T("Error! Please reset device and Re-connect now !!!\n"));
         return FALSE;
     }
 #endif
@@ -1098,7 +1098,7 @@ BOOL CNuWriterDlg::OneDeviceInfo(int id)
         NucUsb.CloseWinUsbDevice(id);
         ShowDeviceConnectState(0);//Disconnected
         GetDlgItem(IDC_RECONNECT)->EnableWindow(TRUE);
-        //AfxMessageBox(_T("Please reset device and Re-connect now !!!\n"));
+        //AfxMessageBox(_T("Error! Please reset device and Re-connect now !!!\n"));
         return FALSE;
     }
 
@@ -1107,7 +1107,7 @@ BOOL CNuWriterDlg::OneDeviceInfo(int id)
     bResult=NucUsb.NUC_CheckFw(id);
     ResetEvent(m_ExitEvent[id]);
     if(bResult==FALSE) {
-        AfxMessageBox(_T("Please reset device and Re-connect now !!!\n"));
+        AfxMessageBox(_T("Error! Please reset device and Re-connect now !!!\n"));
         return FALSE;
     }
 #endif
@@ -1511,7 +1511,7 @@ BOOL CNuWriterDlg::XUSB(int id, CString& m_BinName)
         delete []lpBuffer;
         NucUsb.CloseWinUsbDevice(id);
         fclose(fp);
-        AfxMessageBox(_T("Bin File Open error\n"));
+        AfxMessageBox(_T("Error! Bin File Open error\n"));
         //TRACE(_T("XXX Bin File Open error\n"));
         return FALSE;
     }
@@ -1535,7 +1535,7 @@ BOOL CNuWriterDlg::XUSB(int id, CString& m_BinName)
         fclose(fp);
         delete []lpBuffer;
         NucUsb.CloseWinUsbDevice(id);
-        TRACE(_T("File length is zero\n"));
+        TRACE(_T("Error! File length is zero\n"));
         return FALSE;
     }
 
@@ -1546,7 +1546,7 @@ BOOL CNuWriterDlg::XUSB(int id, CString& m_BinName)
         delete []lpBuffer;
         NucUsb.CloseWinUsbDevice(id);
         fclose(fp);
-        TRACE(_T("Invalid Image !\n"));
+        TRACE(_T("Error! Invalid Image.\n"));
         return FALSE;
     }
 

@@ -143,7 +143,7 @@ void CMMCDlg::Download()
             else
             {
                 m_progress.SetPos(0);
-                TRACE(_T("Burn Failed!! Please check device\n"));
+                TRACE(_T("Burn Error! Please check device\n"));
             }
         } else {
             ret = XUSB_PackErase(0, mainWnd->m_portName,m_filename);
@@ -157,7 +157,7 @@ void CMMCDlg::Download()
                 GetDlgItem(IDC_MMC_DOWNLOAD)->EnableWindow(TRUE);
                 GetDlgItem(IDC_MMC_DOWNLOAD)->SetWindowText(_T("Program"));
                 mainWnd->m_gtype.EnableWindow(TRUE);
-                AfxMessageBox(_T("Burn Failed!! Please check device\n"));
+                AfxMessageBox(_T("Burn Error! Please check device\n"));
                 return;
             }
             ret=XUSB_Pack(mainWnd->m_portName,m_filename,&len);
@@ -181,7 +181,7 @@ void CMMCDlg::Download()
         //}
 
     } else
-        AfxMessageBox(_T("Please choose image file !"));
+        AfxMessageBox(_T("Error! Please choose image file."));
     return ;
 
 }
@@ -203,7 +203,7 @@ void CMMCDlg::OnBnClickedMmcDownload()
 
     if((m_type!=UBOOT)&&((m_execaddr.IsEmpty())||(m_startblock.IsEmpty())) && (m_type!=PACK) ) {
 
-        AfxMessageBox(_T("Please input image information"));
+        AfxMessageBox(_T("Error! Please input image information"));
         return;
     }
 
@@ -217,7 +217,7 @@ void CMMCDlg::OnBnClickedMmcDownload()
         AfxMessageBox(_T(tmp));
         return;
 #else
-        if(::MessageBox(this->m_hWnd,tmp,_T("Nu Writer"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
+        if(::MessageBox(this->m_hWnd,tmp,_T("NuWriter"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
             return;
 #endif
     }
@@ -229,7 +229,7 @@ void CMMCDlg::OnBnClickedMmcDownload()
 
         UpdateData(TRUE);
 
-        if(::MessageBox(this->m_hWnd,_T("Do you confirm this operation ?"),_T("Turbo Writer"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
+        if(::MessageBox(this->m_hWnd,_T("Do you confirm this operation ?"),_T("NuWriter"),MB_OKCANCEL|MB_ICONWARNING)==IDCANCEL)
             return;
 
         unsigned Thread1;
@@ -402,10 +402,10 @@ void CMMCDlg:: Read()
         _stscanf_s(m_blocks,_T("%d"),&blocks);
         _stscanf_s(m_sblocks,_T("%d"),&sblocks);
         if(XUSB_Read(mainWnd->m_portName,m_filename2,sblocks,blocks*(0x200)))
-            AfxMessageBox(_T("Read OK !"));
+            AfxMessageBox(_T("Read OK."));
         else
         {
-            AfxMessageBox(_T("Read Error !"));
+            AfxMessageBox(_T("Read Error! "));
             m_progress.SetPos(0);
         }
         GetDlgItem(IDC_MMC_READ)->EnableWindow(TRUE);
@@ -414,7 +414,7 @@ void CMMCDlg:: Read()
         mainWnd->m_gtype.EnableWindow(TRUE);
 
     } else
-        AfxMessageBox(_T("Please choose read file !"));
+        AfxMessageBox(_T("Error! Please choose read file."));
 
     return ;
 }
@@ -473,10 +473,10 @@ void CMMCDlg::Verify()
         GetDlgItem(IDC_MMC_VERIFY)->SetWindowText(_T("Abort"));
         ret=XUSB_Verify(mainWnd->m_portName,m_filename);
         if(ret)
-            AfxMessageBox(_T("Verify OK !"));
+            AfxMessageBox(_T("Verify OK."));
         else
         {
-            AfxMessageBox(_T("Verify Error !"));
+            AfxMessageBox(_T("Verify Error!"));
             m_progress.SetPos(0);
         }
         GetDlgItem(IDC_MMC_VERIFY)->EnableWindow(TRUE);
@@ -484,7 +484,7 @@ void CMMCDlg::Verify()
         //UpdateData(FALSE);
         mainWnd->m_gtype.EnableWindow(TRUE);
     } else
-        AfxMessageBox(_T("Please choose comparing file !"));
+        AfxMessageBox(_T("Error! Please choose comparing file"));
 
     return ;
 }
@@ -506,7 +506,7 @@ void CMMCDlg::OnBnClickedMmcVerify()
 
     if(m_type==PACK) {
 
-        AfxMessageBox(_T("Pack image can't verify"));
+        AfxMessageBox(_T("Error! Pack image can't verify"));
         return;
     }
 

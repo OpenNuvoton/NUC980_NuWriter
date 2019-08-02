@@ -1,4 +1,4 @@
-// FastDlg.cpp : 實作檔
+// FastDlg.cpp :
 //
 
 #include "stdafx.h"
@@ -7,11 +7,11 @@
 #include "afxdialogex.h"
 #include "NuWriterDlg.h"
 
-// FastDlg 對話方塊
+// FastDlg
 #define MMC_TIMEOUT_SEC 400////300//200
-#define SPI_TIMEOUT_SEC 300//480//360
+#define SPI_TIMEOUT_SEC 1200//300//480//360
 #define NAND_TIMEOUT_SEC 200//120
-#define SPINAND_TIMEOUT_SEC 200
+#define SPINAND_TIMEOUT_SEC 210//1000//200
 
 IMPLEMENT_DYNAMIC(FastDlg, CDialog)
 
@@ -230,7 +230,7 @@ LRESULT FastDlg::ThreadClose( WPARAM  id, LPARAM message)
         GetDlgItem(IDC_BTN_FAST_START)->SetWindowText(_T("Start"));
         GetDlgItem(IDC_BTN_FAST_START)->EnableWindow(FALSE);
         mainWnd->m_gtype.EnableWindow(TRUE);
-        KillTimer(0);//停止編號0計時器
+        KillTimer(0);//stop timer
     }
 
     return true;
@@ -239,9 +239,12 @@ LRESULT FastDlg::ThreadClose( WPARAM  id, LPARAM message)
 BOOL FastDlg::InitFile(int flag)
 {
     CString tmp;
+	FILE* fp;
+	//unsigned int file_len;
     CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
 
-    if(!mainWnd->m_inifile.ReadFile()) return false;
+    if(!mainWnd->m_inifile.ReadFile()) return false;		
+	
     switch(flag) {
     case 0:
         tmp=mainWnd->m_inifile.GetValue(_T("Mass_Production"),_T("PATH"));
@@ -286,6 +289,29 @@ BOOL FastDlg::InitFile(int flag)
             break;
         }
         case 3: {
+		
+			fp=_wfopen(m_filename,_T("rb"));
+
+			if(!fp) {
+				AfxMessageBox(_T("Error! File Open error\n"));
+				return FALSE;
+			}
+
+			fseek(fp,0,SEEK_END);
+			m_filename_len=ftell(fp);
+			fseek(fp,0,SEEK_SET);		
+		
+		    m_filename_len = m_filename_len / 0xa00000; // 10MB
+		    if(m_filename_len <= 1)
+                timeoutsec = SPINAND_TIMEOUT_SEC; // 210, 3.5 min
+            else if(m_filename_len > 2 &&  m_filename_len <= 8)
+                timeoutsec = (SPINAND_TIMEOUT_SEC)*5; // 1050, 17.5 min			
+			else if(m_filename_len > 8 &&  m_filename_len <= 12)
+                timeoutsec = (SPINAND_TIMEOUT_SEC)*10; // 2100, 35 min
+			else
+                timeoutsec = (SPINAND_TIMEOUT_SEC)*20; // 4200, 70 min
+			
+			
             ((CButton *)GetDlgItem(IDC_RADIO_FAST_SPINAND))->SetCheck(TRUE);
             GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
             GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
@@ -295,7 +321,7 @@ BOOL FastDlg::InitFile(int flag)
             break;
         }
         }
-        TRACE(_T("InitFile(0) m_type = %s, timeoutsec = %d\n"), tmp, timeoutsec);
+        TRACE(_T("InitFile(0) m_filename_len=%dMB, m_type = %s, timeoutsec = %d\n"), m_filename_len*10, tmp, timeoutsec);
         break;
     case 1:
         mainWnd->m_inifile.SetValue(_T("Mass_Production"),_T("PATH"),m_filename);
@@ -324,15 +350,35 @@ BOOL FastDlg::InitFile(int flag)
             GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
             m_type = TYPE_EMMC;
             break;
-        case 3:
-            timeoutsec = SPINAND_TIMEOUT_SEC;
+        case 3:		
+			fp=_wfopen(m_filename,_T("rb"));
+
+			if(!fp) {
+				AfxMessageBox(_T("Error! File Open error\n"));
+				return FALSE;
+			}
+
+			fseek(fp,0,SEEK_END);
+			m_filename_len=ftell(fp);
+			fseek(fp,0,SEEK_SET);		
+		
+		    m_filename_len = m_filename_len / 0xa00000; // 10MB
+		    if(m_filename_len <= 1)
+                timeoutsec = SPINAND_TIMEOUT_SEC; // 210, 3.5 min
+            else if(m_filename_len > 2 &&  m_filename_len <= 8)
+                timeoutsec = (SPINAND_TIMEOUT_SEC)*5; // 1050, 17.5 min			
+			else if(m_filename_len > 8 &&  m_filename_len <= 12)
+                timeoutsec = (SPINAND_TIMEOUT_SEC)*10; // 2100, 35 min
+			else
+                timeoutsec = (SPINAND_TIMEOUT_SEC)*20; // 4200, 70 min
+				
             GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
             GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
             GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(TRUE);
             m_type = TYPE_SPINAND;
             break;
         }
-        TRACE(_T("InitFile(1) m_type = %s, timeoutsec = %d\n"), tmp, timeoutsec);
+        TRACE(_T("InitFile(1) m_filename_len=%dMB, m_type = %s, timeoutsec = %d\n"), m_filename_len*10, tmp, timeoutsec);
         break;
     default:
         break;
@@ -349,7 +395,7 @@ BOOL FastDlg:: CheckImageSouce(CString& m_pathName)
     fp=_wfopen(m_pathName,_T("rb"));
 
     if(!fp) {
-        AfxMessageBox(_T("File Open error\n"));
+        AfxMessageBox(_T("Error! File Open error\n"));
         return FALSE;
     }
 
@@ -359,7 +405,7 @@ BOOL FastDlg:: CheckImageSouce(CString& m_pathName)
 
     if(!file_len) {
         fclose(fp);
-        AfxMessageBox(_T("File length is zero\n"));
+        AfxMessageBox(_T("Error! File length is zero\n"));
         return FALSE;
     }
 
@@ -367,7 +413,7 @@ BOOL FastDlg:: CheckImageSouce(CString& m_pathName)
     fread((unsigned char *)&magic,4,1,fp);
     if(magic!=0x5) {
         fclose(fp);
-        AfxMessageBox(_T("Pack Image Format Error\n"));
+        AfxMessageBox(_T("Error! Pack Image Format Error\n"));
         return FALSE;
     }
 
@@ -473,7 +519,7 @@ int FastDlg:: FastVerify(int id, int storagetype)
         }
     } else {
         ret = -1;
-        //AfxMessageBox(_T("Please choose comparing file !"));
+        //AfxMessageBox(_T("Error! Please choose comparing file."));
     }
 
     return ret;
@@ -547,12 +593,12 @@ void FastDlg::Start(int id)
         ret = FastBurn(id, m_type);
         if (ret == ERR_PACK_FORMAT) { // Image is not pack format
             ((CProgressCtrl *)GetDlgItem(iId_Array[id]))->SetRange(0,0);
-            AfxMessageBox(_T("This file is not pack image\n"));
+            AfxMessageBox(_T("Error! This file is not pack image\n"));
             goto _fail_stop;
         }
         else if (ret == ERR_DDRINI_DATACOM) { // DDR Init VS. pack image ini data compare error
             ((CProgressCtrl *)GetDlgItem(iId_Array[id]))->SetRange(0,0);
-            AfxMessageBox(_T("DDR Init select error\n"));
+            AfxMessageBox(_T("Error! DDR Init select error\n"));
             goto _fail_stop;
         }
         else if (ret != 1) {
@@ -566,7 +612,7 @@ void FastDlg::Start(int id)
         ret=FastVerify(id, m_type);
         if (ret == ERR_VERIFY_DATACOM) { // data compare error
             ((CProgressCtrl *)GetDlgItem(iId_Array[id]))->SetRange(0,0);
-            AfxMessageBox(_T("Verify error\n"));
+            AfxMessageBox(_T("Verify Error!\n"));
             //break;
             goto _fail_stop;
         }
@@ -595,7 +641,6 @@ _fail_stop:
 
 void FastDlg::OnBnClickedBtnFastStart()
 {
-    // TODO: 在此加入控制項告知處理常式程式碼
     int i = 0, j = 0;
     CString dlgText, connectText;
     BOOL ret;
@@ -604,7 +649,7 @@ void FastDlg::OnBnClickedBtnFastStart()
     InitFile(1);
     //TRACE(_T("timeoutsec =%d , m_type = %d\n"), timeoutsec, m_type);
     if(m_imagename.IsEmpty()) {
-        AfxMessageBox(_T("Please input image file"));
+        AfxMessageBox(_T("Error! Please input image file"));
         return;
     }
 
@@ -622,13 +667,13 @@ void FastDlg::OnBnClickedBtnFastStart()
     GetDlgItem(IDC_BTN_FAST_START)->GetWindowText(dlgText);
     m_DeviceId=0;
     if(connectText.CompareNoCase(_T(" Disconnected")) ==0) {
-        AfxMessageBox(_T("Please reset device and Re-connect now !!!\n"));
+        AfxMessageBox(_T("Error! Please reset device and Re-connect now !!!\n"));
     } else {
         if(dlgText.CompareNoCase(_T("Start"))==0) {
             UpdateData(TRUE);
             if (mainWnd->g_iDeviceNum) {
                 if(m_filename.IsEmpty()) {
-                    AfxMessageBox(_T("Please choose image file !"));
+                    AfxMessageBox(_T("Error! Please choose image file !"));
                     return;
                 }
 
@@ -650,11 +695,11 @@ void FastDlg::OnBnClickedBtnFastStart()
                     timeoutflag[i] = false;
                 }
                 timercnt = 0;
-                SetTimer(0,1000,NULL);//啟動計時器編號0每一秒觸發一次  //debug
+                SetTimer(0,1000,NULL);//start timer every 1 second //debug
                 GetDlgItem(IDC_BTN_FAST_START)->SetWindowText(_T("Abort"));
                 mainWnd->m_gtype.EnableWindow(FALSE);
             } else {
-                //AfxMessageBox(_T("Please reset device and press Re-connect button now !!!\n"));
+                //AfxMessageBox(_T("Error! Please reset device and press Re-connect button now !!!\n"));
             }
 
         } else {
@@ -670,18 +715,15 @@ void FastDlg::OnBnClickedBtnFastStart()
             }
             TRACE("Abort burn end\n");
             GetDlgItem(IDC_BTN_FAST_START)->EnableWindow(FALSE);
-            //OnBnClickedAllrstbtn();
             GetDlgItem(IDC_BTN_FAST_START)->SetWindowText(_T("Start"));
-            //KillTimer(0);//停止編號0計時器
             mainWnd->m_gtype.EnableWindow(TRUE);
-            AfxMessageBox(_T("Please reset device and press Re-connect button now !!!\n"));
+            AfxMessageBox(_T("Error! Please reset device and press Re-connect button now !!!\n"));
         }
     }
 }
 
 void FastDlg::OnBnClickedFastBrowse()
 {
-    // TODO: 在此加入控制項告知處理常式程式碼
     UpdateData(TRUE);
     UpdateData(FALSE);
     CString temp;
@@ -729,7 +771,6 @@ void FastDlg::OnBnClickedFastBrowse()
 
 void FastDlg::OnBnClickedButton1()
 {
-    // TODO: 在此加入控制項告知處理常式程式碼
     int Num;
     char* lpBuffer;
     BOOL bResult;
@@ -753,7 +794,6 @@ void FastDlg::OnBnClickedButton1()
 
 void FastDlg::OnBnClickedButton2()
 {
-    // TODO: 在此加入控制項告知處理常式程式碼
     int Num;
     //Num = GetDlgItemInt(IDC_USBEDIT1);
     Num = m_FastDeviceID.GetCurSel();
@@ -763,7 +803,6 @@ void FastDlg::OnBnClickedButton2()
 
 void FastDlg::OnCbnSelchangeComboFastId()
 {
-    // TODO: 在此加入控制項告知處理常式程式碼
     int IdNum = 0;
     CString str;
 
@@ -779,7 +818,6 @@ void FastDlg::OnCbnSelchangeComboFastId()
 
 void FastDlg::OnTimer(UINT_PTR nIDEvent)
 {
-    // TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
     CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
     int i;
 
@@ -799,9 +837,9 @@ void FastDlg::OnTimer(UINT_PTR nIDEvent)
             }
         }
         timercnt = 0;
-        KillTimer(0);//停止編號0計時器
+        KillTimer(0);//stop timer
         GetDlgItem(IDC_BTN_FAST_START)->EnableWindow(TRUE);
-        //AfxMessageBox(_T("Please reset device and Re-connect now !!!\n"));
+        AfxMessageBox(_T("Error! Time Out. Please reset device and Re-connect now !!!\n"));
     }
     CDialog::OnTimer(nIDEvent);
 }
@@ -809,7 +847,6 @@ void FastDlg::OnTimer(UINT_PTR nIDEvent)
 
 void FastDlg::OnBnClickedRstbtn()
 {
-    // TODO: 在此加入控制項告知處理常式程式碼
     int Num;
     BOOL bResult;
 
@@ -838,7 +875,6 @@ void FastDlg::OnBnClickedRstbtn()
 
 void FastDlg::OnBnClickedAllrstbtn()
 {
-    // TODO: 在此加入控制項告知處理常式程式碼
     int i;
     BOOL bResult;
     CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
@@ -1000,7 +1036,7 @@ BOOL FastDlg::XUSB(int id, CString& m_BinName)
     //TRACE(_T("FastDlg::XUSB (%d), %s\n"), id, m_BinName);
     bResult=NucUsb.EnableOneWinUsbDevice(id);
     if(!bResult) {
-        //AfxMessageBox(_T("InitDlg.cpp  XUSB Device Open error\n"));
+        //AfxMessageBox(_T("Error! InitDlg.cpp  XUSB Device Open error\n"));
         str.Format(_T("XXX (%d) FastDlg.cpp  XUSB Device Open error\n"),id);
         TRACE("%s\n", str);
         //AfxMessageBox(str);
@@ -1029,7 +1065,7 @@ BOOL FastDlg::XUSB(int id, CString& m_BinName)
         delete []lpBuffer;
         NucUsb.CloseWinUsbDevice(id);
         fclose(fp);
-        AfxMessageBox(_T("Bin File Open error\n"));
+        AfxMessageBox(_T("Error! Bin File Open error\n"));
         //TRACE(_T("XXX Bin File Open error\n"));
         return FALSE;
     }
@@ -1176,12 +1212,34 @@ void FastDlg::OnBnClickedRadioFastemmc()
 
 void FastDlg::OnBnClickedRadioFastSpinand()
 {
+	FILE* fp;
+
+	fp=_wfopen(m_filename,_T("rb"));
+
+	if(!fp) {		
+		return;
+	}
+
+	fseek(fp,0,SEEK_END);
+	m_filename_len=ftell(fp);
+	fseek(fp,0,SEEK_SET);
+
+    m_filename_len = m_filename_len / 0xa00000; // 10MB
+	if(m_filename_len <= 1)
+		timeoutsec = SPINAND_TIMEOUT_SEC; // 210, 3.5 min
+	else if(m_filename_len > 2 &&  m_filename_len <= 8)
+		timeoutsec = (SPINAND_TIMEOUT_SEC)*5; // 1050, 17.5 min
+	else if(m_filename_len > 8 &&  m_filename_len <= 12)
+		timeoutsec = (SPINAND_TIMEOUT_SEC)*10; // 2100, 35 min
+	else
+		timeoutsec = (SPINAND_TIMEOUT_SEC)*20; // 4200, 70 min	
+			
     m_type = TYPE_SPINAND;
-    timeoutsec = SPINAND_TIMEOUT_SEC;
+    //timeoutsec = SPINAND_TIMEOUT_SEC;
     GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
     GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
     GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(TRUE);
-    TRACE(_T("SPI NAND timeoutsec =%d, m_type = %d\n"), timeoutsec, m_type);
+    TRACE(_T("SPI NAND: m_filename_len =%dMB timeoutsec =%d, m_type = %d\n"), m_filename_len*10, timeoutsec, m_type);
 }
 
 

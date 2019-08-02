@@ -64,6 +64,7 @@
 #define SPI63K 63*1024
 
 #define NAND_SIZE 64*2048
+#define SPI_BLOCK_SIZE 64*1024
 
 #define MMC512B 512
 
