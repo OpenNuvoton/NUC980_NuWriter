@@ -200,7 +200,7 @@ int Burn_SPI(UINT32 len,UINT32 imageoffset)
 
     MSG_DEBUG("Burn_SPI: Enable4ByteFlag=%d len=%d(0x%x)     imageoffset= %d(0x%x)\n", Enable4ByteFlag, len, len, imageoffset, imageoffset);
     /* set up interface */
-    if (usiInit() < 0)
+    if (usiInit() == Fail)
     {
         SendAck(0xFFFFFFFF);
         return Fail;
@@ -269,7 +269,7 @@ int BatchBurn_SPI(UINT32 len,UINT32 imageoffset)
 
     MSG_DEBUG("BatchBurn_SPI: Enable4ByteFlag=%d len=%d(0x%x)     imageoffset= %d(0x%x)\n", Enable4ByteFlag, len, len, imageoffset, imageoffset);
     /* set up interface */
-    if (usiInit() < 0)
+    if (usiInit() == Fail)
     {
         SendAck(0xFFFFFFFF);
         return Fail;
@@ -359,9 +359,7 @@ int BatchBurn_SPI(UINT32 len,UINT32 imageoffset)
         if(Enable4ByteFlag)
             printf("Enable4ByteFlag %d:  offset=0x%08x(%d)\n", Enable4ByteFlag, offset, offset);
 
-        len = tmplen;// - blockCount*SPI_BLOCK_SIZE;
-        //spiSourceAddr += len;
-        //printf("Enable4ByteFlag %d:  len=0x%08x(%d) offset=0x%08x(%d)  spiSourceAddr=0x%08x\n", Enable4ByteFlag, len, len, offset, offset, spiSourceAddr);
+        len = tmplen;
         usiEraseSector(offset, 1);
         usiWrite(offset, len, (UINT8 *)spiSourceAddr);
 
@@ -428,7 +426,8 @@ void UXmodem_SPI(void)
         _ch=((unsigned char*)(((unsigned int)DOWNLOAD_BASE)|NON_CACHE));
         ptr=_ch;
 
-        if (pSpiImage->imageType == UBOOT)      // uboot image
+        //image size = DDR size – 1M - 64k
+        if (pSpiImage->imageType == UBOOT) // uboot image
         {
             pSpiImage->imageNo = 0;
             pSpiImage->flashOffset = 0;
@@ -436,31 +435,29 @@ void UXmodem_SPI(void)
             addNUC980MagicHeader(1);
             ptr += IBR_HEADER_LEN; // except the 32 bytes magic header
             offset = IBR_HEADER_LEN;
-        }
-        else
-            offset=0;
 
-#if(0) //image size = DDR size – 1M - 64k
-        do
-        {
-            if(Bulk_Out_Transfer_Size>0)
+            do
             {
+                if(Bulk_Out_Transfer_Size>0)
+                {
 
-                len=Bulk_Out_Transfer_Size;
-                usb_recv(ptr,len);  //recv data from PC
-                ptr+=len;
-                *_ack=len;
-                usb_send((unsigned char*)_ack,4);//send ack to PC
+                    len=Bulk_Out_Transfer_Size;
+                    usb_recv(ptr,len);  //recv data from PC
+                    ptr+=len;
+                    *_ack=len;
+                    usb_send((unsigned char*)_ack,4);//send ack to PC
+                }
             }
+            while((ptr-_ch)<(pSpiImage->fileLength+offset+((FW_NOR_IMAGE_T *)pSpiImage)->initSize));
+            Burn_SPI(pSpiImage->fileLength+(((FW_NOR_IMAGE_T *)pSpiImage)->initSize)+offset,pSpiImage->flashOffset);
+            MSG_DEBUG("uBOOT  len=%d, fileLength=%d, IBR_HEADER_LEN=%d, ddrlen=%d\n", pSpiImage->fileLength+(((FW_NOR_IMAGE_T *)pSpiImage)->initSize)+offset, pSpiImage->fileLength, offset, (((FW_NOR_IMAGE_T *)pSpiImage)->initSize));
         }
-        while((ptr-_ch)<(pSpiImage->fileLength+offset+((FW_NOR_IMAGE_T *)pSpiImage)->initSize));
-        Burn_SPI(pSpiImage->fileLength+(((FW_NOR_IMAGE_T *)pSpiImage)->initSize)+offset,pSpiImage->flashOffset);
-
-#else // BATCH_BRUN
-
-        MSG_DEBUG("len=%d, fileLength=%d, IBR_HEADER_LEN=%d, ddrlen=%d\n", pSpiImage->fileLength+(((FW_NOR_IMAGE_T *)pSpiImage)->initSize)+offset, pSpiImage->fileLength, offset, (((FW_NOR_IMAGE_T *)pSpiImage)->initSize));
-        BatchBurn_SPI(pSpiImage->fileLength+(((FW_NOR_IMAGE_T *)pSpiImage)->initSize)+offset,pSpiImage->flashOffset);
-#endif
+        else // BATCH_BRUN
+        {
+            offset=0;
+            MSG_DEBUG("len=%d, fileLength=%d, IBR_HEADER_LEN=%d, ddrlen=%d\n", pSpiImage->fileLength+(((FW_NOR_IMAGE_T *)pSpiImage)->initSize)+offset, pSpiImage->fileLength, offset, (((FW_NOR_IMAGE_T *)pSpiImage)->initSize));
+            BatchBurn_SPI(pSpiImage->fileLength+(((FW_NOR_IMAGE_T *)pSpiImage)->initSize)+offset,pSpiImage->flashOffset);
+        }
     }
     break;
 
@@ -519,7 +516,7 @@ void UXmodem_SPI(void)
     }
     break;
 
-    case VERIFY_MODE:   // verify
+    case VERIFY_MODE: // verify
     {
         MSG_DEBUG("SPI normal verify !!!\n");
 
@@ -527,68 +524,32 @@ void UXmodem_SPI(void)
         {
             usleep(1000);
             *_ack=0x85;
-            usb_send((unsigned char*)_ack,4);//send ack to PC
+            usb_send((unsigned char*)_ack,4); //send ack to PC
         }
 
-
-#if(0) //image size = DDR size – 1M - 64k
-        _ch=((unsigned char*)(((unsigned int)DOWNLOAD_BASE)|NON_CACHE));
-        ptr=_ch;
-        MSG_DEBUG("offset=%d,flashOffset=%d,fileLength=%d\n",offset,pSpiImage->flashOffset,pSpiImage->fileLength);
-        memset(ptr, 0, pSpiImage->fileLength);
-        offset=0;
-        do
+        if (pSpiImage->imageType == UBOOT) // uboot image, image size = DDR size – 1M - 64k
         {
-            tempoffset = 0;
-            //4Byte Address Mode (>16MByte)
-            Enable4ByteFlag = 0;
-            if((pSpiImage->flashOffset + offset + TRANSFER_LEN) > SPI_FLASH_SIZE)
-                Enable4ByteFlag = 1;
-
-            if(Enable4ByteFlag)
-                MSG_DEBUG("VERIFY_MODE  Enable4ByteFlag %d:  offset=0x%08x(%d)\n", Enable4ByteFlag, offset, offset);
-
-            if (pSpiImage->flashOffset == 0)
-                usiRead(pSpiImage->flashOffset+offset+((FW_NOR_IMAGE_T *)pSpiImage)->initSize, TRANSFER_LEN, (UINT8 *)(DOWNLOAD_BASE));
-            else
-                usiRead(pSpiImage->flashOffset+offset, TRANSFER_LEN, (UINT8 *)(DOWNLOAD_BASE));
-            usb_send(ptr,TRANSFER_LEN); //send data to PC
-            //while(Bulk_Out_Transfer_Size==0) {}
-            usb_recv((unsigned char*)_ack,4);   //recv data from PC
-
-            if(*_ack==0)
-                break;
-            else
-                offset+=(*_ack);
-
-            MSG_DEBUG("SPI VERIFY_MODE: pSpiImage->fileLength=%d  offset=0x%08x(%d)   ack= 0x%08x(%d)\n", pSpiImage->fileLength, offset, offset, (*_ack), (*_ack));
-        }while(offset<pSpiImage->fileLength);
-
-#else // Batch Verify
-        offset=0;
-        _ch=((unsigned char*)(((unsigned int)DOWNLOAD_BASE)|NON_CACHE));
-        blockCount = pSpiImage->fileLength / SPI_BLOCK_SIZE;
-        for(i=0; i<blockCount; i++)
-        {
+            _ch=((unsigned char*)(((unsigned int)DOWNLOAD_BASE)|NON_CACHE));
             ptr=_ch;
-            memset(ptr, 0, SPI_BLOCK_SIZE);
-            tempoffset = SPI_BLOCK_SIZE;
+            MSG_DEBUG("UBOOT verify offset=%d,flashOffset=%d,fileLength=%d\n",offset,pSpiImage->flashOffset,pSpiImage->fileLength);
+            memset(ptr, 0, pSpiImage->fileLength);
+            offset=32;
+            len =  pSpiImage->fileLength;
             do
             {
+                tempoffset = 0;
+                remainlen=MIN(len, TRANSFER_LEN);
                 //4Byte Address Mode (>16MByte)
                 Enable4ByteFlag = 0;
-                if((pSpiImage->flashOffset + offset + TRANSFER_LEN) > SPI_FLASH_SIZE)
+                if((pSpiImage->flashOffset + offset + remainlen) > SPI_FLASH_SIZE)
                     Enable4ByteFlag = 1;
 
                 if(Enable4ByteFlag)
                     MSG_DEBUG("VERIFY_MODE  Enable4ByteFlag %d:  offset=0x%08x(%d)\n", Enable4ByteFlag, offset, offset);
 
-                if (pSpiImage->flashOffset == 0)
-                    usiRead(pSpiImage->flashOffset+offset+((FW_NOR_IMAGE_T *)pSpiImage)->initSize, TRANSFER_LEN, ptr);
-                else
-                    usiRead(pSpiImage->flashOffset+offset, TRANSFER_LEN, ptr);
+                usiRead(pSpiImage->flashOffset+offset+((FW_NOR_IMAGE_T *)pSpiImage)->initSize, remainlen, ptr);//(UINT8 *)(DOWNLOAD_BASE));
 
-                usb_send(ptr,TRANSFER_LEN); //send data to PC
+                usb_send(ptr,remainlen); //send data to PC
                 while(Bulk_Out_Transfer_Size==0) {}
                 usb_recv((unsigned char*)_ack,4);   //recv data from PC
 
@@ -597,56 +558,96 @@ void UXmodem_SPI(void)
                 else
                 {
                     offset+=(*_ack);
-                    tempoffset-=(*_ack);
+                    len -= remainlen;
                 }
-            }while(tempoffset>0);
-            MSG_DEBUG("SPI VERIFY_MODE: i=%d, pSpiImage->fileLength=%d  offset=0x%08x(%d)   tempoffset= 0x%08x(%d)\n", i, pSpiImage->fileLength, offset, offset, tempoffset, tempoffset);
+                MSG_DEBUG("SPI VERIFY_MODE: pSpiImage->fileLength=%d  offset=0x%08x(%d)   len= 0x%08x(%d)\n", pSpiImage->fileLength, offset, offset, len, len);
+            }while(len>0);
         }
-
-        tmplen = pSpiImage->fileLength % (SPI_BLOCK_SIZE);
-        MSG_DEBUG("tmplen: pSpiImage->fileLength=%d  offset=0x%08x(%d)   tmplen= %d\n", pSpiImage->fileLength, offset, offset, tmplen);
-        if (tmplen != 0)
+        else // Batch verify
         {
-            ptr=_ch;
-            memset(ptr, 0, SPI_BLOCK_SIZE);
-            tempoffset = tmplen;
-            do
+            offset=0;
+            _ch=((unsigned char*)(((unsigned int)DOWNLOAD_BASE)|NON_CACHE));
+            blockCount = pSpiImage->fileLength / SPI_BLOCK_SIZE;
+            for(i=0; i<blockCount; i++)
             {
-                reclen=MIN(TRANSFER_LEN,tmplen);
-
-                //4Byte Address Mode (>16MByte)
-                Enable4ByteFlag = 0;
-                if((pSpiImage->flashOffset + offset + reclen) > SPI_FLASH_SIZE)
-                    Enable4ByteFlag = 1;
-
-                if(Enable4ByteFlag)
-                    MSG_DEBUG("VERIFY_MODE  Enable4ByteFlag %d:  offset=0x%08x(%d)\n", Enable4ByteFlag, offset, offset);
-
-                if (pSpiImage->flashOffset == 0)
-                    usiRead(pSpiImage->flashOffset+offset+((FW_NOR_IMAGE_T *)pSpiImage)->initSize, reclen, ptr);
-                else
-                    usiRead(pSpiImage->flashOffset+offset, reclen, ptr);
-
-                usb_send(ptr,reclen); //send data to PC
-                while(Bulk_Out_Transfer_Size==0) {}
-                usb_recv((unsigned char*)_ack,4);   //recv data from PC
-
-                if(*_ack==0)
-                    break;
-                else
+                ptr=_ch;
+                memset(ptr, 0, SPI_BLOCK_SIZE);
+                tempoffset = SPI_BLOCK_SIZE;
+                do
                 {
-                    tmplen-=(*_ack);
-                    offset+=(*_ack);
-                    tempoffset -=(*_ack);
-                }
+                    //4Byte Address Mode (>16MByte)
+                    Enable4ByteFlag = 0;
+                    if((pSpiImage->flashOffset + offset + TRANSFER_LEN) > SPI_FLASH_SIZE)
+                        Enable4ByteFlag = 1;
 
-            }while(tempoffset>0);
+                    if(Enable4ByteFlag)
+                        MSG_DEBUG("VERIFY_MODE  Enable4ByteFlag %d:  offset=0x%08x(%d)\n", Enable4ByteFlag, offset, offset);
+
+                    if (pSpiImage->flashOffset == 0)
+                        usiRead(pSpiImage->flashOffset+offset+((FW_NOR_IMAGE_T *)pSpiImage)->initSize, TRANSFER_LEN, ptr);
+                    else
+                        usiRead(pSpiImage->flashOffset+offset, TRANSFER_LEN, ptr);
+
+                    usb_send(ptr,TRANSFER_LEN); //send data to PC
+                    while(Bulk_Out_Transfer_Size==0) {}
+                    usb_recv((unsigned char*)_ack,4);   //recv data from PC
+
+                    if(*_ack==0)
+                        break;
+                    else
+                    {
+                        offset+=(*_ack);
+                        tempoffset-=(*_ack);
+                    }
+                }while(tempoffset>0);
+                MSG_DEBUG("SPI VERIFY_MODE: i=%d, pSpiImage->fileLength=%d  offset=0x%08x(%d)   tempoffset= 0x%08x(%d)\n", i, pSpiImage->fileLength, offset, offset, tempoffset, tempoffset);
+            }
+
+            tmplen = pSpiImage->fileLength % (SPI_BLOCK_SIZE);
+            MSG_DEBUG("tmplen: pSpiImage->fileLength=%d  offset=0x%08x(%d)   tmplen= %d\n", pSpiImage->fileLength, offset, offset, tmplen);
+            if (tmplen != 0)
+            {
+                ptr=_ch;
+                memset(ptr, 0, SPI_BLOCK_SIZE);
+                tempoffset = tmplen;
+                do
+                {
+                    reclen=MIN(TRANSFER_LEN,tmplen);
+
+                    //4Byte Address Mode (>16MByte)
+                    Enable4ByteFlag = 0;
+                    if((pSpiImage->flashOffset + offset + reclen) > SPI_FLASH_SIZE)
+                        Enable4ByteFlag = 1;
+
+                    if(Enable4ByteFlag)
+                        MSG_DEBUG("VERIFY_MODE  Enable4ByteFlag %d:  offset=0x%08x(%d)\n", Enable4ByteFlag, offset, offset);
+
+                    if (pSpiImage->flashOffset == 0)
+                        usiRead(pSpiImage->flashOffset+offset+((FW_NOR_IMAGE_T *)pSpiImage)->initSize, reclen, ptr);
+                    else
+                        usiRead(pSpiImage->flashOffset+offset, reclen, ptr);
+
+                    usb_send(ptr,reclen); //send data to PC
+                    while(Bulk_Out_Transfer_Size==0) {}
+                    usb_recv((unsigned char*)_ack,4);   //recv data from PC
+
+                    if(*_ack==0)
+                        break;
+                    else
+                    {
+                        tmplen-=(*_ack);
+                        offset+=(*_ack);
+                        tempoffset -=(*_ack);
+                    }
+
+                }while(tempoffset>0);
+
+            }
 
         }
-#endif
     }
     break;
-    case PACK_VERIFY_MODE:   // verify
+    case PACK_VERIFY_MODE: // Mass production verify
     {
         MSG_DEBUG("\n SPI PACK verify !!!\n");
 
@@ -762,7 +763,7 @@ void UXmodem_SPI(void)
                 //usleep(1000);
                 *_ack=0x85;
                 usb_send((unsigned char*)_ack,4);//send ack to PC
-				pSpiImage->fileLength = pSpiImage->fileLength - IBR_HEADER_LEN - ddrlen;
+                pSpiImage->fileLength = pSpiImage->fileLength - IBR_HEADER_LEN - ddrlen;
             }
 
             for(j=0; j<blockCount; j++)
@@ -864,7 +865,7 @@ void UXmodem_SPI(void)
         }
     }
     break;
-    case READ_MODE:   // read
+    case READ_MODE: // read
     {
         MSG_DEBUG("SPI normal read !!!\n");
         MSG_DEBUG("offset=%d,flashOffset=%d,fileLength=%d\n",offset,pSpiImage->flashOffset,pSpiImage->fileLength);
@@ -943,7 +944,7 @@ void UXmodem_SPI(void)
                 }
             }
             MSG_DEBUG("pack.actionFlag=0x%x, pack.fileLength=0x%08x pack.num=%d!!!\n",pack.actionFlag,pack.fileLength,pack.num);
-#if(0) //image size = DDR size ??1M - 64k
+#if(0) //image size = DDR size - 1M - 64k
             for(i=0; i<pack.num; i++)
             {
                 while(1)
@@ -975,7 +976,7 @@ void UXmodem_SPI(void)
                     Burn_SPI(ppack.filelen,((ppack.startaddr+SPI_BLOCK_SIZE-1)/SPI_BLOCK_SIZE)*SPI_BLOCK_SIZE);
                 }
             }
-#else // BATCH_BRUN
+#else // PACK BATCH_BRUN
 
             for(i=0; i<pack.num; i++)
             {
@@ -2643,7 +2644,7 @@ void UXmodem_NAND()
         }
     }
     break;
-    case PACK_VERIFY_MODE:   // verify
+    case PACK_VERIFY_MODE: // verify
     {
         MSG_DEBUG("\n NAND PACK verify !!!\n");
         /* for debug or delay */
@@ -4068,12 +4069,12 @@ void UXmodem_INFO()
     MSG_DEBUG("Get INFO flash Image ...\n");
 
 #if(1) /* QSPI0 Init */
-    if (usiInit() == 1)
+    if (usiInit() == Fail)
     {
         info.SPI_ID=usiReadID();
 
-        if(info.SPI_ID != 0xffff)
-            printf("Error! SPI ID: 0x%x\n", info.SPI_ID);
+        if(info.SPI_ID == 0xffff)
+            printf("Error! Read SPI ID(0x%x)\n", info.SPI_ID);
     }
 #endif
 

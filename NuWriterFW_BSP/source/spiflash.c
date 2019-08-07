@@ -703,8 +703,8 @@ int usiStatusWrite(UINT8 data)
 BOOL volatile _usbd_bIsSPIInit = FALSE;
 int usiInit()
 {
-    //int volatile tick;
-    int ret = 1;
+    int ret = 0;
+
     if (_usbd_bIsSPIInit == FALSE) {
         /* Configure multi function pins to QSPI0 */
         outpw(REG_SYS_GPD_MFPL, (inpw(REG_SYS_GPD_MFPL) & ~0xFFFFFF00) | 0x11111100); // PD.2 ~ PD.7
@@ -713,8 +713,12 @@ int usiInit()
         QSPI_Open(QSPI_FLASH_PORT, QSPI_MASTER, QSPI_MODE_0, 8, 20000000);
         /* Disable auto SS function, control SS signal manually. */
         QSPI_DisableAutoSS(QSPI_FLASH_PORT);
+
         if (usiReadID() == 0xffff)
+        {
+            _usbd_bIsSPIInit = FALSE;
             return Fail;
+        }
 
         usiStatusWrite(0x00);   // clear block protect
 
