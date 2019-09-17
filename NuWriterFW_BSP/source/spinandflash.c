@@ -897,7 +897,7 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_PagePerBlock = 64; // 64 pages per block
 
         } else {
-            printf("SPI NAND ID not support!! 0x%x\n", pSN->SPINand_ID);
+            printf("SPI NAND ID 0x%x not support!! \n", pSN->SPINand_ID);
             pSN->SPINand_ID = 0x0;//pSN->SPINand_ID;
         }
     }

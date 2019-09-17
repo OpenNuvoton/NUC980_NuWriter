@@ -24,7 +24,7 @@
 UINT32 g_uIsUserConfig; //nand
 
 UCHAR NandBlockSize=0;
-INT32 eMMCBlockSize=0;
+unsigned int eMMCBlockSize=0;
 
 unsigned char *pImageList;
 unsigned char imageList[512];
@@ -426,7 +426,7 @@ void UXmodem_SPI(void)
         _ch=((unsigned char*)(((unsigned int)DOWNLOAD_BASE)|NON_CACHE));
         ptr=_ch;
 
-        //image size = DDR size – 1M - 64k
+        //image size = DDR size - 1M - 64k
         if (pSpiImage->imageType == UBOOT) // uboot image
         {
             pSpiImage->imageNo = 0;
@@ -527,7 +527,7 @@ void UXmodem_SPI(void)
             usb_send((unsigned char*)_ack,4); //send ack to PC
         }
 
-        if (pSpiImage->imageType == UBOOT) // uboot image, image size = DDR size – 1M - 64k
+        if (pSpiImage->imageType == UBOOT) // uboot image, image size = DDR size - 1M - 64k
         {
             _ch=((unsigned char*)(((unsigned int)DOWNLOAD_BASE)|NON_CACHE));
             ptr=_ch;
@@ -662,7 +662,7 @@ void UXmodem_SPI(void)
         ptr=_ch;
         MSG_DEBUG("pSpiImage->imageNo=%d,flashOffset=%d,fileLength=%d\n",pSpiImage->imageNo,pSpiImage->flashOffset,pSpiImage->fileLength);
 
-#if(0) //image size = DDR size – 1M - 64k
+#if(0) //image size = DDR size - 1M - 64k
         memset(ptr, 0, pSpiImage->fileLength);
 #else // PACK Batch Verify
         memset(ptr, 0, SPI_BLOCK_SIZE);
@@ -684,7 +684,7 @@ void UXmodem_SPI(void)
                 }
             }
 
-#if(0) //image size = DDR size – 1M - 64k
+#if(0) //image size = DDR size - 1M - 64k
             pSpiImage->fileLength = ppack.filelen;
             pSpiImage->flashOffset = ppack.startaddr;
             offset = 0;
@@ -3280,7 +3280,7 @@ int BatchBurn_SPINAND_BOOT(UINT32 len,UINT32 blockNo,UINT32 blockLen,UINT32 Head
 
             if(spiNAND_bad_block_check(page) == 1)
             {
-                printf("bad_block:%d\n", blockNum);
+                printf("bad_block:%d\n", blkindx);
                 //blockNum++;
                 //goto _retry_2;
                 continue;
@@ -3292,7 +3292,7 @@ int BatchBurn_SPINAND_BOOT(UINT32 len,UINT32 blockNo,UINT32 blockLen,UINT32 Head
                 status = spiNAND_Check_Program_Erase_Fail_Flag();
                 if (status != 0)
                 {
-                    printf("Error erase status! bad_block:%d\n", blockNum);
+                    printf("Error erase status! bad_block:%d\n", blkindx);
                     spiNANDMarkBadBlock(page);
                     //blockNum++;
                     //goto _retry_2;
@@ -4136,7 +4136,7 @@ void UXmodem_INFO()
         info.EMMC_uBlock=eMMCBlockSize;
     }
 
-    printf("eMMCBlockSize=0x%08x(%d) \n",eMMCBlockSize, eMMCBlockSize);
+    printf("BlockSize=0x%08x(%d), %d KB\n", eMMCBlockSize, eMMCBlockSize, info.EMMC_uBlock/2);		
 
     usb_send((UINT8 *)&info, sizeof(INFO_T));
     printf("\nFinish get INFO!!\n\n");

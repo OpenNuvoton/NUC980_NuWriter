@@ -17,7 +17,7 @@
 #include "filesystem.h"  //for eMMC format test
 
 extern void ParseFlashType(void);
-extern UINT32 eMMCBlockSize;
+extern unsigned int eMMCBlockSize;
 
 #define WDT_RSTCNT    outpw(REG_WDT_RSTCNT, 0x5aa5)
 
