@@ -216,7 +216,7 @@ typedef struct _info {
     UINT8   SPI_ReadStatusCmd;
     UINT8   SPI_WriteStatusCmd;
     UINT8   SPI_StatusValue;
-    UINT8   SPI_dummybyte;	
+    UINT8   SPI_dummybyte;
 
     UINT32  EMMC_uBlock;
     UINT32  EMMC_uReserved;
@@ -232,6 +232,7 @@ typedef struct _info {
     UINT8   SPINand_dummybyte;
     UINT32  SPINand_BlockPerFlash;
     UINT32  SPINand_PagePerBlock;
+    UINT8   SPINand_IsDieSelect;//Multi Chip
 } INFO_T;
 
 //------------------------------------

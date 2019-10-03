@@ -97,6 +97,7 @@ typedef struct _INFO_T
     BYTE	SPINand_dummybyte;
     DWORD   SPINand_BlockPerFlash;
     DWORD   SPINand_PagePerBlock;
+	BYTE    SPINand_IsDieSelect;
 }INFO_T,*PINFO_T;
 
 typedef struct _MMC_FORMAT_INFO

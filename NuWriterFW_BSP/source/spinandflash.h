@@ -14,6 +14,8 @@ typedef unsigned short     int uint16_t;
 typedef unsigned           int uint32_t;
 typedef unsigned       __int64 uint64_t;
 
+#define SPINAND_DIE_ID0 (0)
+#define SPINAND_DIE_ID1 (1)
 
 /* SPI NAND information in header */
 typedef struct spinand_info
@@ -30,6 +32,7 @@ typedef struct spinand_info
     UINT32   SPINand_PagePerBlock;
     //UINT32   SPINand_BadBlockNum;
     //UINT32   SPINand_RecBadBlock[16];
+    UINT8   SPINand_IsDieSelect;//Multi Chip
 } SPINAND_INFO_T;
 
 /* program function */

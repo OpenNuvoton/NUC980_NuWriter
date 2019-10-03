@@ -676,7 +676,7 @@ int8_t spiNAND_ReadyBusy_Check()
             }
         }
     }
-			
+
     return 0;
 }
 
@@ -778,6 +778,16 @@ int spiNANDInit()
         u32ReturnValue &= 0x83;
         spiNAND_StatusRegister_Write_SR1(u32ReturnValue);
 
+        if(pSN->SPINand_IsDieSelect == 1)
+        {
+            spiNAND_Die_Select(SPINAND_DIE_ID1);
+            u32ReturnValue = spiNAND_StatusRegister(1);
+            MSG_DEBUG("ID1 SR1 =0x%x  ", u32ReturnValue);
+            u32ReturnValue &= 0x83;
+            MSG_DEBUG("0x%x\n", u32ReturnValue);
+            spiNAND_StatusRegister_Write_SR1(u32ReturnValue);
+        }
+
         _usbd_bIsSPINANDInit = TRUE;
     }
 
@@ -788,6 +798,8 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
 {
     pSN->SPINand_ID=spiNAND_ReadID();
 
+    info.SPINand_IsDieSelect = 0;
+    pSN->SPINand_IsDieSelect = 0;
     if(info.SPINand_uIsUserConfig == 1) {
         pSN->SPINand_ID = pSN->SPINand_ID;
         pSN->SPINand_PageSize = info.SPINand_PageSize;
@@ -799,7 +811,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
         pSN->SPINand_dummybyte      = info.SPINand_dummybyte;
         pSN->SPINand_BlockPerFlash = info.SPINand_BlockPerFlash;
         pSN->SPINand_PagePerBlock = info.SPINand_PagePerBlock;
-    } else {
+        pSN->SPINand_IsDieSelect = info.SPINand_IsDieSelect;
+    } 
+    else {
         //printf("spiNAND_ReadINFO   ID = 0x%x\n", pSN->SPINand_ID);
         if(pSN->SPINand_ID == 0xEFAA21) { /* winbond */
             pSN->SPINand_ID = 0xEFAA21;
@@ -825,7 +839,32 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
+        } else if(pSN->SPINand_ID == 0xEFAB21) { /* winbond W25M02GV(2x1G-bit), MCP(Multi Chip Package) */
+            pSN->SPINand_ID = 0xEFAB21;
+            pSN->SPINand_PageSize=0x800; // 2048 bytes per page
+            pSN->SPINand_SpareArea=0x40; // 64 bytes per page spare area
+            //CMD_READ_QUAD_IO_FAST     0xeb, dummy 3
+            //CMD_READ_QUAD_OUTPUT_FAST 0x6b, dummy 1
+            pSN->SPINand_QuadReadCmd = 0x6b;
+            pSN->SPINand_ReadStatusCmd = 0xff;
+            pSN->SPINand_WriteStatusCmd =0xff;
+            pSN->SPINand_StatusValue = 0xff;
+            pSN->SPINand_dummybyte = 0x1;
+            pSN->SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
+            pSN->SPINand_PagePerBlock = 64; // 64 pages per block
+            pSN->SPINand_IsDieSelect = 1; //W25M02GV(2 x 1G-bit), MCP(Multi Chip Package)
 
+            info.SPINand_ID = 0xEFAB21;
+            info.SPINand_PageSize=0x800; // 2048 bytes per page
+            info.SPINand_SpareArea=0x40; // 64 bytes per page spare area
+            info.SPINand_QuadReadCmd = 0x6b;
+            info.SPINand_ReadStatusCmd = 0xff;
+            info.SPINand_WriteStatusCmd =0xff;
+            info.SPINand_StatusValue = 0xff;
+            info.SPINand_dummybyte = 0x1;
+            info.SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
+            info.SPINand_PagePerBlock = 64; // 64 pages per block
+            info.SPINand_IsDieSelect = 1; //W25M02GV(2 x 1G-bit), MCP (Multi Chip Package)
         } else if(pSN->SPINand_ID == 0xC212) { /* mxic */
             pSN->SPINand_ID = 0xC212;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page

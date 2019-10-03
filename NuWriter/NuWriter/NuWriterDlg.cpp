@@ -1236,6 +1236,7 @@ BOOL CNuWriterDlg::OneDeviceInfo(int id)
             m_info.SPINand_StatusValue = Str2Hex(m_inifile.GetValue(_T("SPINAND_INFO"),_T("StatusValue")));
             m_info.SPINand_BlockPerFlash=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("BlockPerFlash")));
             m_info.SPINand_PagePerBlock=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("PagePerBlock")));
+			m_info.SPINand_IsDieSelect=_wtoi(m_inifile.GetValue(_T("SPINAND_INFO"),_T("MultiChip")));
         }
         //TRACE(_T("OneDeviceInfo: IsUserConfig =%d, BlockPerFlash =%d, PagePerBlock = %d\n"),  m_info.Nand_uIsUserConfig, m_info.Nand_uBlockPerFlash, m_info.Nand_uPagePerBlock);
     }
@@ -1287,7 +1288,9 @@ BOOL CNuWriterDlg::OneDeviceInfo(int id)
     m_inifile.SetValue(_T("SPINAND_INFO"),_T("BlockPerFlash"), tmp);
     tmp.Format(_T("%d"),m_info.SPINand_PagePerBlock);
     m_inifile.SetValue(_T("SPINAND_INFO"),_T("PagePerBlock"), tmp);
-
+    tmp.Format(_T("%d"),m_info.SPINand_IsDieSelect);
+    m_inifile.SetValue(_T("SPINAND_INFO"),_T("MultiChip"), tmp);
+	tmp.Format(_T("%d"),m_info.SPINand_IsDieSelect);
     m_inifile.WriteFile();
 
     bResult=NucUsb.NUC_ReadPipe(id,(UCHAR *)&ack,4);
