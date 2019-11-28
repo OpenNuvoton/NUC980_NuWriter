@@ -146,7 +146,7 @@ int main()
     printf("Parse NuWriter command line\n");
     printf("=======================================\n");
 
-
+    sysEnableICache();
     while(1) {
         WDT_RSTCNT;
         ParseFlashType();

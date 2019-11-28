@@ -250,6 +250,18 @@ void sysFlushCache(INT32 nCacheType)
     }
 }
 
+void sysEnableICache()
+{
+    int temp;
+
+    __asm {
+    /*----- Enable I-cache -----*/
+    MRC     p15, 0, temp, c1, c0, 0  // read control register c1
+    ORR     temp, temp, #0x1000      // enable I cache bit
+    MCR     p15, 0, temp, c1, c0, 0  // write control register c1
+    }
+
+}
 void sysInvalidCache()
 {
     int temp;

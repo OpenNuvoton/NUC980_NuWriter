@@ -185,7 +185,7 @@ void    sysFlushCache(INT32 nCacheType);
 BOOL    sysGetCacheState(void);
 INT32   sysGetSdramSizebyMB(void);
 void    sysInvalidCache(void);
-
+void    sysEnableICache(void);
 UINT32 sysGetClock(CLK_Type clk);
 
 typedef void (*sys_pvFunPtr)();   /* function pointer */

@@ -753,7 +753,8 @@ int spiNANDInit()
     PD6 = 1; /* PD6: SPI0_MOSI1 or SPI flash /WP pin */
     PD7 = 1; /* PD7: SPI0_MISO1 or SPI flash /HOLD pin */
 
-    outpw(REG_QSPI0_CLKDIV, 15);   /* Set SPI0 clock to 9.375 MHz => PCLK(150)/(n+1) */
+    //outpw(REG_QSPI0_CLKDIV, 15);   /* Set SPI0 clock to 9.375 MHz => PCLK(150)/(n+1) */
+    outpw(REG_QSPI0_CLKDIV, 2);   /* Set SPI0 clock to 50 MHz => PCLK(150)/(n+1) */
 
     /* Default setting: slave selection signal is active low; disable automatic slave selection function. */
     outpw(REG_QSPI0_SSCTL, 0); /* AUTOSS=0; low-active; de-select all SS pins. */

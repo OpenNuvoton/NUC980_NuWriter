@@ -3058,7 +3058,7 @@ _retry_2:
                 if (status != 0)
                 {
                     spiNANDMarkBadBlock((Blk_Idx % pSN->SPINand_BlockPerFlash)*pSN->SPINand_PagePerBlock);
-                    printf("Error write status! spiNANDMarkBadBlock (Blk_Idx % pSN->SPINand_BlockPerFlash) = %d\n", (Blk_Idx % pSN->SPINand_BlockPerFlash));
+                    printf("Error write status! spiNANDMarkBadBlock (Blk_Idx mod pSN->SPINand_BlockPerFlash) = %d\n", (Blk_Idx % pSN->SPINand_BlockPerFlash));
                     Blk_Idx++;
                     addr+=(pSN->SPINand_PageSize* pSN->SPINand_PagePerBlock);
                     goto _retry_2;
