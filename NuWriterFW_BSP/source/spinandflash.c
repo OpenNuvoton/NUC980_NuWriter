@@ -135,7 +135,10 @@ void spiNANDMarkBadBlock(uint32_t page_address)
 
     /* Set byte 2048 to 0xF0 */
     data = 0xF0;
-    spiNAND_Pageprogram_Pattern(8, 0, &data, 1);
+    if(pSN->SPINand_ID == 0x2C242C)
+        spiNAND_Pageprogram_Pattern(((page_address & (1 << 6)) ? (1 << 4) : 0) + 8, 0, &data, 1);
+    else
+        spiNAND_Pageprogram_Pattern(8, 0, &data, 1);
     spiNAND_Program_Excute(page_address /0x100, page_address %0x100);
 
 }
@@ -153,15 +156,18 @@ uint8_t spiNAND_bad_block_check(uint32_t page_address)
     uint8_t volatile *read_buf;
 
     spiNAND_PageDataRead(page_address/0x100, page_address%0x100); // Read the first page of a block
-
-    spiNAND_Normal_Read(0x8, 0x0, read_buf, 1); // Read bad block mark at 0x800 update at v.1.0.8
+    if(pSN->SPINand_ID == 0x2C242C)
+        spiNAND_Normal_Read(((page_address & (1 << 6)) ? (1 << 4) : 0) + 0x8, 0, read_buf, 1);
+    else
+        spiNAND_Normal_Read(0x8, 0x0, read_buf, 1); // Read bad block mark at 0x800 update at v.1.0.8
     if(*read_buf != 0xFF) { // update at v.1.0.7
         return 1;
     }
     spiNAND_PageDataRead((page_address+1)/0x100, (page_address+1)%0x100); // Read the second page of a block
-
-
-    spiNAND_Normal_Read(0x8, 0x0, read_buf, 1); // Read bad block mark at 0x800 update at v.1.0.8
+    if(pSN->SPINand_ID == 0x2C242C)
+        spiNAND_Normal_Read((((page_address + 1) & (1 << 6)) ? (1 << 4) : 0) + 0x8, 0, read_buf, 1);
+    else
+        spiNAND_Normal_Read(0x8, 0x0, read_buf, 1); // Read bad block mark at 0x800 update at v.1.0.8
     if(*read_buf != 0xFF) { // update at v.1.0.7
         return 1;
     }
@@ -957,6 +963,28 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_StatusValue = 0x1;
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
+            info.SPINand_PagePerBlock = 64; // 64 pages per block
+        }  else if(pSN->SPINand_ID == 0x2C242C) { /* MT29F2G01 */
+            pSN->SPINand_ID = 0x2C242C;
+            pSN->SPINand_PageSize=0x800; // 2048 bytes per page
+            pSN->SPINand_SpareArea=0x80; // 128 bytes per page spare area
+            pSN->SPINand_QuadReadCmd = 0x6b;
+            pSN->SPINand_ReadStatusCmd = 0x0f;
+            pSN->SPINand_WriteStatusCmd =0x1f;
+            pSN->SPINand_StatusValue = 0x1;
+            pSN->SPINand_dummybyte = 0x1;
+            pSN->SPINand_BlockPerFlash = 0x800;// 2048 blocks per 1G NAND
+            pSN->SPINand_PagePerBlock = 64; // 64 pages per block
+
+            info.SPINand_ID = 0x2C242C;
+            info.SPINand_PageSize=0x800; // 2048 bytes per page
+            info.SPINand_SpareArea=0x80;    // 128 bytes per page spare area
+            info.SPINand_QuadReadCmd = 0x6b;
+            info.SPINand_ReadStatusCmd = 0x0f;
+            info.SPINand_WriteStatusCmd =0x1f;
+            info.SPINand_StatusValue = 0x1;
+            info.SPINand_dummybyte = 0x1;
+            info.SPINand_BlockPerFlash = 0x800;// 2048 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
         } else {
             printf("SPI NAND ID 0x%x not support!! \n", pSN->SPINand_ID);

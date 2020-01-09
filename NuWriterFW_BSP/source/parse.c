@@ -2979,7 +2979,10 @@ _retry_1:
         for (i=0; i<pSN->SPINand_PagePerBlock; i++)
         {
             MSG_DEBUG("#2297 Blk_Idx=%d,  page+i=%d\n", (Blk_Idx % pSN->SPINand_BlockPerFlash), page+i);
-            spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
+            if(pSN->SPINand_ID == 0x2C242C)
+                spiNAND_Pageprogram_Pattern(((page+i) & (1 << 6)) ? (1 << 4) : 0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
+            else
+                spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
             spiNAND_Program_Excute((((page+i)>>8)&0xFF), (page+i)&0xFF);
             status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
             if (status == 1)
@@ -3052,7 +3055,10 @@ _retry_2:
             for (i=0; i<page_count; i++)
             {
                 MSG_DEBUG("Blk_Idx=%d,  page+i=%d\n",(Blk_Idx % pSN->SPINand_BlockPerFlash), page+i);
-                spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
+                if(pSN->SPINand_ID == 0x2C242C)
+                    spiNAND_Pageprogram_Pattern(((page + i) & (1 << 6)) ? (1 << 4) : 0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
+                else
+                    spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
                 spiNAND_Program_Excute((((page+i)>>8)&0xFF), ((page+i)&0xFF));
                 status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
                 if (status != 0)
@@ -3149,7 +3155,10 @@ _retry_1:
         for (i=0; i<pSN->SPINand_PagePerBlock; i++)
         {
             MSG_DEBUG("blockNum+j=%d,  page+i=%d\n",blockNum, page+i);
-            spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, (pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
+            if(pSN->SPINand_ID == 0x2C242C)
+                spiNAND_Pageprogram_Pattern(((page+i) & (1 << 6)) ? (1 << 4) : 0, 0, (uint8_t*)addr, (pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
+            else
+                spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, (pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
             spiNAND_Program_Excute((((page+i)>>8)&0xFF), (page+i)&0xFF);
             status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
             if (status == 1)
@@ -3216,7 +3225,10 @@ _retry_2:
             for (i=0; i<page_count; i++)
             {
                 MSG_DEBUG("page+i=%d\n",page+i);
-                spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, (pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
+                if(pSN->SPINand_ID == 0x2C242C)
+                    spiNAND_Pageprogram_Pattern(((page+i) & (1 << 6)) ? (1 << 4) : 0, 0, (uint8_t*)addr, (pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
+                else
+                    spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, (pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
                 spiNAND_Program_Excute((((page+i)>>8)&0xFF), ((page+i)&0xFF));
                 status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
                 if (status != 0)
@@ -3320,7 +3332,10 @@ int BatchBurn_SPINAND_BOOT(UINT32 len,UINT32 blockStartIdx,UINT32 blockLen,UINT3
                 for (i=0; i<page_count; i++)
                 {
                     MSG_DEBUG("page+i=%d\n",page+i);
-                    spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
+                    if(pSN->SPINand_ID == 0x2C242C)
+                        spiNAND_Pageprogram_Pattern(((page + i) & (1 << 6)) ? (1 << 4) : 0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
+                    else
+                        spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
                     spiNAND_Program_Excute((((page+i)>>8)&0xFF), (page+i)&0xFF);
                     status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
                     if (status == 1)
@@ -3377,7 +3392,10 @@ _retry_:
             MSG_DEBUG("blockNum =%d  page_no = %d   total=%d  pageSize=%d\n", blockNum, page_no, total, pSN->SPINand_PageSize);
             spiNAND_PageDataRead((page_no>>8)&0xFF, (page_no&0xFF));// Read verify
             //spiNAND_QuadIO_Read(0, 0, (uint8_t*)dst_adr, pSN->SPINand_PageSize);
-            spiNAND_Normal_Read(0, 0, (uint8_t*)dst_adr, pSN->SPINand_PageSize);
+            if(pSN->SPINand_ID == 0x2C242C)
+                spiNAND_Normal_Read((page_no & (1 << 6)) ? (1 << 4) : 0, 0, (uint8_t*)dst_adr, pSN->SPINand_PageSize);
+            else
+                spiNAND_Normal_Read(0, 0, (uint8_t*)dst_adr, pSN->SPINand_PageSize);
             status = spiNAND_Check_Embedded_ECC_Flag();
             if(status != 0x00 && status != 0x01)
             {
@@ -3425,7 +3443,10 @@ _retry_:
             page_no = (blockNum * pSN->SPINand_PagePerBlock) + i;
             MSG_DEBUG("blockNum =%d  page_no = %d   total=%d  pageSize=%d\n", blockNum, page_no, total, pSN->SPINand_PageSize+64);
             spiNAND_PageDataRead((page_no>>8)&0xFF, (page_no&0xFF));// Read verify
-            spiNAND_Normal_Read(0, 0, (uint8_t*)dst_adr, pSN->SPINand_PageSize+spareSize);
+            if(pSN->SPINand_ID == 0x2C242C)
+                spiNAND_Normal_Read((page_no & (1 << 6)) ? (1 << 4) : 0, 0, (uint8_t*)dst_adr, pSN->SPINand_PageSize);
+            else
+                spiNAND_Normal_Read(0, 0, (uint8_t*)dst_adr, pSN->SPINand_PageSize+spareSize);
             status = spiNAND_Check_Embedded_ECC_Flag();
             if(status != 0x00 && status != 0x01)
             {
