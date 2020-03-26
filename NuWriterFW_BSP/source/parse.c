@@ -2963,7 +2963,7 @@ _retry_1:
         }
         else
         {
-            spiNAND_BlockErase(((block_idx>>8)&0xFF), (block_idx&0xFF)); // block erase
+            spiNAND_BlockErase(((block_idx>>16)&0xFF), ((block_idx>>8)&0xFF), (block_idx&0xFF)); // block erase
             status = spiNAND_Check_Program_Erase_Fail_Flag();
             if (status == 1)
             {
@@ -2983,7 +2983,7 @@ _retry_1:
                 spiNAND_Pageprogram_Pattern(((page+i) & (1 << 6)) ? (1 << 4) : 0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
             else
                 spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
-            spiNAND_Program_Excute((((page+i)>>8)&0xFF), (page+i)&0xFF);
+            spiNAND_Program_Excute((((page+i)>>16)&0xFF), (((page+i)>>8)&0xFF), (page+i)&0xFF);
             status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
             if (status == 1)
             {
@@ -3040,7 +3040,7 @@ _retry_2:
         }
         else
         {
-            spiNAND_BlockErase( ((page>>8)&0xFF), (page&0xFF));
+            spiNAND_BlockErase(((page>>16)&0xFF), ((page>>8)&0xFF), (page&0xFF));
             status = spiNAND_Check_Program_Erase_Fail_Flag();
             if (status == 1)
             {
@@ -3059,7 +3059,7 @@ _retry_2:
                     spiNAND_Pageprogram_Pattern(((page + i) & (1 << 6)) ? (1 << 4) : 0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
                 else
                     spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
-                spiNAND_Program_Excute((((page+i)>>8)&0xFF), ((page+i)&0xFF));
+                spiNAND_Program_Excute((((page+i)>>16)&0xFF), (((page+i)>>8)&0xFF), ((page+i)&0xFF));
                 status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
                 if (status != 0)
                 {
@@ -3139,7 +3139,7 @@ _retry_1:
         }
         else
         {
-            spiNAND_BlockErase(((block_idx>>8)&0xFF), (block_idx&0xFF)); // block erase
+            spiNAND_BlockErase(((block_idx>>16)&0xFF), ((block_idx>>8)&0xFF), (block_idx&0xFF)); // block erase
             status = spiNAND_Check_Program_Erase_Fail_Flag();
             if (status == 1)
             {
@@ -3159,7 +3159,7 @@ _retry_1:
                 spiNAND_Pageprogram_Pattern(((page+i) & (1 << 6)) ? (1 << 4) : 0, 0, (uint8_t*)addr, (pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
             else
                 spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, (pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
-            spiNAND_Program_Excute((((page+i)>>8)&0xFF), (page+i)&0xFF);
+            spiNAND_Program_Excute((((page+i)>>16)&0xFF), (((page+i)>>8)&0xFF), (page+i)&0xFF);
             status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
             if (status == 1)
             {
@@ -3210,7 +3210,7 @@ _retry_2:
         }
         else
         {
-            spiNAND_BlockErase( ((page>>8)&0xFF), (page&0xFF));
+            spiNAND_BlockErase(((page>>16)&0xFF), ((page>>8)&0xFF), (page&0xFF));
             status = spiNAND_Check_Program_Erase_Fail_Flag();
             if (status == 1)
             {
@@ -3229,7 +3229,7 @@ _retry_2:
                     spiNAND_Pageprogram_Pattern(((page+i) & (1 << 6)) ? (1 << 4) : 0, 0, (uint8_t*)addr, (pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
                 else
                     spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, (pSN->SPINand_PageSize+pSN->SPINand_SpareArea));
-                spiNAND_Program_Excute((((page+i)>>8)&0xFF), ((page+i)&0xFF));
+                spiNAND_Program_Excute((((page+i)>>16)&0xFF), (((page+i)>>8)&0xFF), ((page+i)&0xFF));
                 status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
                 if (status != 0)
                 {
@@ -3317,7 +3317,7 @@ int BatchBurn_SPINAND_BOOT(UINT32 len,UINT32 blockStartIdx,UINT32 blockLen,UINT3
             else
             {
                 MSG_DEBUG("blkindx = %d   page = %d   page_count=%d\n", blkindx, page, page_count);
-                spiNAND_BlockErase(((page>>8)&0xFF), (page&0xFF)); // block erase
+                spiNAND_BlockErase(((page>>16)&0xFF), ((page>>8)&0xFF), (page&0xFF)); // block erase
                 status = spiNAND_Check_Program_Erase_Fail_Flag();
                 if (status != 0)
                 {
@@ -3336,7 +3336,7 @@ int BatchBurn_SPINAND_BOOT(UINT32 len,UINT32 blockStartIdx,UINT32 blockLen,UINT3
                         spiNAND_Pageprogram_Pattern(((page + i) & (1 << 6)) ? (1 << 4) : 0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
                     else
                         spiNAND_Pageprogram_Pattern(0, 0, (uint8_t*)addr, pSN->SPINand_PageSize);
-                    spiNAND_Program_Excute((((page+i)>>8)&0xFF), (page+i)&0xFF);
+                    spiNAND_Program_Excute((((page+i)>>16)&0xFF), (((page+i)>>8)&0xFF), (page+i)&0xFF);
                     status = (spiNAND_StatusRegister(3) & 0x0C)>>2;
                     if (status == 1)
                     {
@@ -3390,7 +3390,7 @@ _retry_:
         {
             page_no = (blockNum * pSN->SPINand_PagePerBlock) + i;
             MSG_DEBUG("blockNum =%d  page_no = %d   total=%d  pageSize=%d\n", blockNum, page_no, total, pSN->SPINand_PageSize);
-            spiNAND_PageDataRead((page_no>>8)&0xFF, (page_no&0xFF));// Read verify
+            spiNAND_PageDataRead((page_no>>16)&0xFF, (page_no>>8)&0xFF, (page_no&0xFF));// Read verify
             //spiNAND_QuadIO_Read(0, 0, (uint8_t*)dst_adr, pSN->SPINand_PageSize);
             if(pSN->SPINand_ID == 0x2C242C)
                 spiNAND_Normal_Read((page_no & (1 << 6)) ? (1 << 4) : 0, 0, (uint8_t*)dst_adr, pSN->SPINand_PageSize);
@@ -3442,7 +3442,7 @@ _retry_:
         {
             page_no = (blockNum * pSN->SPINand_PagePerBlock) + i;
             MSG_DEBUG("blockNum =%d  page_no = %d   total=%d  pageSize=%d\n", blockNum, page_no, total, pSN->SPINand_PageSize+64);
-            spiNAND_PageDataRead((page_no>>8)&0xFF, (page_no&0xFF));// Read verify
+            spiNAND_PageDataRead((page_no>>16)&0xFF, (page_no>>8)&0xFF, (page_no&0xFF));// Read verify
             if(pSN->SPINand_ID == 0x2C242C)
                 spiNAND_Normal_Read((page_no & (1 << 6)) ? (1 << 4) : 0, 0, (uint8_t*)dst_adr, pSN->SPINand_PageSize);
             else
@@ -3640,7 +3640,7 @@ void UXmodem_SPINAND()
                         }
                         else
                         {
-                            spiNAND_BlockErase( (PA_Num>>8)&0xFF, PA_Num&0xFF);
+                            spiNAND_BlockErase((PA_Num>>16)&0xFF, (PA_Num>>8)&0xFF, PA_Num&0xFF);
                             SR = spiNAND_Check_Program_Erase_Fail_Flag();
                             if (SR != 0)
                             {
@@ -3720,7 +3720,7 @@ void UXmodem_SPINAND()
                         usb_send((unsigned char*)_ack,4);//send ack to PC
                         continue;
                     }
-                    spiNAND_BlockErase( (PA_Num>>8)&0xFF, PA_Num&0xFF);
+                    spiNAND_BlockErase((PA_Num>>16)&0xFF, (PA_Num>>8)&0xFF, PA_Num&0xFF);
                     SR = spiNAND_Check_Program_Erase_Fail_Flag();
                     if (SR != 0)
                     {

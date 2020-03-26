@@ -38,7 +38,7 @@ typedef struct spinand_info
 /* program function */
 uint8_t Program_verify(uint8_t* buff1, uint8_t* buff2, uint32_t count);
 void spiNAND_Pageprogram_Pattern(uint8_t addh, uint8_t addl, uint8_t* program_buffer, uint32_t count);
-void spiNAND_Program_Excute(uint8_t addh, uint8_t addl);
+void spiNAND_Program_Excute(uint8_t Addr2, uint8_t Addr1, uint8_t Addr0);
 
 /* status check */
 uint8_t spiNAND_Check_Embedded_ECC(void);
@@ -67,10 +67,10 @@ void spiNAND_Unprotect(void);
 void spiNAND_LUT_Set(uint16_t LBA, uint16_t PBA);
 
 /* erase function */
-void spiNAND_BlockErase(uint8_t PA_H, uint8_t PA_L);
+void spiNAND_BlockErase(uint8_t Addr2, uint8_t Addr1, uint8_t Addr0);
 
 /* read function */
-void spiNAND_PageDataRead(uint8_t PA_H, uint8_t PA_L);
+void spiNAND_PageDataRead(uint8_t Addr2, uint8_t Addr1, uint8_t Addr0);
 void spiNAND_Normal_Read(uint8_t addh, uint8_t addl, uint8_t* buff, uint32_t count);
 void spiNAND_Continuous_Normal_Read(uint8_t* buff, uint32_t count);
 void spiNAND_QuadIO_Read(uint8_t addh, uint8_t addl, uint8_t* buff, uint32_t count);

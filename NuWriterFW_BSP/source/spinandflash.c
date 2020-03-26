@@ -131,7 +131,7 @@ void spiNANDMarkBadBlock(uint32_t page_address)
 {
     unsigned char data;
 
-    spiNAND_BlockErase(page_address/0x100, page_address%0x100);
+    spiNAND_BlockErase((page_address >> 16) & 0xFF, (page_address >> 8) & 0xFF, page_address & 0xFF);
 
     /* Set byte 2048 to 0xF0 */
     data = 0xF0;
@@ -139,7 +139,7 @@ void spiNANDMarkBadBlock(uint32_t page_address)
         spiNAND_Pageprogram_Pattern(((page_address & (1 << 6)) ? (1 << 4) : 0) + 8, 0, &data, 1);
     else
         spiNAND_Pageprogram_Pattern(8, 0, &data, 1);
-    spiNAND_Program_Excute(page_address /0x100, page_address %0x100);
+    spiNAND_Program_Excute((page_address >> 16) & 0xFF, (page_address >> 8) & 0xFF, page_address & 0xFF);
 
 }
 
@@ -155,7 +155,8 @@ uint8_t spiNAND_bad_block_check(uint32_t page_address)
 {
     uint8_t volatile *read_buf;
 
-    spiNAND_PageDataRead(page_address/0x100, page_address%0x100); // Read the first page of a block
+
+    spiNAND_PageDataRead((page_address >> 16) & 0xFF, (page_address >> 8) & 0xFF, page_address & 0xFF); // Read the first page of a block
     if(pSN->SPINand_ID == 0x2C242C)
         spiNAND_Normal_Read(((page_address & (1 << 6)) ? (1 << 4) : 0) + 0x8, 0, read_buf, 1);
     else
@@ -166,7 +167,7 @@ uint8_t spiNAND_bad_block_check(uint32_t page_address)
 
     if(pSN->SPINand_ID != 0xB148C8)
     {
-        spiNAND_PageDataRead((page_address+1)/0x100, (page_address+1)%0x100); // Read the second page of a block
+        spiNAND_PageDataRead(((page_address+1) >> 16) & 0xFF, ((page_address+1) >> 8) & 0xFF, (page_address+1)& 0xFF); // Read the second page of a block
         if(pSN->SPINand_ID == 0x2C242C)
             spiNAND_Normal_Read((((page_address + 1) & (1 << 6)) ? (1 << 4) : 0) + 0x8, 0, read_buf, 1);
         else
@@ -248,14 +249,14 @@ pattern: program data
 count: program count
 return: ready busy count
 *********************/
-void spiNAND_Program_Excute(uint8_t addh, uint8_t addl)
+void spiNAND_Program_Excute(uint8_t Addr2, uint8_t Addr1, uint8_t Addr0)
 {
     spiNAND_CS_LOW();
     /* Send command : Page program */
     SPIin(0x10);
-    SPIin(0x00); // dummy
-    SPIin(addh);
-    SPIin(addl);
+    SPIin(Addr2);
+    SPIin(Addr1);
+    SPIin(Addr0);
     spiNAND_CS_HIGH();
     spiNAND_ReadyBusy_Check();
 
@@ -434,7 +435,7 @@ Argument:
 PA_H, PA_L: Page address
 return:
 *********************/
-void spiNAND_BlockErase(uint8_t PA_H, uint8_t PA_L)
+void spiNAND_BlockErase(uint8_t Addr2, uint8_t Addr1, uint8_t Addr0)
 {
     spiNAND_CS_LOW();
     SPIin(0x06);
@@ -443,9 +444,9 @@ void spiNAND_BlockErase(uint8_t PA_H, uint8_t PA_L)
     //__nop();
     spiNAND_CS_LOW();
     SPIin(0xD8);
-    SPIin(0x00); // dummy
-    SPIin(PA_H);
-    SPIin(PA_L);
+    SPIin(Addr2);
+    SPIin(Addr1);
+    SPIin(Addr0);
     spiNAND_CS_HIGH();
 
     spiNAND_ReadyBusy_Check();
@@ -502,14 +503,14 @@ PA_H, page address
 PA_L, page address
 return:
 *********************/
-void spiNAND_PageDataRead(uint8_t PA_H, uint8_t PA_L)
+void spiNAND_PageDataRead(uint8_t Addr2, uint8_t Addr1, uint8_t Addr0)
 {
     spiNAND_CS_LOW();
     /* Send command 0x13: Read data */
     SPIin(0x13); //
-    SPIin(0x00); // dummy
-    SPIin(PA_H); // Page address
-    SPIin(PA_L); // Page address
+    SPIin(Addr2); // dummy
+    SPIin(Addr1); // Page address
+    SPIin(Addr0); // Page address
     spiNAND_CS_HIGH();
     spiNAND_ReadyBusy_Check(); // Need to wait for the data transfer.
     return;
