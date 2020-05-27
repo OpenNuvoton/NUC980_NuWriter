@@ -26,7 +26,7 @@ Abort_Stack		EQU		RAM_Limit+1024
 IRQ_Stack       EQU     RAM_Limit+2048       ; followed by IRQ stack
 FIQ_Stack       EQU     RAM_Limit+3072       ; followed by IRQ stack
 SVC_Stack       EQU     RAM_Limit+4096      ; SVC stack at top of memory
-USR_Stack		EQU		RAM_Limit+5120
+USR_Stack		EQU		RAM_Limit+6144
 
 
 	ENTRY

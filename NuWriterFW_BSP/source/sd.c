@@ -192,8 +192,8 @@ int SD_Init(FMI_SD_INFO_T *pSD)
     unsigned int CIDBuffer[4];
     unsigned int volatile u32CmdTimeOut;
 
-    // set the clock to 1000KHz
-    SD_Set_clock(1000);
+    // set the clock to 300KHz for SD Initial
+    SD_Set_clock(300);
 
     // power ON 74 clock
     outpw(REG_FMI_EMMCCTL, inpw(REG_FMI_EMMCCTL) | SD_CSR_CLK74_OE);
