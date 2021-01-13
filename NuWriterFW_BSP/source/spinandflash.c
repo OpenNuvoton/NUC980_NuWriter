@@ -153,15 +153,14 @@ update: V.1.0.8 // correct the bad block mark address
 *********************/
 uint8_t spiNAND_bad_block_check(uint32_t page_address)
 {
-    uint8_t volatile *read_buf;
-
+    uint8_t read_buf;
 
     spiNAND_PageDataRead((page_address >> 16) & 0xFF, (page_address >> 8) & 0xFF, page_address & 0xFF); // Read the first page of a block
     if(pSN->SPINand_ID == 0x2C242C)
-        spiNAND_Normal_Read(((page_address & (1 << 6)) ? (1 << 4) : 0) + 0x8, 0, read_buf, 1);
+        spiNAND_Normal_Read(((page_address & (1 << 6)) ? (1 << 4) : 0) + 0x8, 0, &read_buf, 1);
     else
-        spiNAND_Normal_Read(0x8, 0x0, read_buf, 1); // Read bad block mark at 0x800 update at v.1.0.8
-    if(*read_buf != 0xFF) { // update at v.1.0.7
+        spiNAND_Normal_Read(0x8, 0x0, &read_buf, 1); // Read bad block mark at 0x800 update at v.1.0.8
+    if(read_buf != 0xFF) { // update at v.1.0.7
         return 1;
     }
 
@@ -169,10 +168,10 @@ uint8_t spiNAND_bad_block_check(uint32_t page_address)
     {
         spiNAND_PageDataRead(((page_address+1) >> 16) & 0xFF, ((page_address+1) >> 8) & 0xFF, (page_address+1)& 0xFF); // Read the second page of a block
         if(pSN->SPINand_ID == 0x2C242C)
-            spiNAND_Normal_Read((((page_address + 1) & (1 << 6)) ? (1 << 4) : 0) + 0x8, 0, read_buf, 1);
+            spiNAND_Normal_Read((((page_address + 1) & (1 << 6)) ? (1 << 4) : 0) + 0x8, 0, &read_buf, 1);
         else
-            spiNAND_Normal_Read(0x8, 0x0, read_buf, 1); // Read bad block mark at 0x800 update at v.1.0.8
-        if(*read_buf != 0xFF) { // update at v.1.0.7
+            spiNAND_Normal_Read(0x8, 0x0, &read_buf, 1); // Read bad block mark at 0x800 update at v.1.0.8
+        if(read_buf != 0xFF) { // update at v.1.0.7
             return 1;
         }
     }
