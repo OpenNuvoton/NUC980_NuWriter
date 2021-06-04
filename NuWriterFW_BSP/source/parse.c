@@ -2998,7 +2998,7 @@ _retry_1:
         Blk_Idx++;
     }
 
-    MSG_DEBUG("page_count=%d,pSM->uPagePerBlock=%d, blockNum=%d\n",page_count,pSN->SPINand_PagePerBlock, blockNum);
+    MSG_DEBUG("page_count=%d,pSN->SPINand_PagePerBlock=%d, blockNum=%d\n",page_count,pSN->SPINand_PagePerBlock, blockNum);
     if ((page_count % pSN->SPINand_PagePerBlock) != 0)
     {
         MSG_DEBUG("Cnt=%d\n",page_count % pSN->SPINand_PagePerBlock);
@@ -3174,7 +3174,7 @@ _retry_1:
         blockNum++;
     }
 
-    MSG_DEBUG("page_count=%d,pSM->uPagePerBlock=%d, blockNum=%d\n",page_count,pSN->SPINand_PagePerBlock, blockNum);
+    MSG_DEBUG("page_count=%d,pSN->SPINand_PagePerBlock=%d, blockNum=%d\n",page_count,pSN->SPINand_PagePerBlock, blockNum);
     if ((page_count % pSN->SPINand_PagePerBlock) != 0)
     {
         MSG_DEBUG("Cnt=%d\n",page_count % pSN->SPINand_PagePerBlock);
@@ -3554,14 +3554,14 @@ void UXmodem_SPINAND()
                 {
                     MSG_DEBUG("DATA_OOB type\n");
                     // ChipWriteWithOOB
-                    //BatchBurn_SPINAND_Data_OOB(pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize,pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSM->uPageSize),pspiNandImage->imageType);
+                    //BatchBurn_SPINAND_Data_OOB(pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize,pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize),pspiNandImage->imageType);
                 }
                 else
                 {
                     MSG_DEBUG("WRITER_MODE: BatchBurn_SPINAND(0x%x, 0x%x, 0x%x)\n", pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize, pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize), pspiNandImage->imageType);
-                    BatchBurn_SPINAND(pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize,pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSM->uPageSize),pspiNandImage->imageType);
+                    BatchBurn_SPINAND(pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize,pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize),pspiNandImage->imageType);
                     MSG_DEBUG("BatchBurn_SPINAND(%d   %d   %d  )\n", pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize, pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize), pspiNandImage->imageType);
-                    MSG_DEBUG("BatchBurn_SPINAND offset = %d    ((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize  %d \n", pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize,pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSM->uPageSize), ((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize);
+                    MSG_DEBUG("BatchBurn_SPINAND offset = %d    ((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize  %d \n", pspiNandImage->fileLength + offset +((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize,pspiNandImage->blockNo/(pSN->SPINand_PagePerBlock*pSN->SPINand_PageSize), ((FW_SPINAND_IMAGE_T *)pspiNandImage)->initSize);
                 }
             }
             else

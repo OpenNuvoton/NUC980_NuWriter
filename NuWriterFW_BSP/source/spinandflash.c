@@ -159,7 +159,7 @@ uint8_t spiNAND_bad_block_check(uint32_t page_address)
     if(pSN->SPINand_ID == 0x2C242C)
         spiNAND_Normal_Read(((page_address & (1 << 6)) ? (1 << 4) : 0) + 0x8, 0, &read_buf, 1);
     else
-        spiNAND_Normal_Read(0x8, 0x0, &read_buf, 1); // Read bad block mark at 0x800 update at v.1.0.8
+        spiNAND_Normal_Read(pSN->SPINand_PageSize >> 8,0x0, &read_buf, 1); // Read bad block mark at 0x800 update at v.1.0.8
     if(read_buf != 0xFF) { // update at v.1.0.7
         return 1;
     }
@@ -170,7 +170,7 @@ uint8_t spiNAND_bad_block_check(uint32_t page_address)
         if(pSN->SPINand_ID == 0x2C242C)
             spiNAND_Normal_Read((((page_address + 1) & (1 << 6)) ? (1 << 4) : 0) + 0x8, 0, &read_buf, 1);
         else
-            spiNAND_Normal_Read(0x8, 0x0, &read_buf, 1); // Read bad block mark at 0x800 update at v.1.0.8
+            spiNAND_Normal_Read(pSN->SPINand_PageSize >> 8, 0x0, &read_buf, 1); // Read bad block mark at 0x800 update at v.1.0.8
         if(read_buf != 0xFF) { // update at v.1.0.7
             return 1;
         }
@@ -862,8 +862,7 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
         pSN->SPINand_BlockPerFlash = info.SPINand_BlockPerFlash;
         pSN->SPINand_PagePerBlock = info.SPINand_PagePerBlock;
         pSN->SPINand_IsDieSelect = info.SPINand_IsDieSelect;
-    } 
-    else {
+    } else {
         //printf("spiNAND_ReadINFO   ID = 0x%x\n", pSN->SPINand_ID);
         if(pSN->SPINand_ID == 0xEFAA21) { /* winbond */
             pSN->SPINand_ID = 0xEFAA21;
@@ -1029,7 +1028,50 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash= 0x400;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-						
+        } else  if(pSN->SPINand_ID == 0x0b1300) { /* XTX/  4G */
+            //pSN->SPINand_ID = 0x0b1300;
+            pSN->SPINand_PageSize=0x1000; // 4096 bytes per page
+            pSN->SPINand_SpareArea=0x100;    // 256 bytes per page spare area
+            pSN->SPINand_QuadReadCmd = 0x6b;
+            pSN->SPINand_ReadStatusCmd = 0xff;
+            pSN->SPINand_WriteStatusCmd =0xff;
+            pSN->SPINand_StatusValue = 0xff;
+            pSN->SPINand_dummybyte = 0x1;
+            pSN->SPINand_BlockPerFlash = 0x800;// 2048 blocks per 4G NAND
+            pSN->SPINand_PagePerBlock = 64; // 64 pages per block
+
+            info.SPINand_ID = pSN->SPINand_ID;//0x0b1300;
+            info.SPINand_PageSize=0x1000; // 4096 bytes per page
+            info.SPINand_SpareArea=0x100;    // 256 bytes per page spare area
+            info.SPINand_QuadReadCmd = 0x6b;
+            info.SPINand_ReadStatusCmd = 0xff;
+            info.SPINand_WriteStatusCmd =0xff;
+            info.SPINand_StatusValue = 0xff;
+            info.SPINand_dummybyte = 0x1;
+            info.SPINand_BlockPerFlash= 0x800;// 2048 blocks per 4G NAND
+            info.SPINand_PagePerBlock = 64; // 64 pages per block
+        } else  if(pSN->SPINand_ID == 0xd50bd5) { /* MKSV4GIL-DE/  4G */
+            //pSN->SPINand_ID = 0xd50bd5;
+            pSN->SPINand_PageSize=0x1000; // 4096 bytes per page
+            pSN->SPINand_SpareArea=0xF0;    // 240 bytes per page spare area
+            pSN->SPINand_QuadReadCmd = 0x6b;
+            pSN->SPINand_ReadStatusCmd = 0xff;
+            pSN->SPINand_WriteStatusCmd =0xff;
+            pSN->SPINand_StatusValue = 0xff;
+            pSN->SPINand_dummybyte = 0x1;
+            pSN->SPINand_BlockPerFlash = 0x800;// 2048 blocks per 4G NAND
+            pSN->SPINand_PagePerBlock = 64; // 64 pages per block
+
+            info.SPINand_ID = pSN->SPINand_ID;//0xd50bd5;
+            info.SPINand_PageSize=0x1000; // 4096 bytes per page
+            info.SPINand_SpareArea=0xF0;    // 240 bytes per page spare area
+            info.SPINand_QuadReadCmd = 0x6b;
+            info.SPINand_ReadStatusCmd = 0xff;
+            info.SPINand_WriteStatusCmd =0xff;
+            info.SPINand_StatusValue = 0xff;
+            info.SPINand_dummybyte = 0x1;
+            info.SPINand_BlockPerFlash= 0x800;// 2048 blocks per 4G NAND
+            info.SPINand_PagePerBlock = 64; // 64 pages per block
         } else if(pSN->SPINand_ID == 0x9B129B) { /* ATO25D1GA */
             pSN->SPINand_ID = 0x9B129B;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
@@ -1052,7 +1094,7 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        }  else if(pSN->SPINand_ID == 0x2C242C) { /* MT29F2G01 */
+        } else if(pSN->SPINand_ID == 0x2C242C) { /* MT29F2G01 */
             pSN->SPINand_ID = 0x2C242C;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x80; // 128 bytes per page spare area
