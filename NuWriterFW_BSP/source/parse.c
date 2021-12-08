@@ -764,6 +764,7 @@ void UXmodem_SPI(void)
                 *_ack=0x85;
                 usb_send((unsigned char*)_ack,4);//send ack to PC
                 pSpiImage->fileLength = pSpiImage->fileLength - IBR_HEADER_LEN - ddrlen;
+				blockCount = pSpiImage->fileLength / (SPI_BLOCK_SIZE);
             }
 
             for(j=0; j<blockCount; j++)

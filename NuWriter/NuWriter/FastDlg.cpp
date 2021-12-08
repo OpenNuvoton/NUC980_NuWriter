@@ -280,11 +280,32 @@ BOOL FastDlg::InitFile(int flag)
             break;
         }
         case 2: {
+            fp = _wfopen(m_filename, _T("rb"));
+
+            if (!fp) {
+                AfxMessageBox(_T("Error! File Open error\n"));
+                return FALSE;
+            }
+
+            fseek(fp, 0, SEEK_END);
+            m_filename_len = ftell(fp);
+            fseek(fp, 0, SEEK_SET);
+
+            m_filename_len = m_filename_len / 0xa00000; // 10MB
+            if (m_filename_len <= 1)
+                timeoutsec = MMC_TIMEOUT_SEC; // 400s
+            else if (m_filename_len > 2 && m_filename_len <= 8)
+                timeoutsec = (MMC_TIMEOUT_SEC) * 5; // 400x5 = 2000s
+            else if (m_filename_len > 8 && m_filename_len <= 12)
+                timeoutsec = (MMC_TIMEOUT_SEC) * 10; // 400x10 = 4000s
+            else
+                timeoutsec = (MMC_TIMEOUT_SEC) * 20; // 400x20 = 8000s
+
             ((CButton *)GetDlgItem(IDC_RADIO_FAST_eMMC))->SetCheck(TRUE);
             GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
             GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
             GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
-            timeoutsec = MMC_TIMEOUT_SEC;
+            //timeoutsec = MMC_TIMEOUT_SEC;
             m_type =TYPE_EMMC;
             break;
         }
@@ -344,7 +365,28 @@ BOOL FastDlg::InitFile(int flag)
             m_type = TYPE_SPI;
             break;
         case 2:
-            timeoutsec = MMC_TIMEOUT_SEC;
+            fp = _wfopen(m_filename, _T("rb"));
+
+            if (!fp) {
+                AfxMessageBox(_T("Error! File Open error\n"));
+                return FALSE;
+            }
+
+            fseek(fp, 0, SEEK_END);
+            m_filename_len = ftell(fp);
+            fseek(fp, 0, SEEK_SET);
+
+            m_filename_len = m_filename_len / 0xa00000; // 10MB
+            if (m_filename_len <= 1)
+                timeoutsec = MMC_TIMEOUT_SEC; // 400s
+            else if (m_filename_len > 2 && m_filename_len <= 8)
+                timeoutsec = (MMC_TIMEOUT_SEC) * 5; // 400x5 = 2000s
+            else if (m_filename_len > 8 && m_filename_len <= 12)
+                timeoutsec = (MMC_TIMEOUT_SEC) * 10; // 400x10 = 4000s
+            else
+                timeoutsec = (MMC_TIMEOUT_SEC) * 20; // 400x20 = 8000s
+
+            //timeoutsec = MMC_TIMEOUT_SEC;
             GetDlgItem(IDC_FAST_NAND_USRCONFIG)->EnableWindow(FALSE);
             GetDlgItem(IDC_FAST_SPINOR_USRCONFIG)->EnableWindow(FALSE);
             GetDlgItem(IDC_FAST_SPINAND_USRCONFIG)->EnableWindow(FALSE);
