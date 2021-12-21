@@ -37,11 +37,13 @@
 #define DATA		0
 #define ENV			1
 #define UBOOT		2
-#define PARTITION	3
+//#define PARTITION	3
 
 #define	PACK		3
 #define	IMAGE		4
 #define DATA_OOB	5
+
+#define PARTITION	6
 
 #define	PMTP 	15
 #endif

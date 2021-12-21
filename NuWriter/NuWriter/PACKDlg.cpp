@@ -132,7 +132,7 @@ void CPACKDlg::OnBnClickedPackAdd()
         CNuWriterDlg* mainWnd=(CNuWriterDlg*)(AfxGetApp()->m_pMainWnd);
         //szFileName.Format(_T("%s%s"),filename,ext);
         //sList.push_back(szFileName); // 將完整路徑加到 sList 裡頭
-        if(m_packtab1.m_type != PARTITION) {
+		if(m_packtab1.m_type != PACK) {
             if(m_packtab1.m_imagename.IsEmpty()) {
                 AfxMessageBox(_T("Error! Please input image file"));
                 return;
@@ -150,6 +150,7 @@ void CPACKDlg::OnBnClickedPackAdd()
             m_packtab1.m_execaddr = _T("0x0");
             m_packtab1.m_startblock = _T("0x0");
             m_packtab1.m_isUserConfig = 0;
+			m_packtab1.m_type = PACK;//PARTITION;
         }
 
         ImageName.push_back(m_packtab1.m_filename);
@@ -207,9 +208,10 @@ void CPACKDlg::OnBnClickedPackAdd()
         case PARTITION:
             flagstr.Format(_T("FORMAT"));
             break;
-#if(0)
+#if(1)
         case PACK :
             flagstr.Format(_T("Pack"));
+			flagstr.Format(_T("FORMAT"));
             break;
 #endif
         case IMAGE :
@@ -217,7 +219,7 @@ void CPACKDlg::OnBnClickedPackAdd()
             break;
         }
         CString len;
-        if(m_packtab1.m_type != PARTITION) {
+        if (m_packtab1.m_type != PACK) {
             FILE* rfp;
             int total;
             int startblock;
@@ -243,6 +245,7 @@ void CPACKDlg::OnBnClickedPackAdd()
             m_imagelist.InsertItem(m_imagelist.GetItemCount(),m_packtab1.m_imagename,flagstr,ubootflashtype,m_packtab1.m_startblock,len,_T(""),_T(""));
             break;
         case PARTITION:
+        case PACK:
             m_imagelist.InsertItem(m_imagelist.GetItemCount(),_T("Partition_INFO"),flagstr,_T(""),_T(""),_T(""),_T(""),_T(""));
             break;
         case UBOOT:
@@ -351,9 +354,10 @@ void CPACKDlg::OnBnClickedPackModify()
         case PARTITION:
             flagstr.Format(_T("FORMAT"));
             break;
-#if(0)
+#if(1)
         case PACK :
             flagstr.Format(_T("Pack"));
+			flagstr.Format(_T("FORMAT"));
             break;
 #endif
         case IMAGE :
@@ -393,8 +397,7 @@ void CPACKDlg::OnBnClickedPackModify()
         }
 
         CString len;
-        if(*itemType != PARTITION) {
-        //if(*itemType!=PMTP) {
+        if(*itemType!=PACK) {
             FILE* rfp;
             int total;
             int startblock;
@@ -420,6 +423,7 @@ void CPACKDlg::OnBnClickedPackModify()
             m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,flashstr,*itemStartblock,len,_T(""),_T(""));
             break;
         case PARTITION:
+		case PACK:
             m_imagelist.InsertItem(m_imagelist.GetItemCount(),_T("Partition_INFO"),flagstr,_T(""),_T(""),_T(""),_T(""),_T(""));
             break;
         case UBOOT:
@@ -502,9 +506,10 @@ void CPACKDlg::OnBnClickedPackDelete()
         case PARTITION:
             flagstr.Format(_T("FORMAT"));
             break;
-#if(0)
+#if(1)
         case PACK :
             flagstr.Format(_T("Pack"));
+			flagstr.Format(_T("FORMAT"));
             break;
 #endif
         case IMAGE :
@@ -540,7 +545,7 @@ void CPACKDlg::OnBnClickedPackDelete()
         CString len;
         if(*itemType!=PMTP) {
 
-            if(*itemType != PARTITION) {
+			if(*itemType != PACK) {
             FILE* rfp;
             int total;
             int startblock;
@@ -555,7 +560,7 @@ void CPACKDlg::OnBnClickedPackDelete()
         if(*itemType!=PMTP) {
             if(*itemType==UBOOT)
                 m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,flashstr,*itemStartblock,len,*itemExec,userstr);
-            else if(*itemType==PARTITION)
+            else if(*itemType==PACK)
                 m_imagelist.InsertItem(m_imagelist.GetItemCount(),_T("Partition_INFO"),flagstr,_T(""),_T(""),_T(""),_T(""),_T(""));
             else if(*itemType==DATA)
                 m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,_T(""),*itemStartblock,len,_T(""),_T(""));
@@ -617,7 +622,7 @@ int CPACKDlg::Output()
     for(i=0; i<imagelen; i++) {
         itemType=(ImageType.begin()+i);
         if(*itemType!=PMTP) {
-            if(*itemType!=PARTITION) {
+            if(*itemType!=PACK) {
                 itemName=(ImageName.begin()+i);
                 rfp=_wfopen(*itemName,_T("rb"));
                 fseek(rfp,0,SEEK_END);
@@ -651,7 +656,7 @@ int CPACKDlg::Output()
 
         if(*itemType!=PMTP) {
             itemStartblock=(ImageStartblock.begin()+i);
-            if(*itemType!=PARTITION) {
+            if(*itemType!=PACK) {
                 rfp=_wfopen(*itemName,_T("rb"));
                 fseek(rfp,0,SEEK_END);
                 len= ftell(rfp);
@@ -795,6 +800,7 @@ int CPACKDlg::Output()
             }
             break;
             case PARTITION:
+            case PACK:
                 //if(!mainWnd->m_inifile.ReadFile())
                 //    return FALSE;
                 memset((char *)&child,0xff,sizeof(PACK_CHILD_HEAD));
@@ -971,6 +977,7 @@ BOOL CPACKDlg::InitFile(int flag)
             itemStartblock=(ImageStartblock.begin()+i);
             itemUserConfig=(UserConfig.begin()+i);
 
+			TRACE(_T("------------ InitFile(%d) itemType:%d\n"), flag, *itemType);
             CString flagstr,flashstr,userstr;
             switch(*itemType) {
             case DATA   :
@@ -985,9 +992,10 @@ BOOL CPACKDlg::InitFile(int flag)
             case PARTITION  :
                 flagstr.Format(_T("FORMAT"));
                 break;
-#if(0)
+#if(1)
             case PACK   :
                 flagstr.Format(_T("Pack"));
+				flagstr.Format(_T("FORMAT"));
                 break;
 #endif
             case IMAGE  :
@@ -1036,7 +1044,7 @@ BOOL CPACKDlg::InitFile(int flag)
             //    filename = filename.Mid(0,15);
 
             CString len;
-            if(*itemType!=PARTITION) {
+            if(*itemType!=PACK) {
                 FILE* rfp;
                 int total;
                 int startblock;
@@ -1064,6 +1072,7 @@ BOOL CPACKDlg::InitFile(int flag)
                 m_imagelist.InsertItem(m_imagelist.GetItemCount(),filename,flagstr,flashstr,*itemStartblock,len,_T(""),_T(""));
                 break;
             case PARTITION:
+            case PACK:
                 m_imagelist.InsertItem(m_imagelist.GetItemCount(),_T("Partition_INFO"),flagstr,_T(""),_T(""),_T(""),_T(""),_T(""));
                 break;
             case UBOOT:
@@ -1176,7 +1185,8 @@ void CPACKDlg::OnNMDblclkPackImagelist(NMHDR *pNMHDR, LRESULT *pResult)
         ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A4))->SetCheck(TRUE);
         break;
     case PARTITION:
-        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A ))->SetCheck(TRUE);
+    case PACK:
+        ((CButton *)m_packtab1.GetDlgItem(IDC_PACK_TYPE_A3))->SetCheck(TRUE);
         //AfxMessageBox(_T("Error! Please delete this item and re-format"));
         break;
     }
@@ -1205,7 +1215,7 @@ void CPACKDlg::OnNMDblclkPackImagelist(NMHDR *pNMHDR, LRESULT *pResult)
         break;
     }
     //-----------------------------------------------------------------------------
-    if((*itemType) == PARTITION) {
+    if((*itemType) == PACK) {
         m_packtab1.GetDlgItem(IDC_PACK_EXECADDR_A)->SetWindowText(_T("0"));
         m_packtab1.GetDlgItem(IDC_PACK_FLASHOFFSET_A)->SetWindowText(_T("0"));
     }

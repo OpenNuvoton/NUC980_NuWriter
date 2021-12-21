@@ -66,10 +66,11 @@ extern INFO_T info;
 #define DATA           0
 #define ENV            1
 #define UBOOT          2
-#define PARTITION      3
+//#define PARTITION      3
 #define PACK           3
 #define IMAGE          4
 #define DATA_OOB       5
+#define PARTITION      6
 
 #define YAFFS2         41
 #define UBIFS          42
@@ -1858,6 +1859,8 @@ void UXmodem_MMC()
                         ppack.startaddr=0x400;
                     BatchBurn_MMC(ppack.filelen,ppack.startaddr/SD_SECTOR,0);
                 }
+                else
+                    continue;
             }
         }
     }
