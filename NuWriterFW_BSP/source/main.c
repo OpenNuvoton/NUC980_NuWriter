@@ -74,7 +74,7 @@ void CPU_Info(void)
     system= system / (((inpw(REG_CLK_DIVCTL0) & (0x1<<8))>>8)+1);
     cpu   = system / (((inpw(REG_CLK_DIVCTL0) & (0x1<<16))>>16)+1);
     pclk  = system / 2;
-    printf("CPU: %dMHz, DDR: %dMHz, SYS: %dMHz, PCLK: %dMHz\n",cpu,system,system,pclk);
+    printf("CPU: %dMHz, DDR: %dMHz, SYS: %dMHz, PCLK: %dMHz\n",cpu,system/2,system,pclk);
     //printf("CLK_DIVCTL8 =0x%x\n",inpw(REG_CLK_DIVCTL8));// XIN/512 = 23kHz
 
 }
