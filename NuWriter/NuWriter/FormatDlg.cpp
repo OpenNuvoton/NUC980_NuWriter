@@ -101,18 +101,28 @@ void CFormatDlg::SliderCTRL(bool bShow)
 
     if(m_CtrlCnt == 0) {
         m_Slider1.EnableWindow(bShow);
+        m_Edit1.EnableWindow(bShow);
     } else if(m_CtrlCnt == 1) {
         m_Slider1.EnableWindow(bShow);
+        m_Edit1.EnableWindow(bShow);
         m_Slider2.EnableWindow(bShow);
+        m_Edit2.EnableWindow(bShow);
     } else if(m_CtrlCnt == 2) {
         m_Slider1.EnableWindow(bShow);
+        m_Edit1.EnableWindow(bShow);
         m_Slider2.EnableWindow(bShow);
+        m_Edit2.EnableWindow(bShow);
         m_Slider3.EnableWindow(bShow);
+        m_Edit3.EnableWindow(bShow);
     } else if(m_CtrlCnt == 3) {
         m_Slider1.EnableWindow(bShow);
+        m_Edit1.EnableWindow(bShow);
         m_Slider2.EnableWindow(bShow);
+        m_Edit2.EnableWindow(bShow);
         m_Slider3.EnableWindow(bShow);
+        m_Edit3.EnableWindow(bShow);
         m_Slider4.EnableWindow(bShow);
+        m_Edit4.EnableWindow(bShow);
     }
 
 }
@@ -251,6 +261,8 @@ void CFormatDlg::OnBnClickedFormatBtnadd()
     //SliderCTRL(TRUE);
     if(m_CtrlCnt == 1) {
         m_Slider1.EnableWindow(FALSE);
+        m_Edit1.EnableWindow(FALSE);
+        m_Edit2.EnableWindow(TRUE);
         m_Edit2.SetSlideLink( this, IDC_FORMAT_SLIDER2 );
         m_Edit2.SetParams(0, ParTotalMB-Partition1Size, 1);//Partition1Size+1
         m_Edit2.SetValue(0);//Partition1Size+1
@@ -270,6 +282,8 @@ void CFormatDlg::OnBnClickedFormatBtnadd()
             return;
         }
         m_Slider3.EnableWindow(TRUE);
+        m_Edit2.EnableWindow(FALSE);
+        m_Edit3.EnableWindow(TRUE);
         m_Edit3.SetSlideLink( this, IDC_FORMAT_SLIDER3 );
         m_Edit3.SetParams(0, ParTotalMB-Partition1Size-Partition2Size, 1);
         m_Edit3.SetValue(0);
@@ -293,6 +307,8 @@ void CFormatDlg::OnBnClickedFormatBtnadd()
             return;
         }
         m_Slider4.EnableWindow(TRUE);
+        m_Edit3.EnableWindow(FALSE);
+        m_Edit4.EnableWindow(TRUE);
         m_Edit4.SetSlideLink( this, IDC_FORMAT_SLIDER4 );
         m_Edit4.SetParams(0, ParTotalMB-Partition1Size-Partition2Size-Partition3Size, 1);
         m_Edit4.SetValue(0);
@@ -338,6 +354,7 @@ void CFormatDlg::OnBnClickedFormatBtnset()
         m_BtnSet.EnableWindow(TRUE);
 
         m_Slider1.EnableWindow(TRUE);
+        m_Edit1.EnableWindow(TRUE);
         m_Edit1.SetSlideLink( this, IDC_FORMAT_SLIDER1 );
         m_Edit1.SetParams( 0, ParTotalMB, 1);
         m_Edit1.SetValue(0);
@@ -414,6 +431,7 @@ void CFormatDlg::OnBnClickedFormatBtnrst()
     m_Edit1.SetValue(0);
     m_Slider1.SetSlidePos(0);
     m_Slider1.EnableWindow(TRUE);
+    m_Edit1.EnableWindow(FALSE);
     m_Edit1.SetWindowText(_T("0"));
     Partition1Size = 0;
     strPartition1Size = _T("0");
@@ -421,6 +439,7 @@ void CFormatDlg::OnBnClickedFormatBtnrst()
     m_Edit2.SetValue(0);
     m_Slider2.SetSlidePos(0);
     m_Slider2.EnableWindow(FALSE);
+    m_Edit2.EnableWindow(FALSE);
     m_Edit2.SetWindowText(_T("0"));
     Partition2Size = 0;
     strPartition2Size = _T("0");
@@ -428,6 +447,7 @@ void CFormatDlg::OnBnClickedFormatBtnrst()
     m_Edit3.SetValue(0);
     m_Slider3.SetSlidePos(0);
     m_Slider3.EnableWindow(FALSE);
+    m_Edit3.EnableWindow(FALSE);
     m_Edit3.SetWindowText(_T("0"));
     Partition3Size = 0;
     strPartition3Size = _T("0");
@@ -435,6 +455,7 @@ void CFormatDlg::OnBnClickedFormatBtnrst()
     m_Edit4.SetValue(0);
     m_Slider4.SetSlidePos(0);
     m_Slider4.EnableWindow(FALSE);
+    m_Edit4.EnableWindow(FALSE);
     m_Edit4.SetWindowText(_T("0"));
     Partition4Size = 0;
     strPartition4Size = _T("0");

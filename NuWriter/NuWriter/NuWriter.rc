@@ -16,7 +16,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-//resources
+// Chinese (Traditional, Taiwan) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHT)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_TRADITIONAL
@@ -69,7 +69,9 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\NuWriter.ico"
+
 IDI_CHIP                ICON                    "res\\chip.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -144,7 +146,7 @@ BEGIN
     LTEXT           "Select DDR parameter :",IDC_STATIC_DDR_PAR,16,48,116,8
     COMBOBOX        IDC_COMBO1,16,31,141,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_COMBO_DDR,16,61,141,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         140,IDC_STATIC,"Static",SS_BITMAP,1,1,501,15
+    CONTROL         IDB_BITMAP1,IDC_STATIC,"Static",SS_BITMAP,1,1,501,15
 END
 
 IDD_MMC DIALOGEX 0, 0, 442, 152
@@ -285,7 +287,7 @@ BEGIN
     LTEXT           " COMx ",IDC_COMPORT,334,37,71,11,SS_SUNKEN
     PUSHBUTTON      "Re-Connect",IDC_RECONNECT,407,35,58,14
     GROUPBOX        "...",IDC_TYPE,10,53,455,169
-    CONTROL         140,IDC_STATIC,"Static",SS_BITMAP,-1,0,1389,15
+    CONTROL         IDB_BITMAP1,IDC_STATIC,"Static",SS_BITMAP,-1,0,1389,15
 END
 
 IDD_FORMAT DIALOGEX 0, 0, 281, 227
@@ -309,19 +311,19 @@ BEGIN
     LTEXT           "MB",IDC_STATIC_FORMAT_P3Size,256,137,18,8
     LTEXT           "4th PartitionSize:",IDC_STATIC,7,171,52,8
     LTEXT           "MB",IDC_STATIC_FORMAT_P4Size,256,171,12,8
-    EDITTEXT        IDC_FORMAT_ReserveSize,66,80,49,12,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY | NOT WS_VISIBLE,WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_FORMAT_ReserveSize,66,80,49,12,ES_CENTER | ES_AUTOHSCROLL | NOT WS_VISIBLE,WS_EX_CLIENTEDGE
     CONTROL         "",IDC_FORMAT_STATIC1,"Static",SS_GRAYFRAME | SS_SUNKEN,63,61,191,28
     CONTROL         "Slider1",IDC_FORMAT_SLIDER1,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_BORDER | WS_TABSTOP,117,66,134,18,WS_EX_CLIENTEDGE
-    EDITTEXT        IDC_FORMAT_P1Size,66,69,49,12,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY,WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_FORMAT_P1Size,66,69,49,12,ES_CENTER | ES_AUTOHSCROLL,WS_EX_CLIENTEDGE
     CONTROL         "",IDC_FORMAT_STATIC2,"Static",SS_GRAYFRAME | SS_SUNKEN,63,96,191,28
     CONTROL         "Slider2",IDC_FORMAT_SLIDER2,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_BORDER | WS_TABSTOP,117,101,134,18,WS_EX_CLIENTEDGE
-    EDITTEXT        IDC_FORMAT_P2Size,66,104,49,12,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY,WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_FORMAT_P2Size,66,104,49,12,ES_CENTER | ES_AUTOHSCROLL,WS_EX_CLIENTEDGE
     CONTROL         "",IDC_FORMAT_STATIC3,"Static",SS_GRAYFRAME | SS_SUNKEN,63,130,191,28
     CONTROL         "Slider3",IDC_FORMAT_SLIDER3,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_BORDER | WS_TABSTOP,116,137,134,18,WS_EX_CLIENTEDGE
-    EDITTEXT        IDC_FORMAT_P3Size,66,140,49,12,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY,WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_FORMAT_P3Size,66,140,49,12,ES_CENTER | ES_AUTOHSCROLL,WS_EX_CLIENTEDGE
     CONTROL         "",IDC_FORMAT_STATIC4,"Static",SS_GRAYFRAME | SS_SUNKEN,63,164,191,28
     CONTROL         "Slider4",IDC_FORMAT_SLIDER4,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_BORDER | WS_TABSTOP,115,169,134,18,WS_EX_CLIENTEDGE
-    EDITTEXT        IDC_FORMAT_P4Size,66,173,49,12,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY,WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_FORMAT_P4Size,66,173,49,12,ES_CENTER | ES_AUTOHSCROLL,WS_EX_CLIENTEDGE
     PUSHBUTTON      "Add",IDC_FORMAT_BTNADD,62,22,52,16
     PUSHBUTTON      "Set",IDC_FORMAT_BTNSET,116,22,52,16
     PUSHBUTTON      "Reset",IDC_FORMAT_BTNRST,169,22,52,16
@@ -617,27 +619,54 @@ END
 //
 
 IDB_BANNER              BITMAP                  "res\\banner.bmp"
+
 IDB_READ_DEVICE         BITMAP                  "res\\ReadDevice.bmp"
+
 IDB_WRITE_DEVICE        BITMAP                  "res\\WriterDevice.bmp"
+
 IDB_BROWSE              BITMAP                  "res\\Browse.bmp"
+
 IDB_FORMAT              BITMAP                  "res\\Format.bmp"
+
 IDB_ERASEALL            BITMAP                  "res\\EraseAll.bmp"
+
 IDB_VERIFY              BITMAP                  "res\\Verify.bmp"
+
 IDB_CONTINUE            BITMAP                  "res\\Continue.bmp"
+
 IDB_RECONNECT0          BITMAP                  "res\\ReConnect0.bmp"
+
 IDB_RECONNECT1          BITMAP                  "res\\ReConnect1.bmp"
+
 IDB_EXIT                BITMAP                  "res\\Exit.bmp"
+
 IDB_NUWRITER            BITMAP                  "res\\NuWriter.bmp"
+
 IDB_ADD                 BITMAP                  "res\\Add.bmp"
+
 IDB_DELETE              BITMAP                  "res\\Delete.bmp"
+
 IDB_MODIFY              BITMAP                  "res\\Modify.bmp"
+
 IDB_OUTPUT              BITMAP                  "res\\Output.bmp"
-#endif    // resources
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_FORMAT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+#endif    // Chinese (Traditional, Taiwan) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -660,7 +689,7 @@ BEGIN
     CONTROL         "Data",IDC_PACK_TYPE_A,"Button",BS_AUTORADIOBUTTON | WS_GROUP,48,26,31,10
     CONTROL         "Environment",IDC_PACK_TYPE_A2,"Button",BS_AUTORADIOBUTTON,77,26,52,10
     CONTROL         "Loader",IDC_PACK_TYPE_A4,"Button",BS_AUTORADIOBUTTON,133,26,38,10
-	CONTROL         "eMMC/SD Partition",IDC_PACK_TYPE_A3,"Button",BS_AUTORADIOBUTTON,172,26,77,10
+    CONTROL         "eMMC/SD Partition",IDC_PACK_TYPE_A3,"Button",BS_AUTORADIOBUTTON,172,26,77,10
     LTEXT           "Flash Type :",IDC_STATIC,2,57,43,8
     CONTROL         "NAND",IDC_PACK_FLASHTYPE_1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,48,57,30,10
     CONTROL         "SPI NOR",IDC_PACK_FLASHTYPE_2,"Button",BS_AUTORADIOBUTTON,81,57,39,10
@@ -671,7 +700,7 @@ BEGIN
     LTEXT           "Image start offset : 0x",IDC_STATIC,1,42,77,8,NOT WS_GROUP
     LTEXT           "Alignment : SPI(0x10000) / eMMC(0x200) / NAND(0x20000)",IDC_PACK_STATUS,2,71,231,8,NOT WS_VISIBLE | NOT WS_GROUP
     LTEXT           "SPI Flash Parameter:",IDC_STATIC,224,57,71,10
-    CONTROL         "User Defined",IDC_PACK_USRCONFIG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,296,57,61,10    
+    CONTROL         "User Defined",IDC_PACK_USRCONFIG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,296,57,61,10
 END
 
 
@@ -743,7 +772,7 @@ BEGIN
     IDS_ABOUTBOX            "&About NuWriter..."
 END
 
-#endif    // resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
