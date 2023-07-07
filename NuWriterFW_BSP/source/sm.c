@@ -446,8 +446,8 @@ INT fmiSM_ReadID(FMI_SM_INFO_T *pSM)
                 pSM->uPageSize = 2048;
                 return 1;
             }
+            IsID=1;
         }
-        IsID=1;
     }
 
     //if((u32PowerOn&0x3C0)!=0x3C0 ) {

@@ -127,7 +127,7 @@ int main()
     MSG_DEBUG("after WDT: 0x08%x/0x08%x/0x08%x\n",inpw(REG_WDT_CTL),inpw(REG_WDT_ALTCTL),inpw(REG_WDT_RSTCNT));
     MSG_DEBUG("0x%x\n", inpw(REG_USBD_PHY_CTL));
     //printf("after WDT: 0x08%x/0x08%x/0x08%x\n",inpw(REG_WDT_CTL),inpw(REG_WDT_ALTCTL),inpw(REG_WDT_RSTCNT));
-    printf("=======================================\n");
+    printf("======================================= %s %s\n", __DATE__, __TIME__);
     printf("Run firmware code\n");
     CPU_Info();
 
