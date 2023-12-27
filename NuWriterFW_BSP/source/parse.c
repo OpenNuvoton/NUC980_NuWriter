@@ -177,10 +177,10 @@ void addNUC980MagicHeader(unsigned char u8IsSPINOR)
     else
     {
         // IBR_Header for SPI NAND Flash
-        u8header[16] = 0x00;//info.SPINand_PageSize;
-        u8header[17] = 0x08;//info.SPINand_PageSize;
-        u8header[18] = 0x40;//info.SPINand_SpareArea;
-        u8header[19] = 0x00;//info.SPINand_SpareArea;
+        u8header[16] = info.SPINand_PageSize & 0xff;//0x00
+        u8header[17] = (info.SPINand_PageSize >> 8) & 0xff;//0x08
+        u8header[18] = info.SPINand_SpareArea & 0xff;//0x40
+        u8header[19] = (info.SPINand_SpareArea >> 8) & 0xff;//0x00
         u8header[20] = info.SPINand_QuadReadCmd;
         u8header[21] = info.SPINand_ReadStatusCmd;
         u8header[22] = info.SPINand_WriteStatusCmd;
@@ -3492,7 +3492,8 @@ void UXmodem_SPINAND()
     /* Initial SPI NAND */
     spiNANDInit();
 
-    MSG_DEBUG("pSN->SPINand_PageSize=%d\n",pSN->SPINand_PageSize);
+    printf/*MSG_DEBUG*/("pSN->SPINand_PageSize=%d\n",pSN->SPINand_PageSize);
+    printf/*MSG_DEBUG*/("pSN->SPINand_SpareArea=%d\n",pSN->SPINand_SpareArea);
     MSG_DEBUG("pSN->SPINand_PagePerBlock=%d\n",pSN->SPINand_PagePerBlock);
 
     memset((char *)&spinandImage, 0, sizeof(FW_SPINAND_IMAGE_T));
@@ -4216,7 +4217,7 @@ void UXmodem_INFO()
     }
 #endif
 
-    // NAND Init
+#if(1) // NAND Init
     if(!fmiNandInit())
     {
         info.Nand_uBlockPerFlash=pSM->uBlockPerFlash;
@@ -4227,8 +4228,9 @@ void UXmodem_INFO()
 
         printf("BlockPerFlash=%d, PagePerBlock=%d, PageSize=%d\n",info.Nand_uBlockPerFlash, info.Nand_uPagePerBlock, info.Nand_uPageSize);
     }
+#endif
 
-
+#if(1) // eMMC/SD Init 
     /* eMMC/SD Init */
     _sd_ReferenceClock = 12000;    // kHz
 
@@ -4256,6 +4258,7 @@ void UXmodem_INFO()
         goto _init_done;
     }
     printf("BlockSize=0x%08x(%d), %d KB\n", eMMCBlockSize, eMMCBlockSize, info.EMMC_uBlock/2);
+#endif
 
 _init_done:
     usb_send((UINT8 *)&info, sizeof(INFO_T));
