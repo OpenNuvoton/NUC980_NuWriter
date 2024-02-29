@@ -43,7 +43,7 @@ extern UINT32 g_uIsUserConfig;
 
 INT fmiSMCheckRB()
 {
-    SetTimer(3000);
+    SetTimer(5000);
     while(1) {
         if((inpw(REG_NANDINTSTS) & 0x400)) { /* RB0_IF */
             //while(! (inpw(REG_NANDINTSTS) & 0x40000) );
