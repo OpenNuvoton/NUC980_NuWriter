@@ -19,7 +19,8 @@ extern void DelayMicrosecond(unsigned int count);
 extern SPINAND_INFO_T SNInfo, *pSN;
 extern INFO_T info;
 
-typedef struct {
+typedef struct
+{
     char PID;
     int (*SpiFlashWrite)(UINT32 address, UINT32 len, UCHAR *data);
 } spiflash_t;
@@ -41,7 +42,8 @@ void spiNAND_Continuous_Normal_Read(uint8_t* buff, uint32_t count)
     SPIin(0x00); // dummy
     SPIin(0x00); // dummy
     SPIin(0x00); // dummy
-    for( i = 0; i < count; i++) {
+    for( i = 0; i < count; i++)
+    {
         *(buff+i) = SPIin(0x00);
     }
     spiNAND_CS_HIGH();
@@ -115,7 +117,8 @@ void spiNAND_LUT_Read(uint16_t* LBA, uint16_t* PBA)
     spiNAND_CS_LOW();
     SPIin(0xA5);
     SPIin(0x00);                  // Dummy
-    for(i = 0; i < 20; i++) {
+    for(i = 0; i < 20; i++)
+    {
         buf1 = SPIin(0x00);
         buf2 = SPIin(0x00);
         *(LBA+i) = (buf1 << 8) | buf2;
@@ -160,7 +163,8 @@ uint8_t spiNAND_bad_block_check(uint32_t page_address)
         spiNAND_Normal_Read(((page_address & (1 << 6)) ? (1 << 4) : 0) + 0x8, 0, &read_buf, 1);
     else
         spiNAND_Normal_Read(pSN->SPINand_PageSize >> 8,0x0, &read_buf, 1); // Read bad block mark at 0x800 update at v.1.0.8
-    if(read_buf != 0xFF) { // update at v.1.0.7
+    if(read_buf != 0xFF)   // update at v.1.0.7
+    {
         return 1;
     }
 
@@ -171,7 +175,8 @@ uint8_t spiNAND_bad_block_check(uint32_t page_address)
             spiNAND_Normal_Read((((page_address + 1) & (1 << 6)) ? (1 << 4) : 0) + 0x8, 0, &read_buf, 1);
         else
             spiNAND_Normal_Read(pSN->SPINand_PageSize >> 8, 0x0, &read_buf, 1); // Read bad block mark at 0x800 update at v.1.0.8
-        if(read_buf != 0xFF) { // update at v.1.0.7
+        if(read_buf != 0xFF)   // update at v.1.0.7
+        {
             return 1;
         }
     }
@@ -187,8 +192,10 @@ return:
 uint8_t Program_verify(uint8_t* buff1, uint8_t* buff2, uint32_t count)
 {
     uint32_t volatile i = 0;
-    for( i = 0; i < count; i++) {
-        if( *(buff1+i) != *(buff2+i)) {
+    for( i = 0; i < count; i++)
+    {
+        if( *(buff1+i) != *(buff2+i))
+        {
             return 1;
         }
     }
@@ -212,23 +219,25 @@ void spiNAND_Pageprogram_Pattern(uint8_t addh, uint8_t addl, uint8_t* program_bu
         spiNAND_CS_LOW();
         SPIin(0x06);
         spiNAND_CS_HIGH();
-    
+
         spiNAND_CS_LOW();
         SPIin(0x02);
         SPIin(addh);
         SPIin(addl);
-        for(i = 0; i < count; i++) {
+        for(i = 0; i < count; i++)
+        {
             SPIin(*(program_buffer+i));
         }
         spiNAND_CS_HIGH();
     }
     else /* GD */
-    { 
+    {
         spiNAND_CS_LOW();
         SPIin(0x02);
         SPIin(addh);
         SPIin(addl);
-        for(i = 0; i < count; i++) {
+        for(i = 0; i < count; i++)
+        {
             SPIin(*(program_buffer+i));
         }
         //printf("program_buffer[0]=0x%x\n", *program_buffer);
@@ -460,7 +469,8 @@ return: status register value
 uint8_t spiNAND_StatusRegister(uint8_t sr_sel)
 {
     uint8_t volatile SR = 0;  // status register data
-    switch(sr_sel) {
+    switch(sr_sel)
+    {
     case 0x01:
         spiNAND_CS_LOW();
         if(pSN->SPINand_ID == 0xEFAA21)   /* winbond */
@@ -531,26 +541,29 @@ void spiNAND_Normal_Read(uint8_t addh, uint8_t addl, uint8_t* buff, uint32_t cou
         spiNAND_CS_LOW();
         /* Send command 0x03: Read data */
         SPIin(0x03);
-    
+
         SPIin(0x00); // dummy
         SPIin(addh);
         SPIin(addl);
-    
-        for( i = 0; i < count; i++) {
+
+        for( i = 0; i < count; i++)
+        {
             *(buff+i) = SPIin(0x00);
         }
         spiNAND_CS_HIGH();
     }
-    else{
+    else
+    {
         spiNAND_CS_LOW();
         /* Send command 0x03: Read data */
         SPIin(0x03);
-    
+
         SPIin(addh);
         SPIin(addl);
         SPIin(0x00); // dummy
-    
-        for( i = 0; i < count; i++) {
+
+        for( i = 0; i < count; i++)
+        {
             *(buff+i) = SPIin(0x00);
         }
         spiNAND_CS_HIGH();
@@ -583,7 +596,8 @@ void spiNAND_QuadIO_Read(uint8_t addh, uint8_t addl, uint8_t* buff, uint32_t cou
     QSPI0->CTL |= 0x1;
     while ((QSPI0->STATUS & 0x8000) == 0);
 
-    for( i = 0; i < count; i++) {
+    for( i = 0; i < count; i++)
+    {
         *(buff+i) = SPIin(0x00);
     }
     spiNAND_CS_HIGH();
@@ -641,12 +655,15 @@ void spiNAND_QuadOutput_Read(uint8_t addh, uint8_t addl, uint8_t* buff, uint32_t
     outpw(REG_QSPI0_TX, 0);
     u32RxCounter=0;
     u32TxCounter=2;
-    while(u32RxCounter<count) {
-        while((inpw(REG_QSPI0_STATUS)&0x100)==0) { // RX empty
+    while(u32RxCounter<count)
+    {
+        while((inpw(REG_QSPI0_STATUS)&0x100)==0)   // RX empty
+        {
             buff[u32RxCounter] = inpw(REG_QSPI0_RX);
             u32RxCounter++;
         }
-        if( ((inpw(REG_QSPI0_STATUS)&0x20000)==0)&&(u32TxCounter<count)  ) { // TX full
+        if( ((inpw(REG_QSPI0_STATUS)&0x20000)==0)&&(u32TxCounter<count)  )   // TX full
+        {
             outpw(REG_QSPI0_TX, 0);
             u32TxCounter++;
         }
@@ -692,22 +709,28 @@ int8_t spiNAND_ReadyBusy_Check()
     uint8_t volatile SR = 0xFF;
 
     SetTimer(5000);
-    if(pSN->SPINand_ID == 0xEFAA21) { /* winbond */
-    //if(1){
-        while((SR & 0x1) != 0x00) {
+    if(pSN->SPINand_ID == 0xEFAA21)   /* winbond */
+    {
+        //if(1){
+        while((SR & 0x1) != 0x00)
+        {
             spiNAND_CS_LOW();
             SPIin(0x0F);
             SPIin(0xC0);
             SR = SPIin(0x00);
             spiNAND_CS_HIGH();
-            if (inpw(REG_ETMR0_ISR) & 0x1) {
+            if (inpw(REG_ETMR0_ISR) & 0x1)
+            {
                 outpw(REG_ETMR0_ISR, 0x1);
                 printf("Error winbond spiNAND_ReadyBusy_Check timeout\n");
                 return 1;
             }
         }
-    } else { // MXIC
-        while((SR & 0x1) != 0x00) {
+    }
+    else     // MXIC
+    {
+        while((SR & 0x1) != 0x00)
+        {
             spiNAND_CS_LOW();
             SPIin(0x0F);
             SPIin(0xC0);
@@ -716,7 +739,8 @@ int8_t spiNAND_ReadyBusy_Check()
             SR = SPIin(0x00);
             spiNAND_CS_HIGH();
 
-            if (inpw(REG_ETMR0_ISR) & 0x1) {
+            if (inpw(REG_ETMR0_ISR) & 0x1)
+            {
                 outpw(REG_ETMR0_ISR, 0x1);
                 printf("Error MXIC spiNAND_ReadyBusy_Check timeout\n");
                 return 1;
@@ -741,12 +765,15 @@ uint32_t spiNAND_ReadID()
     SPIin(0x00); // dummy
     JEDECID += SPIin(0x00);
 
-    if(JEDECID == 0xC2 || JEDECID == 0xC8) { 
+    if(JEDECID == 0xC2 || JEDECID == 0xC8)
+    {
         // MXIC Read ID BYTE0, BYTE1
         // GD, except 0xB148C8 which doesn't need the dummy after 0x9F
         JEDECID <<= 8;
         JEDECID += SPIin(0x00);
-    } else {
+    }
+    else
+    {
         JEDECID <<= 8;
         JEDECID += SPIin(0x00);
         JEDECID <<= 8;
@@ -850,7 +877,8 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
 
     info.SPINand_IsDieSelect = 0;
     pSN->SPINand_IsDieSelect = 0;
-    if(info.SPINand_uIsUserConfig == 1) {
+    if(info.SPINand_uIsUserConfig == 1)
+    {
         pSN->SPINand_ID = pSN->SPINand_ID;
         pSN->SPINand_PageSize = info.SPINand_PageSize;
         pSN->SPINand_SpareArea = info.SPINand_SpareArea ;
@@ -862,9 +890,12 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
         pSN->SPINand_BlockPerFlash = info.SPINand_BlockPerFlash;
         pSN->SPINand_PagePerBlock = info.SPINand_PagePerBlock;
         pSN->SPINand_IsDieSelect = info.SPINand_IsDieSelect;
-    } else {
+    }
+    else
+    {
         //printf("spiNAND_ReadINFO   ID = 0x%x\n", pSN->SPINand_ID);
-        if(pSN->SPINand_ID == 0xEFAA21) { /* winbond */
+        if(pSN->SPINand_ID == 0xEFAA21)   /* winbond */
+        {
             pSN->SPINand_ID = 0xEFAA21;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x40; // 64 bytes per page spare area
@@ -888,7 +919,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        } else if(pSN->SPINand_ID == 0xEFAA22){ /* winbond */
+        }
+        else if(pSN->SPINand_ID == 0xEFAA22)    /* winbond */
+        {
             pSN->SPINand_ID = 0xEFAA22;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x40; // 64 bytes per page spare area
@@ -912,7 +945,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash = 0x800;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        } else if(pSN->SPINand_ID == 0xEFAA23){ /* winbond */
+        }
+        else if(pSN->SPINand_ID == 0xEFAA23)    /* winbond */
+        {
             pSN->SPINand_ID = 0xEFAA23;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x80; // 128 bytes per page spare area
@@ -936,7 +971,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash = 0x1000;// 4096 blocks per 4G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        }else if(pSN->SPINand_ID == 0xEFAB21) { /* winbond W25M02GV(2x1G-bit), MCP(Multi Chip Package) */
+        }
+        else if(pSN->SPINand_ID == 0xEFAB21)    /* winbond W25M02GV(2x1G-bit), MCP(Multi Chip Package) */
+        {
             pSN->SPINand_ID = 0xEFAB21;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x40; // 64 bytes per page spare area
@@ -962,7 +999,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
             info.SPINand_IsDieSelect = 1; //W25M02GV(2 x 1G-bit), MCP (Multi Chip Package)
-        } else if(pSN->SPINand_ID == 0xEFAE21) { /* winbond */
+        }
+        else if(pSN->SPINand_ID == 0xEFAE21)     /* winbond */
+        {
             pSN->SPINand_ID = 0xEFAE21;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x40; // 64 bytes per page spare area
@@ -986,7 +1025,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        } else if(pSN->SPINand_ID == 0xC212) { /* mxic */
+        }
+        else if(pSN->SPINand_ID == 0xC212)     /* mxic */
+        {
             pSN->SPINand_ID = 0xC212;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x40; // 64 bytes per page spare area
@@ -1009,7 +1050,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
 
-        } else  if(pSN->SPINand_ID == 0xbe20b || pSN->SPINand_ID == 0xbf20b) { /* XTX  2G */
+        }
+        else  if(pSN->SPINand_ID == 0xbe20b || pSN->SPINand_ID == 0xbf20b)     /* XTX  2G */
+        {
             pSN->SPINand_ID = pSN->SPINand_ID;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x40;    // 64 bytes per page spare area
@@ -1032,8 +1075,10 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_BlockPerFlash= 0x800;// 2048 blocks per 2G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
 
-        } else  if(pSN->SPINand_ID == 0xbe10b  || pSN->SPINand_ID == 0xbf10b ||
-            pSN->SPINand_ID == 0xd511d5 || pSN->SPINand_ID == 0xd51cd5 || pSN->SPINand_ID == 0xa1e47f) { /* XTX/MK/FM  1G */
+        }
+        else  if(pSN->SPINand_ID == 0xbe10b  || pSN->SPINand_ID == 0xbf10b ||
+                 pSN->SPINand_ID == 0xd511d5 || pSN->SPINand_ID == 0xd51cd5 || pSN->SPINand_ID == 0xa1e47f)   /* XTX/MK/FM  1G */
+        {
             //pSN->SPINand_ID = 0xbe10b;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x40;    // 64 bytes per page spare area
@@ -1055,7 +1100,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash= 0x400;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        } else  if(pSN->SPINand_ID == 0x0b1100 || pSN->SPINand_ID == 0x0b1500) { /* XTX/  1G */
+        }
+        else  if(pSN->SPINand_ID == 0x0b1100 || pSN->SPINand_ID == 0x0b1500)     /* XTX/  1G */
+        {
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x80;    // 128 bytes per page spare area
             pSN->SPINand_QuadReadCmd = 0x6b;
@@ -1076,7 +1123,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash= 0x400;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-	 } else  if(pSN->SPINand_ID == 0x0b1200 ) { /* XTX/  2G */
+        }
+        else  if(pSN->SPINand_ID == 0x0b1200 )     /* XTX/  2G */
+        {
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x80;    // 128 bytes per page spare area
             pSN->SPINand_QuadReadCmd = 0x6b;
@@ -1097,7 +1146,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash= 0x800;// 2048 blocks per 2G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        } else  if(pSN->SPINand_ID == 0x0b1300) { /* XTX/  4G */
+        }
+        else  if(pSN->SPINand_ID == 0x0b1300)     /* XTX/  4G */
+        {
             //pSN->SPINand_ID = 0x0b1300;
             pSN->SPINand_PageSize=0x1000; // 4096 bytes per page
             pSN->SPINand_SpareArea=0x100;    // 256 bytes per page spare area
@@ -1119,7 +1170,33 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash= 0x800;// 2048 blocks per 4G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        } else  if(pSN->SPINand_ID == 0xd50bd5) { /* MKSV4GIL-DE/  4G */
+        }
+        else if(pSN->SPINand_ID == 0xF20AF2)     /* MKSV1GCL-AC */
+        {
+            pSN->SPINand_ID = 0xF20AF2;
+            pSN->SPINand_PageSize=0x800; // 2048 bytes per page
+            pSN->SPINand_SpareArea=0x40; // 64 bytes per page spare area
+            pSN->SPINand_QuadReadCmd = 0x6b;
+            pSN->SPINand_ReadStatusCmd = 0x0f;
+            pSN->SPINand_WriteStatusCmd =0x1f;
+            pSN->SPINand_StatusValue = 0x1;
+            pSN->SPINand_dummybyte = 0x1;
+            pSN->SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
+            pSN->SPINand_PagePerBlock = 64; // 64 pages per block
+
+            info.SPINand_ID = 0xF20AF2;
+            info.SPINand_PageSize=0x800; // 2048 bytes per page
+            info.SPINand_SpareArea=0x40;    // 64 bytes per page spare area
+            info.SPINand_QuadReadCmd = 0x6b;
+            info.SPINand_ReadStatusCmd = 0x0f;
+            info.SPINand_WriteStatusCmd =0x1f;
+            info.SPINand_StatusValue = 0x1;
+            info.SPINand_dummybyte = 0x1;
+            info.SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
+            info.SPINand_PagePerBlock = 64; // 64 pages per block
+        }
+        else  if(pSN->SPINand_ID == 0xd50bd5)     /* MKSV4GIL-DE/  4G */
+        {
             //pSN->SPINand_ID = 0xd50bd5;
             pSN->SPINand_PageSize=0x1000; // 4096 bytes per page
             pSN->SPINand_SpareArea=0xF0;    // 240 bytes per page spare area
@@ -1141,7 +1218,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash= 0x800;// 2048 blocks per 4G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        } else if(pSN->SPINand_ID == 0x9B129B) { /* ATO25D1GA */
+        }
+        else if(pSN->SPINand_ID == 0x9B129B)     /* ATO25D1GA */
+        {
             pSN->SPINand_ID = 0x9B129B;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x40; // 64 bytes per page spare area
@@ -1163,7 +1242,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        } else if(pSN->SPINand_ID == 0x2C242C) { /* MT29F2G01 */
+        }
+        else if(pSN->SPINand_ID == 0x2C242C)     /* MT29F2G01 */
+        {
             pSN->SPINand_ID = 0x2C242C;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x80; // 128 bytes per page spare area
@@ -1185,7 +1266,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash = 0x800;// 2048 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        } else if(pSN->SPINand_ID == 0xB148C8) { /* GD */
+        }
+        else if(pSN->SPINand_ID == 0xB148C8)     /* GD */
+        {
             pSN->SPINand_ID = 0xB148C8;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x80; // 128 bytes per page spare area
@@ -1207,7 +1290,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        } else if (pSN->SPINand_ID == 0xC8D1){
+        }
+        else if (pSN->SPINand_ID == 0xC8D1)
+        {
             pSN->SPINand_ID = 0xC8D1;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=0x80; // 128 bytes per page spare area
@@ -1229,7 +1314,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        } else if (pSN->SPINand_ID == 0xC851){
+        }
+        else if (pSN->SPINand_ID == 0xC851)
+        {
             pSN->SPINand_ID = 0xC851;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=64; // 128 bytes per page spare area
@@ -1251,7 +1338,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        } else if (pSN->SPINand_ID == 0xC852){
+        }
+        else if (pSN->SPINand_ID == 0xC852)
+        {
             pSN->SPINand_ID = 0xC852;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=64; // 128 bytes per page spare area
@@ -1273,7 +1362,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash = 0x800;// 2048 blocks per 2G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        }else if (pSN->SPINand_ID == 0x98E240){
+        }
+        else if (pSN->SPINand_ID == 0x98E240)
+        {
             pSN->SPINand_ID = 0x98E240;
             pSN->SPINand_PageSize=0x800; // 2048 bytes per page
             pSN->SPINand_SpareArea=64; // 128 bytes per page spare area
@@ -1295,7 +1386,9 @@ INT spiNAND_ReadINFO(SPINAND_INFO_T *pSN)
             info.SPINand_dummybyte = 0x1;
             info.SPINand_BlockPerFlash = 0x400;// 1024 blocks per 1G NAND
             info.SPINand_PagePerBlock = 64; // 64 pages per block
-        } else {
+        }
+        else
+        {
             printf("SPI NAND ID 0x%x not support!! \n", pSN->SPINand_ID);
             pSN->SPINand_ID = 0x0;//pSN->SPINand_ID;
         }
